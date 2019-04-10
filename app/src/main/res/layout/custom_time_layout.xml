@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <NumberPicker
+        android:id="@+id/number_picker_hours"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toStartOf="@+id/colon_text_view"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
+
+    </NumberPicker>
+
+    <NumberPicker
+        android:id="@+id/number_picker_minutes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/colon_text_view"
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
+
+    </NumberPicker>
+
+    <TextView
+        android:id="@+id/colon_text_view"
+        android:layout_width="50dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text=":"
+        android:textSize="100dp"
+        app:layout_constraintBottom_toBottomOf="@+id/number_picker_hours"
+        app:layout_constraintEnd_toStartOf="@+id/number_picker_minutes"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/number_picker_hours"
+        app:layout_constraintTop_toTopOf="@+id/number_picker_hours" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="Select a Time"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+            android:id="@+id/set_time_button"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Set Time"
+            app:layout_constraintEnd_toEndOf="@+id/number_picker_minutes"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@+id/number_picker_hours"
+            app:layout_constraintTop_toBottomOf="@+id/textView4"/>
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Hours"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/number_picker_hours"
+        app:layout_constraintEnd_toStartOf="@+id/colon_text_view"
+        app:layout_constraintStart_toStartOf="@+id/number_picker_hours"
+        app:layout_constraintTop_toBottomOf="@+id/number_picker_hours" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Minutes"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/number_picker_minutes"
+        app:layout_constraintStart_toStartOf="@+id/number_picker_minutes"
+        app:layout_constraintTop_toBottomOf="@+id/number_picker_minutes" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
