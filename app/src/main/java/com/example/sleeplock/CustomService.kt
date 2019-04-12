@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -12,12 +13,14 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.sleeplock.Constants.*
 import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.subjects.BehaviorSubject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 var isServiceRunning = false
-var sendTimeToViewModel = BehaviorSubject.create<Long>() // observed by view model
 
 class CustomService : Service() {
+
 
     private var isTimerCreated = false
     private lateinit var timer: Timer
@@ -40,7 +43,7 @@ class CustomService : Service() {
 
         isServiceRunning = true
 
-        val millis :Long? = intent?.extras?.getLong(Constants.CURRENT_TIME.text)
+        val millis: Long? = intent?.extras?.getLong(Constants.CURRENT_TIME.text)
 
         if (!isTimerCreated) createAndObserveTimer(millis ?: 0)
 
@@ -144,9 +147,19 @@ class CustomService : Service() {
                 updateNotification(it.formatTime(), playOrPause)
             },
             onComplete = {
-                sendTimeToViewModel.onNext(currentTimeMillis)
+                resetAll()
+                sendBroadcast(currentTimeMillis)
+                GlobalScope.launch(Dispatchers.Main) { showFinishedToast(this@CustomService) }
             }
         )
+
+
+    }
+
+    private fun sendBroadcast(millis: Long) {
+        val sendTimeToViewModel = Intent(MILLIS.text)
+        sendTimeToViewModel.putExtra("millis", millis)
+        sendBroadcast(sendTimeToViewModel)
     }
 
 
@@ -154,5 +167,37 @@ class CustomService : Service() {
 
     private fun getBroadcastReceiverIntent() = Intent(this, CustomBroadcastReceiver::class.java)
 
+
+    /*
+When an notification action is clicked, the broadcast receiver sets an action for the intent,
+and invokes the startButton on command method in our service, which gets filtered in a when statement
+ */
+
+    class CustomBroadcastReceiver : BroadcastReceiver() {
+
+        override fun onReceive(context: Context, intent: Intent) {
+            val action = intent.action
+            val actionIntent = Intent(context, CustomService::class.java)
+
+            when (action) {
+                ACTION_PLAY.text -> {
+                    actionIntent.action = action
+                    context.startService(actionIntent)
+                }
+
+                ACTION_PAUSE.text -> {
+                    actionIntent.action = action
+                    context.startService(actionIntent)
+                }
+
+                ACTION_RESET.text -> {
+                    actionIntent.action = action
+                    context.startService(actionIntent)
+                }
+            }
+        }
+
+
+    }
 
 }

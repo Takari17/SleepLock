@@ -3,7 +3,6 @@ package com.example.sleeplock
 
 import android.os.Bundle
 import android.transition.TransitionManager
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +13,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
-import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.fragment_main.*
 
 
@@ -30,7 +28,8 @@ class MainFragment : Fragment() {
     private var startAnim = true
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_main, container, false)
         thisLayout = view.findViewById(R.id.main_fragment_layout)
@@ -44,18 +43,25 @@ class MainFragment : Fragment() {
             showDialog()
         }
 
-        start_pause_button.setOnClickListener {// todo move this business logic into your view model if you can
-            if (viewModel.start) {
-                viewModel.startTimer()
+        // we're gonna have alot of logic here, maybe use RX to emit a button to our view model, and we do our logic there
+        start_pause_button.setOnClickListener { button ->
+            // todo move this business logic into your view model if you can
+            if (viewModel.startButton) {
+
+                viewModel.startButtonClick(viewModel.startButton)
+
                 if (startAnim) startAnimation()
 
             } else {
-                viewModel.pauseTimer()
+                viewModel.pauseButtonClick(viewModel.startButton)
             }
         }
 
+
+
+
         reset_button.setOnClickListener {
-            viewModel.resetTimer()
+            viewModel.resetButtonClick()
             startAnimation()
         }
 
@@ -70,18 +76,23 @@ class MainFragment : Fragment() {
 
         viewModel.updateCurrentTime.observe(viewLifecycleOwner, observeCurrentTime())
 
-        viewModel.itemIndexLD.observe(viewLifecycleOwner, observeItemIndex())
+        viewModel.clickedItemIndex.observe(viewLifecycleOwner, observeItemIndex())
 
-        viewModel.enabledDisabled.observe(viewLifecycleOwner, observeEnabledDisabled())
+        viewModel.enabledOrDisabled.observe(viewLifecycleOwner, observeEnabledDisabled())
 
         viewModel.updateButtonColor.observe(viewLifecycleOwner, observeButtonColor())
+
+        viewModel.updateButtonText.observe(viewLifecycleOwner, observeButtonText())
+
+        viewModel.notifyAnimation.observe(viewLifecycleOwner, observeNotifyAnim())
+
 
     }
 
 
     private fun showDialog() {
         val dialog = TimeOptionDialog()
-
+        viewModel.subscribeToDialog(dialog.dialogTime)
         if (!dialog.isAdded) {
             val fragmentManager: FragmentManager? = activity?.supportFragmentManager
             if (fragmentManager != null) dialog.show(fragmentManager, "Time Dialog")
@@ -102,7 +113,7 @@ class MainFragment : Fragment() {
     private fun startAnimation() {
         TransitionManager.beginDelayedTransition(thisLayout)
 
-        if (startAnim) { // true = start    false = revert
+        if (startAnim) { // true = startButton    false = revert
             animatedLayout.applyTo(thisLayout)
             startAnim = !startAnim
         } else {
@@ -112,17 +123,19 @@ class MainFragment : Fragment() {
     }
 
 
-
-
     override fun onPause() {
         super.onPause()
-        viewModel.startRunningService()
-
+        viewModel.maybeStartService()
     }
 
-    override fun onStart() {
-        super.onStart()
-        viewModel.startNewTimer()
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.destroyService()
+        if (isServiceRunning) {
+            startAnimation()
+            viewModel.restoreButton()
+        }
     }
 
 
@@ -145,6 +158,15 @@ class MainFragment : Fragment() {
 
     private fun observeEnabledDisabled(): Observer<Boolean> { // Sets button clickability
         return Observer { aBoolean -> start_pause_button.isClickable = aBoolean }
+    }
+
+    private fun observeButtonText(): Observer<String> { // Sets button text
+        return Observer { text -> start_pause_button.text = text }
+    }
+
+
+    private fun observeNotifyAnim(): Observer<Boolean> {
+        return Observer { aBoolean -> startAnimation() }
     }
 
 }

@@ -6,12 +6,17 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.DialogFragment
+import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.custom_time_layout.*
 
 
 class TimeOptionDialog : DialogFragment() {
 
+    // User selected time gets sent to the view model's observer
+    val dialogTime: BehaviorSubject<Long> = BehaviorSubject.create<Long>()
+
     private var timeInMillis: Long = 0
+
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
@@ -46,7 +51,7 @@ class TimeOptionDialog : DialogFragment() {
 
         })
 
-        builder.setIcon(R.drawable.clockicon) // todo: make the clock light blue
+        builder.setIcon(R.drawable.lightblueclock)
 
         return builder.create()
     }

@@ -4,21 +4,32 @@ import android.app.Application
 import android.graphics.Color
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import es.dmoral.toasty.Toasty
 import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.subjects.BehaviorSubject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
+// Todo: add the sound functionality
 class ViewModel(application: Application) : AndroidViewModel(application) {
 
+    // Observed by fragment
     val updateCurrentTime = MutableLiveData<String>() // Tasked with keeping our current time text view up to date
-    val itemIndexLD = MutableLiveData<Int>() // rename this
-    val enabledDisabled = MutableLiveData<Boolean>() // Tasked with enabling/disabling our button
+    val clickedItemIndex = MutableLiveData<Int>() // index of the item selected from the recycler view
+    val enabledOrDisabled = MutableLiveData<Boolean>() // Tasked with enabling/disabling our button
     val updateButtonColor = MutableLiveData<Int>()
+    val updateButtonText = MutableLiveData<String>()
+    val notifyAnimation = MutableLiveData<Boolean>()
+
     private val repository = Repository(application)
-    lateinit var timer: Timer
+    private lateinit var timer: Timer
     private var isTimeChosen = false
     private var isSoundChosen = false
-    var isTimerRunning = false
-    var start = true // used for our start/pause button
+    private var isTimerRunning = false
+    var startButton = true // used for our startButton/pause button
 
     private var timeInMillis: Long = 0
 
@@ -27,42 +38,42 @@ class ViewModel(application: Application) : AndroidViewModel(application) {
         itemIndex.subscribeBy( // index of item selected in recycler view
             onNext = { index ->
                 isSoundChosen = true
+                enabledOrDisabled.value = isTimeAndSoundChosen()
+                setButtonColor(isTimeAndSoundChosen())
 
-                enabledDisabled.value = isTimeAndSoundChosen(isTimeChosen, isSoundChosen)
+                clickedItemIndex.value = index
 
-                sendColor(isTimeAndSoundChosen(isTimeChosen, isSoundChosen))
+                GlobalScope.launch(Dispatchers.Main) { showSoundSelectedToast() }
 
-                // todo show a "sound selected" toast here
-                itemIndexLD.value = index
             }
         )
 
+        repository.passTime.observeForever(observeServiceBroadcast())
+    }
 
+
+    fun subscribeToDialog(dialogTime: BehaviorSubject<Long>) {
         dialogTime.subscribeBy( // User selected time from our dialog
             onNext = { milliSec ->
                 isTimeChosen = true
 
-                enabledDisabled.value = isTimeAndSoundChosen(isTimeChosen, isSoundChosen)
-                sendColor(isTimeAndSoundChosen(isTimeChosen, isSoundChosen))
+                enabledOrDisabled.value = isTimeAndSoundChosen()
+                setButtonColor(isTimeAndSoundChosen())
 
                 val formattedTime = milliSec.formatTime()
                 updateCurrentTime.value = formattedTime
 
-                timeInMillis = milliSec
-
+                createAndObserveTimer(milliSec)
             })
-
     }
 
 
-    fun startService() {
+    private fun startService() {
         repository.startService(timeInMillis)
         isTimerRunning = true
     }
 
-    fun pauseService() = repository.pauseService()
-
-    private fun resetService() = repository.resetService()
+    private fun resetService() = repository.resetService() // will invoke "sendTimeToService"
 
     private fun createAndObserveTimer(millis: Long) {
         timer = Timer(millis)
@@ -72,38 +83,42 @@ class ViewModel(application: Application) : AndroidViewModel(application) {
                 timeInMillis = milliSec
             },
             onComplete = {
-                //todo add a "timer finished" toast with Toasty
                 updateCurrentTime.postValue(resetTimeDisplayes())
+
+                // Runs returns result on main thread
+                GlobalScope.launch(Dispatchers.Main) {
+                    resetButtonClick()
+                    showFinishedToast(getApplication())
+                }
+
+                notifyAnimation.postValue(true)
             }
         )
     }
 
 
-    fun startTimer() {
-        createAndObserveTimer(timeInMillis)
+    private fun startTimer() {
         timer.startTimer()
-        start = !start
+        startButton = !startButton
         isTimerRunning = true
     }
 
-    fun pauseTimer() {
+    private fun pauseTimer() {
         timer.pauseTimer()
-        start = !start
+        startButton = !startButton
         isTimerRunning = false
     }
 
-    fun resetTimer() {
+    private fun resetTimer() {
         timer.resetTimer()
         isTimerRunning = false
     }
 
 
-    private fun isTimeAndSoundChosen(isTimeChosen: Boolean, isSoundChosen: Boolean): Boolean {
-        return isTimeChosen && isSoundChosen // Both must be true to evaluate to true
-    }
+    private fun isTimeAndSoundChosen(): Boolean = isTimeChosen && isSoundChosen // Both must be true to evaluate to true
 
 
-    private fun sendColor(isTimeAndSoundChosen: Boolean) {
+    private fun setButtonColor(isTimeAndSoundChosen: Boolean) {
         if (isTimeAndSoundChosen) {
             updateButtonColor.value = Color.parseColor("#4dd0e1")  // light blue
         } else {
@@ -111,32 +126,84 @@ class ViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun startRunningService() { // Think of a more descriptive name
-        // Starts the service only if the timer is running
-        if (isTimerRunning) {
-            startService() // Only starts the service if the timer is running (wont start if paused)
-            timer.resetTimer()
-            repository.saveServiceStatus()
+    private fun setButtonText(isButtonStart: Boolean) {
+        return if (isButtonStart) {
+            updateButtonText.value = "Pause"
+        } else {
+            updateButtonText.value = "Start"
         }
     }
 
+    private fun setButtonEnabledDisabled(isTimeAndSoundChosen: Boolean) {
+        enabledOrDisabled.value = isTimeAndSoundChosen
+    }
 
-    fun startNewTimer() {
-        // Destroy's service if running, and creates the foreground timer with the services timer's latest time
 
+    // maybe create a higher order function for these 2 methods, if the service is running do this, else do this...
+
+    fun maybeStartService() {
+        // Only starts the service if the timer is running (wont startButton if paused)
+        if (isTimerRunning) {
+            startService()
+            timer.resetTimer()
+        }
+    }
+
+    fun destroyService() {
+        // Destroy's service if running, invokes Live Data which creates the foreground timer with the services timer's latest time
         if (isServiceRunning) {
-            sendTimeToViewModel.subscribeBy(onNext = { millis ->
-                createAndObserveTimer(millis)
-            })
-
             resetService()
+        }
+    }
 
+    private fun observeServiceBroadcast(): Observer<Long> {
+        return Observer { millis ->
+            createAndObserveTimer(millis)
             startTimer()
         }
     }
 
 
+    fun startButtonClick(startButton: Boolean) {
+        startTimer()
+        setButtonText(startButton)
+    }
+
+    fun pauseButtonClick(startButton: Boolean) {
+        pauseTimer()
+        setButtonText(startButton)
+    }
+
+    fun resetButtonClick() {
+        resetTimer()
+        resetBooleans()
+        setButtonText(false)
+        setButtonColor(isTimeAndSoundChosen())
+        setButtonEnabledDisabled(isTimeAndSoundChosen())
+
+    }
+
+    private fun resetBooleans() {
+        // resets booleans to default state
+        isTimeChosen = false
+        isSoundChosen = false
+        isTimerRunning = false
+        startButton = true
+    }
+
+    fun restoreButton() {
+        setButtonText(true)
+        setButtonColor(true)
+        setButtonEnabledDisabled(true)
+    }
+
+    private fun showSoundSelectedToast() {
+        Toasty.success(getApplication(), "Sound Selected", Toasty.LENGTH_SHORT, true).show()
+    }
+
 }
+
+
 
 
 

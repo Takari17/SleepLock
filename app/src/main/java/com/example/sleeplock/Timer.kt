@@ -7,9 +7,6 @@ import java.util.concurrent.atomic.AtomicLong
 
 
 class Timer(millis: Long) {
-    /*
-    Maybe make a bunch of booleans of your timers state in here?
-     */
 
     private val elapsedTime = AtomicLong()
     private val resumed = AtomicBoolean()
@@ -42,17 +39,10 @@ class Timer(millis: Long) {
             .map { elapsedTime.addAndGet(-1000) }
     }
 
-    fun startTimer() {
-        resumed.set(true)
-    }
+    fun startTimer() = resumed.set(true)
 
-    fun pauseTimer() {
-        resumed.set(false)
-    }
+    fun pauseTimer() = resumed.set(false)
 
-    fun resetTimer() {
-        stopped.set(true)
-    }
-
+    fun resetTimer() = stopped.set(true)
 
 }

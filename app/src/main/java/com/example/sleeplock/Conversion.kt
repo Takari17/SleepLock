@@ -1,5 +1,7 @@
 package com.example.sleeplock
 
+import android.content.Context
+import es.dmoral.toasty.Toasty
 import java.util.*
 
 
@@ -23,5 +25,8 @@ fun Long.formatTime(): String {
 }
 
 fun resetTimeDisplayes(): String = "00:00"
+
+fun showFinishedToast(context: Context){ Toasty.info(context, "Timer Finished", Toasty.LENGTH_SHORT, true).show() }
+
 
 

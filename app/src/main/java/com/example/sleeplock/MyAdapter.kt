@@ -5,14 +5,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.Glide.init
 import io.reactivex.subjects.BehaviorSubject
-import io.reactivex.subjects.Subject
 import kotlinx.android.synthetic.main.recycler_view_layout.view.*
+
+// Index of item clicked observed by ViewModel
+val itemIndex = BehaviorSubject.create<Int>()!!
 
 class MyAdapter(private val image: List<Int>, private val text: List<String>) :
     RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyAdapter.MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.recycler_view_layout, parent, false)
@@ -29,7 +29,6 @@ class MyAdapter(private val image: List<Int>, private val text: List<String>) :
             .into(holder.image)
 
         holder.text.text = text[position]
-
     }
 
 

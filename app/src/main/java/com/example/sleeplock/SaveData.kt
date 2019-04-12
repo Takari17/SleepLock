@@ -1,6 +1,5 @@
 package com.example.sleeplock
 
-import android.app.Activity
 import android.app.Application
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
@@ -8,7 +7,8 @@ import android.content.SharedPreferences
 
 class SaveData(context: Application) {
 
-    private val sharedPreferences: SharedPreferences = context.getSharedPreferences(Constants.SHARED_PREFS.text, MODE_PRIVATE)
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences(Constants.SHARED_PREFS.text, MODE_PRIVATE)
     private val editor = sharedPreferences.edit()
 
     fun saveBoolean(Tag: String, aBoolean: Boolean) {

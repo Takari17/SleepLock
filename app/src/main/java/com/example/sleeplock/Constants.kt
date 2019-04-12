@@ -7,5 +7,6 @@ enum class Constants(val text: String) {
     CHANNEL_ID("MyService"),
     CURRENT_TIME("current time"),
     SHARED_PREFS("shared preferences"),
-    IS_SERVICE_RUNNING("is service running boolean")
+    IS_SERVICE_RUNNING("is service running boolean"),
+    MILLIS("millis")
 }

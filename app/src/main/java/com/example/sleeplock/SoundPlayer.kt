@@ -8,9 +8,7 @@ class SoundPlayer(context: Context, index: Int) {
 
     private lateinit var sound: MediaPlayer
 
-    init {
-        setSound(context, index)
-    }
+    init { setSound(context, index) }
 
     fun startMediaPlayer() {
         sound.start()

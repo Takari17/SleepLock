@@ -4,6 +4,7 @@
 
     <application
             android:name=".App"
+            android:screenOrientation="portrait"
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
@@ -18,7 +19,7 @@
             </intent-filter>
         </activity>
         <service android:name=".CustomService"/>
-        <receiver android:name=".CustomBroadcastReceiver"/>
+        <receiver android:name=".CustomService$CustomBroadcastReceiver"/>
 
     </application>
 
