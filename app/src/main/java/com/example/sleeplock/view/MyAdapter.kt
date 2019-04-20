@@ -1,27 +1,36 @@
-package com.example.sleeplock
+package com.example.sleeplock.view
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.sleeplock.R
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.recycler_view_layout.view.*
 
-// Index of item clicked observed by ViewModel
-val itemIndex = BehaviorSubject.create<Int>()!!
+
+//todo set has fixed size= true
+
+// Index of item clicked observed by MyViewModel
+
+//todo fix your unessessary comments
+
+val itemIndex = BehaviorSubject.create<Int>()
 
 class MyAdapter(private val image: List<Int>, private val text: List<String>) :
     RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyAdapter.MyViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.recycler_view_layout, parent, false)
+
         return MyViewHolder(view)
     }
 
     override fun getItemCount(): Int = image.size
 
-    override fun onBindViewHolder(holder: MyAdapter.MyViewHolder, position: Int) {
+
+    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
         Glide.with(holder.itemView.context)
             .asBitmap()
@@ -37,9 +46,8 @@ class MyAdapter(private val image: List<Int>, private val text: List<String>) :
         val text = itemView.item_text
 
         init {
-            itemView.setOnClickListener {
-                itemIndex.onNext(adapterPosition)
-            }
+            itemView.setOnClickListener { itemIndex.onNext(adapterPosition) }
         }
     }
+
 }

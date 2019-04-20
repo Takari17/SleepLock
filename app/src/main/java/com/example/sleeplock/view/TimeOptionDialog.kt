@@ -1,4 +1,4 @@
-package com.example.sleeplock
+package com.example.sleeplock.view
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -6,6 +6,10 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.DialogFragment
+import com.example.sleeplock.R
+import com.example.sleeplock.model.util.DataSource
+import com.example.sleeplock.model.util.convertHoursToMin
+import com.example.sleeplock.model.util.convertMinToMilli
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.custom_time_layout.*
 

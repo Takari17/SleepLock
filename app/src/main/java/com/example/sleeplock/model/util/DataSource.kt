@@ -1,6 +1,6 @@
-package com.example.sleeplock
+package com.example.sleeplock.model.util
 
-import android.graphics.drawable.Drawable
+import com.example.sleeplock.R
 
 class DataSource {
 

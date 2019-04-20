@@ -1,40 +1,42 @@
-package com.example.sleeplock
+package com.example.sleeplock.view
 
 import android.content.res.Resources
 import android.os.Bundle
-import android.view.*
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentContainer
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
+import com.example.sleeplock.R
+import com.example.sleeplock.view.fragments.ListFragment
+import com.example.sleeplock.view.fragments.MainFragment
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_main.view.*
 
-// Todo: I should at least add tabs if Im goin the no action bar route
+/*
+Lets see if we can get the timer working in out activity, if so we can pass the timer from the activity to our fragment
+
+todo Once you fix this problem defnalty write a brief summaary of it just incase of someone ask us in an interview what was our hrdest bug
+ */
+
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
+        val sectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
 
-        container.adapter = mSectionsPagerAdapter
+        container.adapter = sectionsPagerAdapter
 
         val viewPager = findViewById<ViewPager>(R.id.container)
 
-        viewPager.adapter = mSectionsPagerAdapter
+        viewPager.adapter = sectionsPagerAdapter
 
         val tabLayout = findViewById<TabLayout>(R.id.tabs)
 
         viewPager.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(tabLayout))
         tabLayout.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(viewPager))
-
-
     }
 
 

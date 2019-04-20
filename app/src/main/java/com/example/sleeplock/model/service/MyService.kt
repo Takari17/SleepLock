@@ -1,17 +1,22 @@
-package com.example.sleeplock
+package com.example.sleeplock.model.service
 
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.example.sleeplock.Constants.*
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.sleeplock.view.MainActivity
+import com.example.sleeplock.R
+import com.example.sleeplock.feature.Timer
+import com.example.sleeplock.model.util.Constants
+import com.example.sleeplock.model.util.Constants.*
+import com.example.sleeplock.model.util.formatTime
+import com.example.sleeplock.model.util.showFinishedToast
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -21,6 +26,7 @@ var isServiceRunning = false
 
 class CustomService : Service() {
 
+    private val localBroadcastManager = LocalBroadcastManager.getInstance(this)
 
     private var isTimerCreated = false
     private lateinit var timer: Timer
@@ -47,9 +53,7 @@ class CustomService : Service() {
 
         if (!isTimerCreated) createAndObserveTimer(millis ?: 0)
 
-        val action = intent?.action
-
-        when (action) {
+        when (intent?.action) {
             ACTION_PLAY.text -> {
                 startSoundAndTimer()
                 playOrPause = 1
@@ -62,7 +66,7 @@ class CustomService : Service() {
 
             ACTION_RESET.text -> {
                 resetAll()
-                return Service.START_NOT_STICKY
+                return START_NOT_STICKY
             }
         }
 
@@ -83,11 +87,11 @@ class CustomService : Service() {
 
 
         startForeground(NOTIFICATION_ID, getMyNotification(currentTimeMillis.formatTime(), playOrPause))
-        return Service.START_NOT_STICKY
+        return START_NOT_STICKY
     }
 
+    // Updates the notification content description with the text provided
     private fun updateNotification(text: String, playOrPause: Int) {
-        // Updates the notification content description with the text provided
         val notification = getMyNotification(text, playOrPause)
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(NOTIFICATION_ID, notification)
@@ -102,8 +106,8 @@ class CustomService : Service() {
             .addAction(R.drawable.reset, "Reset", pendingResetIntent)
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
-                    .setShowActionsInCompactView(playOrPause, 2)
-            ) // index of the actions
+                    .setShowActionsInCompactView(playOrPause, 2)  // index of the actions
+            )
             .setSubText("Sound Options")
             .setContentTitle("Sleep Lock")
             .setContentText(text)
@@ -125,7 +129,6 @@ class CustomService : Service() {
     private fun pauseSoundAndTimer() {
         //        sound.pauseMediaPlayer();
         timer.pauseTimer()
-
     }
 
 
@@ -148,7 +151,7 @@ class CustomService : Service() {
             },
             onComplete = {
                 resetAll()
-                sendBroadcast(currentTimeMillis)
+                sendTimeBroadcast(currentTimeMillis)
                 GlobalScope.launch(Dispatchers.Main) { showFinishedToast(this@CustomService) }
             }
         )
@@ -156,48 +159,21 @@ class CustomService : Service() {
 
     }
 
-    private fun sendBroadcast(millis: Long) {
-        val sendTimeToViewModel = Intent(MILLIS.text)
-        sendTimeToViewModel.putExtra("millis", millis)
-        sendBroadcast(sendTimeToViewModel)
-    }
-
-
-    private fun createPendingIntent(intent: Intent): PendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
-
-    private fun getBroadcastReceiverIntent() = Intent(this, CustomBroadcastReceiver::class.java)
-
-
-    /*
-When an notification action is clicked, the broadcast receiver sets an action for the intent,
-and invokes the startButton on command method in our service, which gets filtered in a when statement
- */
-
-    class CustomBroadcastReceiver : BroadcastReceiver() {
-
-        override fun onReceive(context: Context, intent: Intent) {
-            val action = intent.action
-            val actionIntent = Intent(context, CustomService::class.java)
-
-            when (action) {
-                ACTION_PLAY.text -> {
-                    actionIntent.action = action
-                    context.startService(actionIntent)
-                }
-
-                ACTION_PAUSE.text -> {
-                    actionIntent.action = action
-                    context.startService(actionIntent)
-                }
-
-                ACTION_RESET.text -> {
-                    actionIntent.action = action
-                    context.startService(actionIntent)
-                }
-            }
+    private fun sendTimeBroadcast(millis: Long) {
+        // received by Fragment
+        Intent().apply {
+            action = MILLIS.text
+            putExtra("millis", millis)
+            localBroadcastManager.sendBroadcast(this)
         }
-
-
     }
 
+
+    private fun createPendingIntent(intent: Intent): PendingIntent {
+        return PendingIntent.getBroadcast(this, 0, intent, 0)
+    }
+
+    private fun getBroadcastReceiverIntent(): Intent {
+        return Intent(this, NotificationBroadcastReceiver::class.java)
+    }
 }

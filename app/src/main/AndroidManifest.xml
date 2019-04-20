@@ -3,7 +3,7 @@
           package="com.example.sleeplock">
 
     <application
-            android:name=".App"
+            android:name="com.example.sleeplock.model.util.App"
             android:screenOrientation="portrait"
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
@@ -11,15 +11,17 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".view.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name=".CustomService"/>
-        <receiver android:name=".CustomService$CustomBroadcastReceiver"/>
+        <service android:name=".model.service.CustomService"/>
+        <receiver android:name=".model.service.NotificationBroadcastReceiver"/>
+
+
 
     </application>
 

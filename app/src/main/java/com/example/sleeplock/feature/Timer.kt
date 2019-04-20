@@ -1,5 +1,6 @@
-package com.example.sleeplock
+package com.example.sleeplock.feature
 
+import com.example.sleeplock.model.util.convertMilliToSeconds
 import io.reactivex.Flowable
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean

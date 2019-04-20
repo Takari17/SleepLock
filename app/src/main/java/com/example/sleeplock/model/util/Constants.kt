@@ -1,4 +1,4 @@
-package com.example.sleeplock
+package com.example.sleeplock.model.util
 
 enum class Constants(val text: String) {
     ACTION_PLAY("play"),

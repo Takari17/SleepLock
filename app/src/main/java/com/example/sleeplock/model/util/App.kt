@@ -1,10 +1,10 @@
-package com.example.sleeplock
+package com.example.sleeplock.model.util
 
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
-import com.example.sleeplock.Constants.CHANNEL_ID
+import com.example.sleeplock.model.util.Constants.CHANNEL_ID
 
 class App : Application() {
 

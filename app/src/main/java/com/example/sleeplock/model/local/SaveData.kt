@@ -1,8 +1,9 @@
-package com.example.sleeplock
+package com.example.sleeplock.model.local
 
 import android.app.Application
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
+import com.example.sleeplock.model.util.Constants
 
 
 class SaveData(context: Application) {

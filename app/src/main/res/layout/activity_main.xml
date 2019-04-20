@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        tools:context=".MainActivity">
+        tools:context=".view.MainActivity">
 
 
     <com.google.android.material.appbar.AppBarLayout
@@ -25,28 +25,30 @@
                 android:id="@+id/tabs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:tabIndicatorColor="@color/design_default_color_secondary"
+                app:tabIndicatorColor="#00E5FF"
                 app:tabTextAppearance="@android:style/TextAppearance.Holo.Medium">
 
             <com.google.android.material.tabs.TabItem
                     android:id="@+id/tabItem"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Timer"/>
+                    android:text="@string/timer"/>
 
             <com.google.android.material.tabs.TabItem
                     android:id="@+id/tabItem2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Noise"/>
+                    android:text="@string/noise"/>
 
         </com.google.android.material.tabs.TabLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
+
     <androidx.viewpager.widget.ViewPager
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
