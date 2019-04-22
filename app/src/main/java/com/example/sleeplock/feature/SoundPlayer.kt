@@ -2,7 +2,7 @@ package com.example.sleeplock.feature
 
 import android.content.Context
 import android.media.MediaPlayer
-import com.example.sleeplock.model.util.DataSource
+import com.example.sleeplock.utils.WHITE_NOISE
 
 
 class SoundPlayer(context: Context, index: Int) {
@@ -11,6 +11,7 @@ class SoundPlayer(context: Context, index: Int) {
 
     init { setSound(context, index) }
 
+    // todo change to just start, pause and reset, same for the timer
     fun startMediaPlayer() {
         sound.start()
         sound.isLooping = true
@@ -24,11 +25,9 @@ class SoundPlayer(context: Context, index: Int) {
     private fun setSound(context: Context, index: Int) {
         // Creates sound bases off position of Recycler View item click, call before you play your sound
 
-        val dataSource = DataSource()
+        for (i in WHITE_NOISE.indices) {
 
-        for (i in dataSource.WHITE_NOISE.indices) {
-
-            if (i == index) sound = MediaPlayer.create(context, dataSource.WHITE_NOISE[i])
+            if (i == index) sound = MediaPlayer.create(context, WHITE_NOISE[i])
         }
     }
 }

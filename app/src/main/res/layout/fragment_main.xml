@@ -6,7 +6,7 @@
         android:id="@+id/main_fragment_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".view.fragments.MainFragment">
+        tools:context=".ui.fragments.MainFragment">
 
     <TextView
             android:id="@+id/current_time_text_view"
@@ -36,6 +36,7 @@
             android:backgroundTintMode="add"
             android:text="@string/start"
             android:textColor="#0B3136"
+            android:enabled="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.493"

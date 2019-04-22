@@ -1,0 +1,328 @@
+Index: app/src/main/java/com/example/sleeplock/viewmodel/MyViewModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/sleeplock/viewmodel/MyViewModel.kt	(date 1555876769869)
++++ app/src/main/java/com/example/sleeplock/viewmodel/MyViewModel.kt	(date 1555876769869)
+@@ -4,20 +4,16 @@
+ import android.graphics.Color
+ import android.util.Log
+ import androidx.lifecycle.AndroidViewModel
++import androidx.lifecycle.LiveData
+ import androidx.lifecycle.MutableLiveData
+ import com.example.sleeplock.R
+ import com.example.sleeplock.feature.Timer
+ import com.example.sleeplock.model.Repository
+ import com.example.sleeplock.model.service.isServiceRunning
+-import com.example.sleeplock.model.util.formatTime
++import com.example.sleeplock.utils.*
+ import com.example.sleeplock.view.itemIndex
+-import es.dmoral.toasty.Toasty
+-import io.reactivex.disposables.Disposable
+ import io.reactivex.rxkotlin.subscribeBy
+-import io.reactivex.subjects.BehaviorSubject
+-import kotlinx.coroutines.Dispatchers
+-import kotlinx.coroutines.GlobalScope
+-import kotlinx.coroutines.launch
++import java.util.logging.Logger
+ 
+ 
+ /*
+@@ -32,67 +28,106 @@
+ Fixed a bug where the service woudnt update the UI with the latest time
+ Added package strucuture for better organization
+ Moved hard coded string delcaations to string resource for language translation
++Fixed our buggy toast, now the finished toast only shows from the service
++We added a warning toast if the user selects a time while the timer is active
++Moved most business logic from Fragment to View model
++Fixed a bug where the screen woudnt lock in portrait mode
++
++Created immutable getter methods for our live data so avoid unintended data changes
++
++renambed some methods and variables for better clarity
++
++Created a new package structure for better organization
++
++Created a util class and added my helper methods and constants in there
+  */
+ 
+ 
++/*
+ 
+-/*
+-todo fix timer functionality when it stops
+-todo fix your toast
+-todo increase notification buttons
++
+ todo: add the sound functionality
++
+ todo what the hell is sp
+ 
++ todo apply a dark theme, maybe change from light blue to something more mellow
++
++Bugs:
++
++todo our foreground timer doesnt react well when we  reset our servuce though the notification
++
+ 
+  */
++
++//todo faster way to write logs... maybe learn how to create an auto filter
++
++// TODO, MOVE ALL OF THESE METHODS INSIDE OF YOUR TIMER CLASS, WHY ARE THEY HERE??
++var isTimerRunning = false // todo maybe change this to is foregroundtimerRunning
++var isTimerPaused = false
++
++
++// todo is timer running is set to false when we pause it, therfore the wrong toast gets displayed, either change that or create a new boolean
++
+ class MyViewModel(application: Application) : AndroidViewModel(application) {
+ 
+-    // Observed by fragment
+-    val updateCurrentTime = MutableLiveData<String>() // keeps current time text view up to date
+-    val clickedItemIndex = MutableLiveData<Int>()
+-    val enabledOrDisabled = MutableLiveData<Boolean>() // For buttons
+-    val updateButtonColor = MutableLiveData<Int>()
+-    val updateButtonText = MutableLiveData<String>()
+-    val timerCompleted = MutableLiveData<Boolean>()
++    // Observed by Main Fragment
++    private val currentTime = MutableLiveData<String>() // keeps current time text view up to date
++    private val timerCompleted = MutableLiveData<Boolean>()
++    private val clickedItemIndex = MutableLiveData<Int>() // item clicked from recycler view
++    private val buttonEnabled = MutableLiveData<Boolean>()
++    private val buttonColor = MutableLiveData<Int>()
++    private val buttonText = MutableLiveData<String>()
+ 
+     private val repository = Repository(application)
++
+     private lateinit var timer: Timer
++
+     private var isTimeChosen = false
+     private var isSoundChosen = false
+-                                                    var isTimerRunning = false
+-    var startButton = true // used for our startButton/pause button
+-    var timeInMillis: Long = 0
++    var startButtonClicked = true // used for switching from start/pause functionality
+     var reverseAnim = false
++    var timeInMillis: Long = 0
++
+ 
+ 
+-   private val itemSelected =  itemIndex.subscribeBy { index ->
+-       isSoundChosen = true
+-       enabledOrDisabled.value = isTimeAndSoundChosen()
+-       setButtonColor(isTimeAndSoundChosen())
+-       clickedItemIndex.value = index
+-       GlobalScope.launch(Dispatchers.Main) { showSoundSelectedToast() }
+-       Log.d("acdcdw", "emitted")
+-   }
+-
++    private val itemSelected = itemIndex.subscribeBy { index ->
++        isSoundChosen = true
++        buttonEnabled.value = isTimeAndSoundChosen()
++        setButtonColor(isTimeAndSoundChosen())
++
++        if (!isTimerRunning) {
++            clickedItemIndex.value = index
++            isTimerRunning.warnOrSuccessToast(application)
++        }
++    }
+ 
+ 
+     fun dispose() = itemSelected.dispose()
+ 
+-
+-    fun subscribeToDialog(dialogTime: BehaviorSubject<Long>) {
+-        dialogTime.subscribeBy( // User selected time from our dialog
+-            onNext = { milliSec ->
+-                isTimeChosen = true
++    fun passDialogTime(millis: Long) { // millis = Minutes expressed as a long
++        isTimeChosen = true
+ 
+-                enabledOrDisabled.value = isTimeAndSoundChosen()
+-                setButtonColor(isTimeAndSoundChosen())
++        buttonEnabled.value = isTimeAndSoundChosen()
++        setButtonColor(isTimeAndSoundChosen())
+ 
+-                val formattedTime = milliSec.formatTime()
+-                updateCurrentTime.value = formattedTime
++        val formattedTime = millis.formatTime()
++        currentTime.value = formattedTime
+ 
+-                createAndObserveTimer(milliSec)
+-            })
++        createAndObserveTimer(millis)
+     }
++
++    fun getCurrentTime(): LiveData<String> = currentTime
++
++    fun getClickedItemIndex(): LiveData<Int> = clickedItemIndex
++
++    fun getButtonEnabled(): LiveData<Boolean> = buttonEnabled
++
++    fun getButtonColor(): LiveData<Int> = buttonColor
++
++    fun getButtonText(): LiveData<String> = buttonText
++
++    fun getTimerCompleted(): LiveData<Boolean> = timerCompleted
++
+ 
+     private fun startService() {
+         repository.startService(timeInMillis)
+@@ -105,20 +140,11 @@
+         timer = Timer(millis)
+         timer.currentTime.subscribeBy(
+             onNext = { milliSec ->
+-                updateCurrentTime.postValue(milliSec.formatTime())
+-
++                currentTime.postValue(milliSec.formatTime())
+                 timeInMillis = milliSec
+             },
+             onComplete = {
+-                updateCurrentTime.postValue(getResourceString(R.string.reset_time))
+-
+-                // Runs returns result on main thread
+-//                GlobalScope.launch(Dispatchers.Main) {
+-//                    resetButtonClick()
+-//                    showFinishedToast(getApplication())
+-//                }
+-
+-
++                currentTime.postValue(getResourceString(R.string.reset_time))
+                 timerCompleted.postValue(true)
+             }
+         )
+@@ -126,66 +152,79 @@
+ 
+     fun startTimer() {
+         timer.startTimer()
+-        startButton = !startButton
++        startButtonClicked = !startButtonClicked
+         isTimerRunning = true
++        isTimerPaused = false
+     }
+ 
+     private fun pauseTimer() {
+         timer.pauseTimer()
+-        startButton = !startButton
+-        isTimerRunning = false
++        startButtonClicked = !startButtonClicked
++        isTimerPaused = true
++
++
+     }
+ 
+-    fun resetTimer() {
++    private fun resetTimer() {
+         timer.resetTimer()
+         isTimerRunning = false
++        isTimerPaused = false
+     }
+ 
+     private fun isTimeAndSoundChosen(): Boolean = isTimeChosen && isSoundChosen // Both must be true to evaluate to true
+ 
+     private fun setButtonColor(isTimeAndSoundChosen: Boolean) {
+         if (isTimeAndSoundChosen) {
+-            updateButtonColor.value = Color.parseColor("#4dd0e1")  // light blue
++            buttonColor.value = Color.parseColor("#4dd0e1")  // light blue
+         } else {
+-            updateButtonColor.value = Color.parseColor("#0B3136") // dark/dull blue
++            buttonColor.value = Color.parseColor("#0B3136") // dark/dull blue
+         }
+     }
+ 
+     private fun setButtonText(isButtonStart: Boolean) {
+         return if (isButtonStart) {
+-            updateButtonText.value = getResourceString(R.string.pause)
++            buttonText.value = getResourceString(R.string.pause)
+         } else {
+-            updateButtonText.value = getResourceString(R.string.start)
++            buttonText.value = getResourceString(R.string.start)
+         }
+     }
+ 
+     private fun setButtonEnabledDisabled(isTimeAndSoundChosen: Boolean) {
+-        enabledOrDisabled.value = isTimeAndSoundChosen
++        buttonEnabled.value = isTimeAndSoundChosen
+     }
+ 
+     fun maybeStartService() {
+-        // Only starts the service if the timer is running (wont startButton if paused)
++        // Only starts the service if the timer is running (wont start if paused)
+         if (isTimerRunning) {
+-            startService()
+-//            timer.resetTimer()
++
++            if (!isTimerPaused) startService()
+         }
+     }
+ 
+     fun destroyService() {
+-        // Destroy's service if running, invokes Live Data which creates the foreground timer with the services timer's latest time
++        // Destroy's service if running and sends the time to the foreground timer
+         if (isServiceRunning) {
+             resetService()
++            restoreButton()
+         }
+     }
++
++    fun startPauseButtonClick(start: Boolean) {
++        if (start) startButtonClick() else pauseButtonClick()
++    }
+ 
+-    fun startButtonClick(startButton: Boolean) {
++    private fun startButtonClick() {
+         startTimer()
+-        setButtonText(startButton)
++        setButtonText(startButtonClicked)
++
++        Log.d("zwi", "start clicked")
+     }
+ 
+-    fun pauseButtonClick(startButton: Boolean) {
++    private fun pauseButtonClick() {
+         pauseTimer()
+-        setButtonText(startButton)
++        setButtonText(startButtonClicked)
++        Log.d("zwi", "paused clicked")
++
+     }
+ 
+     fun resetButtonClick() {
+@@ -201,10 +240,11 @@
+         isTimeChosen = false
+         isSoundChosen = false
+         isTimerRunning = false
+-        startButton = true
++        isTimerPaused = false
++        startButtonClicked = true
+     }
+ 
+-    fun restoreButton() {
++    private fun restoreButton() {
+         setButtonText(true)
+         setButtonColor(true)
+         setButtonEnabledDisabled(true)
+@@ -216,9 +256,6 @@
+         setButtonEnabledDisabled(false)
+     }
+ 
+-    private fun showSoundSelectedToast() {
+-        Toasty.success(getApplication(), R.string.sound_selected, Toasty.LENGTH_SHORT, true).show()
+-    }
+ 
+     private fun getResourceString(id: Int): String {
+         val resources = getApplication<Application>().resources
+@@ -226,9 +263,4 @@
+     }
+ 
+ 
+-}
+-
+-
+-
+-
+-
++}
+\ No newline at end of file

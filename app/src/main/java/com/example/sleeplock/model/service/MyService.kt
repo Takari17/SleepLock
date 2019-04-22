@@ -9,24 +9,26 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.example.sleeplock.view.MainActivity
+import androidx.lifecycle.MutableLiveData
 import com.example.sleeplock.R
 import com.example.sleeplock.feature.Timer
-import com.example.sleeplock.model.util.Constants
-import com.example.sleeplock.model.util.Constants.*
-import com.example.sleeplock.model.util.formatTime
-import com.example.sleeplock.model.util.showFinishedToast
+import com.example.sleeplock.ui.MainActivity
+import com.example.sleeplock.utils.*
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 var isServiceRunning = false
+val serviceTime = MutableLiveData<Long>()
 
-class CustomService : Service() {
 
-    private val localBroadcastManager = LocalBroadcastManager.getInstance(this)
+var foregroundTimerRunning = false
+var foregroundTimerPaused = false
+
+var serviceTimerPaused = false
+
+class MyService : Service() {
 
     private var isTimerCreated = false
     private lateinit var timer: Timer
@@ -42,6 +44,8 @@ class CustomService : Service() {
 
     private val NOTIFICATION_ID = 1001
 
+    private var isServiceForceStopped = false
+
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -49,40 +53,47 @@ class CustomService : Service() {
 
         isServiceRunning = true
 
-        val millis: Long? = intent?.extras?.getLong(Constants.CURRENT_TIME.text)
+        val millis: Long? = intent?.extras?.getLong(CURRENT_TIME)
 
         if (!isTimerCreated) createAndObserveTimer(millis ?: 0)
 
         when (intent?.action) {
-            ACTION_PLAY.text -> {
+            ACTION_PLAY -> {
                 startSoundAndTimer()
                 playOrPause = 1
             }
 
-            ACTION_PAUSE.text -> {
+            ACTION_PAUSE -> {
                 pauseSoundAndTimer()
                 playOrPause = 0
             }
 
-            ACTION_RESET.text -> {
-                resetAll()
+            ACTION_RESET -> { // called from within service
+                timer.resetTimer() // will trigger reset all
                 return START_NOT_STICKY
+            }
+
+            ACTION_FORCE_STOP -> { // called from external source
+                forceStop()
             }
         }
 
         val activityIntent = Intent(this, MainActivity::class.java)
-        contentIntent = createPendingIntent(activityIntent)
+        contentIntent = PendingIntent.getActivity(
+            this,
+            0, activityIntent, 0
+        )
 
         val playIntent = getBroadcastReceiverIntent()
-        playIntent.action = ACTION_PLAY.text
+        playIntent.action = ACTION_PLAY
         pendingPlayIntent = createPendingIntent(playIntent)
 
         val pauseIntent = getBroadcastReceiverIntent()
-        pauseIntent.action = ACTION_PAUSE.text
+        pauseIntent.action = ACTION_PAUSE
         pendingPauseIntent = createPendingIntent(pauseIntent)
 
         val resetIntent = getBroadcastReceiverIntent()
-        resetIntent.action = ACTION_RESET.text
+        resetIntent.action = ACTION_RESET
         pendingResetIntent = createPendingIntent(resetIntent)
 
 
@@ -99,7 +110,7 @@ class CustomService : Service() {
 
     private fun getMyNotification(text: String, playOrPause: Int): Notification {
 
-        return NotificationCompat.Builder(this, CHANNEL_ID.text)
+        return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.music)
             .addAction(R.drawable.play, "Start", pendingPlayIntent)
             .addAction(R.drawable.pause, "Pause", pendingPauseIntent)
@@ -123,16 +134,25 @@ class CustomService : Service() {
     private fun startSoundAndTimer() {
         //        sound.startMediaPlayer();
         timer.startTimer()
+        serviceTimerPaused = false
     }
 
 
     private fun pauseSoundAndTimer() {
         //        sound.pauseMediaPlayer();
         timer.pauseTimer()
+        serviceTimerPaused = true
     }
 
-
     private fun resetAll() {
+        timer.resetTimer()
+        resetBooleans()
+        stopSelf()
+        stopForeground(true)
+    }
+
+    private fun forceStop() {
+        isServiceForceStopped = true
         timer.resetTimer()
         isTimerCreated = false
         isServiceRunning = false
@@ -145,29 +165,20 @@ class CustomService : Service() {
         isTimerCreated = true
 
         timer.currentTime.subscribeBy(
-            onNext = {
-                currentTimeMillis = it
-                updateNotification(it.formatTime(), playOrPause)
+            onNext = { timeInMilli ->
+                currentTimeMillis = timeInMilli
+                serviceTime.postValue(timeInMilli)
+                updateNotification(timeInMilli.formatTime(), playOrPause)
             },
             onComplete = {
+                if (!isServiceForceStopped) {
+                    GlobalScope.launch(Dispatchers.Main) { showFinishedToast(this@MyService, true) }
+                    killAppProcess()
+                }
                 resetAll()
-                sendTimeBroadcast(currentTimeMillis)
-                GlobalScope.launch(Dispatchers.Main) { showFinishedToast(this@CustomService) }
             }
         )
-
-
     }
-
-    private fun sendTimeBroadcast(millis: Long) {
-        // received by Fragment
-        Intent().apply {
-            action = MILLIS.text
-            putExtra("millis", millis)
-            localBroadcastManager.sendBroadcast(this)
-        }
-    }
-
 
     private fun createPendingIntent(intent: Intent): PendingIntent {
         return PendingIntent.getBroadcast(this, 0, intent, 0)
@@ -175,5 +186,15 @@ class CustomService : Service() {
 
     private fun getBroadcastReceiverIntent(): Intent {
         return Intent(this, NotificationBroadcastReceiver::class.java)
+    }
+
+    private fun killAppProcess() {
+        android.os.Process.killProcess(android.os.Process.myPid())
+    }
+
+    private fun resetBooleans(){
+        isTimerCreated = false
+        isServiceRunning = false
+        serviceTimerPaused = false
     }
 }

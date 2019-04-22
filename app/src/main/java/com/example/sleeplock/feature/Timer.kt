@@ -1,11 +1,10 @@
 package com.example.sleeplock.feature
 
-import com.example.sleeplock.model.util.convertMilliToSeconds
+import com.example.sleeplock.utils.convertMilliToSeconds
 import io.reactivex.Flowable
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
-
 
 class Timer(millis: Long) {
 
@@ -15,20 +14,20 @@ class Timer(millis: Long) {
 
     lateinit var currentTime: Flowable<Long>
 
-    private var startingTime: Int = 0 // used for stopping the timer at 0
+    private var startingTime: Int = 0 // used for stopping the timer at 0z
 
     init {
         val seconds = millis.convertMilliToSeconds()
-        setTimer(seconds)
-        setFlowable()
+        prepareTimer(seconds)
+        setTimer()
     }
 
-    private fun setTimer(seconds: Int) {
+    private fun prepareTimer(seconds: Int) {
         elapsedTime.addAndGet((seconds * 1000).toLong())
         startingTime = (elapsedTime.toLong()).convertMilliToSeconds()
     }
 
-    private fun setFlowable() {
+    private fun setTimer() {
         resumed.set(false)
         stopped.set(false)
 
@@ -45,5 +44,4 @@ class Timer(millis: Long) {
     fun pauseTimer() = resumed.set(false)
 
     fun resetTimer() = stopped.set(true)
-
 }

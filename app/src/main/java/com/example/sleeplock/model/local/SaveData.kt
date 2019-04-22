@@ -3,13 +3,13 @@ package com.example.sleeplock.model.local
 import android.app.Application
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
-import com.example.sleeplock.model.util.Constants
+import com.example.sleeplock.utils.SHARED_PREFS
 
 
 class SaveData(context: Application) {
 
     private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences(Constants.SHARED_PREFS.text, MODE_PRIVATE)
+        context.getSharedPreferences(SHARED_PREFS, MODE_PRIVATE)
     private val editor = sharedPreferences.edit()
 
     fun saveBoolean(Tag: String, aBoolean: Boolean) {
@@ -41,6 +41,4 @@ class SaveData(context: Application) {
     fun getSavedInt(Tag: String, defaultValue: Int): Int = sharedPreferences.getInt(Tag, defaultValue)
 
     fun getSavedString(Tag: String, defaultValue: String): String? = sharedPreferences.getString(Tag, defaultValue)
-
-
 }

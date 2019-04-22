@@ -1,26 +1,22 @@
-package com.example.sleeplock.view
+package com.example.sleeplock.ui
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.example.sleeplock.R
-import com.example.sleeplock.model.util.DataSource
-import com.example.sleeplock.model.util.convertHoursToMin
-import com.example.sleeplock.model.util.convertMinToMilli
-import io.reactivex.subjects.BehaviorSubject
+import com.example.sleeplock.utils.convertHoursToMin
+import com.example.sleeplock.utils.convertMinToMilli
+import com.example.sleeplock.utils.timeOptions
 import kotlinx.android.synthetic.main.custom_time_layout.*
 
 
 class TimeOptionDialog : DialogFragment() {
 
-    // User selected time gets sent to the view model's observer
-    val dialogTime: BehaviorSubject<Long> = BehaviorSubject.create<Long>()
-
+    private val userSelectedTime = MutableLiveData<Long>()
     private var timeInMillis: Long = 0
-
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
@@ -28,11 +24,7 @@ class TimeOptionDialog : DialogFragment() {
 
         builder.setTitle("Select a Time")
 
-        val dataSource = DataSource()
-
-        val timeOptions = dataSource.timeOptions
-
-        builder.setSingleChoiceItems(timeOptions, -1, DialogInterface.OnClickListener { dialog, which ->
+        builder.setSingleChoiceItems(timeOptions, -1) { _, which ->
             // Replaces the current dialog with the new one
             if (which == 0) {
                 dismiss()
@@ -43,17 +35,15 @@ class TimeOptionDialog : DialogFragment() {
                 timeInMillis = minutes.convertMinToMilli()
             }
 
-        })
+        }
 
-        builder.setPositiveButton("Set Time", DialogInterface.OnClickListener { dialog, which ->
-            dialogTime.onNext(timeInMillis)
-            Log.d("myLog", "dialog called 1...")
+        builder.setPositiveButton("Set Time") { _, _ ->
+            userSelectedTime.value = timeInMillis
+        }
 
-        })
+        builder.setNegativeButton("Cancel") { _, _ ->
 
-        builder.setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, which ->
-
-        })
+        }
 
         builder.setIcon(R.drawable.lightblueclock)
 
@@ -63,7 +53,7 @@ class TimeOptionDialog : DialogFragment() {
 
     private fun showCustomDialog() {
 
-        val customDialog = Dialog(activity)
+        val customDialog = Dialog(context!!)
 
         customDialog.setContentView(R.layout.custom_time_layout)
         customDialog.setTitle("Select a Time")
@@ -88,18 +78,15 @@ class TimeOptionDialog : DialogFragment() {
 
             timeInMillis = totalMinutes.convertMinToMilli()
 
-            dialogTime.onNext(timeInMillis)
-            Log.d("myLog", "dialog called 2 ...")
-
+            userSelectedTime.value = timeInMillis
             customDialog.dismiss()
         }
 
         return customDialog.show()
     }
 
-
     // Separates the "Min" value from our array and returns only the Int value
     private fun extractIntValues(text: String): Int = Integer.valueOf(text.replace("[^0-9]".toRegex(), ""))
 
-
+    fun getUserSelectedTime(): LiveData<Long> = userSelectedTime
 }

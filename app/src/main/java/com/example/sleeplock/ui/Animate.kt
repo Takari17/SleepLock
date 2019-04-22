@@ -1,4 +1,4 @@
-package com.example.sleeplock.view
+package com.example.sleeplock.ui
 
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
@@ -8,7 +8,6 @@ import android.view.View
 import androidx.core.animation.doOnStart
 
 class Animate {
-
 
     private fun translationLeft(view: View, durationMillis: Long = 500): ValueAnimator {
         return ValueAnimator.ofFloat(0f, -170f).apply {
@@ -43,7 +42,6 @@ class Animate {
             addUpdateListener { animation -> view.alpha = animation.animatedValue as Float }
 
             doOnStart { view.isClickable = false }
-
         }
     }
 
@@ -72,7 +70,6 @@ class Animate {
         )
 
         animSet.start()
-
     }
 
 
@@ -102,7 +99,6 @@ class Animate {
         )
 
         animSet.start()
-
     }
 
     fun fadeOutAll(resetButton: View, fab: View) {
@@ -114,7 +110,5 @@ class Animate {
         )
 
         animSet.start()
-
     }
-
 }

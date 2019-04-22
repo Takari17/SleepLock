@@ -1,4 +1,4 @@
-package com.example.sleeplock.view
+package com.example.sleeplock.ui
 
 import android.content.res.Resources
 import android.os.Bundle
@@ -8,16 +8,11 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.example.sleeplock.R
-import com.example.sleeplock.view.fragments.ListFragment
-import com.example.sleeplock.view.fragments.MainFragment
+import com.example.sleeplock.model.service.foregroundTimerRunning
+import com.example.sleeplock.ui.fragments.ListFragment
+import com.example.sleeplock.ui.fragments.MainFragment
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
-
-/*
-Lets see if we can get the timer working in out activity, if so we can pass the timer from the activity to our fragment
-
-todo Once you fix this problem defnalty write a brief summaary of it just incase of someone ask us in an interview what was our hrdest bug
- */
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,7 +34,6 @@ class MainActivity : AppCompatActivity() {
         tabLayout.addOnTabSelectedListener(TabLayout.ViewPagerOnTabSelectedListener(viewPager))
     }
 
-
     inner class SectionsPagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm) {
 
         override fun getItem(position: Int): Fragment {
@@ -52,5 +46,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun getCount(): Int = 2
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        foregroundTimerRunning = true
     }
 }

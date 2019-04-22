@@ -1,34 +1,29 @@
-package com.example.sleeplock.view
+package com.example.sleeplock.ui.adapters
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
+import com.example.sleeplock.model.service.foregroundTimerRunning
+import com.example.sleeplock.utils.warnOrSuccessToast
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.recycler_view_layout.view.*
 
-
-//todo set has fixed size= true
-
-// Index of item clicked observed by MyViewModel
-
-//todo fix your unessessary comments
-
 val itemIndex = BehaviorSubject.create<Int>()
 
-class MyAdapter(private val image: List<Int>, private val text: List<String>) :
+class MyAdapter(private val context: Context, private val image: List<Int>, private val text: List<String>) :
     RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.recycler_view_layout, parent, false)
 
-        return MyViewHolder(view)
+        return MyViewHolder(context, view)
     }
 
     override fun getItemCount(): Int = image.size
-
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
@@ -40,14 +35,15 @@ class MyAdapter(private val image: List<Int>, private val text: List<String>) :
         holder.text.text = text[position]
     }
 
-
-    class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class MyViewHolder(context: Context, itemView: View) : RecyclerView.ViewHolder(itemView) {
         val image = itemView.item_image
         val text = itemView.item_text
 
         init {
-            itemView.setOnClickListener { itemIndex.onNext(adapterPosition) }
+            itemView.setOnClickListener {
+                itemIndex.onNext(adapterPosition)
+                foregroundTimerRunning.warnOrSuccessToast(context) // timer not running = success, else warning
+            }
         }
     }
-
 }
