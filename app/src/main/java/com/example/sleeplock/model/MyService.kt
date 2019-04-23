@@ -122,9 +122,9 @@ class MyService : Service() {
         resetIntent.action = ACTION_RESET
         pendingResetIntent = createPendingIntent(resetIntent)
 
-        val time = currentTime.value.toString()
+        val time = currentTime.value?.formatTime()
 
-        startForeground(NOTIFICATION_ID, getMyNotification(time, playOrPause))
+        startForeground(NOTIFICATION_ID, getMyNotification(time?: "00:00", playOrPause))
         return START_NOT_STICKY
     }
 
