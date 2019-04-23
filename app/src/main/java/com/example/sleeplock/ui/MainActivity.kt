@@ -8,11 +8,12 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.example.sleeplock.R
-import com.example.sleeplock.model.service.foregroundTimerRunning
 import com.example.sleeplock.ui.fragments.ListFragment
 import com.example.sleeplock.ui.fragments.MainFragment
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
+
+var isAppInForeground = true
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,8 +49,24 @@ class MainActivity : AppCompatActivity() {
         override fun getCount(): Int = 2
     }
 
-    override fun onRestart() {
-        super.onRestart()
-        foregroundTimerRunning = true
+
+    override fun onStart() {
+        super.onStart()
+        isAppInForeground = true
+    }
+
+    override fun onResume() {
+        super.onResume()
+        isAppInForeground = true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isAppInForeground = false
+    }
+
+    override fun onStop() {
+        super.onStop()
+        isAppInForeground = false
     }
 }

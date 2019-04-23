@@ -6,6 +6,10 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
+// Only modified within this class
+var isTimerRunning = false
+var isTimerPaused = false
+
 class Timer(millis: Long) {
 
     private val elapsedTime = AtomicLong()
@@ -39,9 +43,21 @@ class Timer(millis: Long) {
             .map { elapsedTime.addAndGet(-1000) }
     }
 
-    fun startTimer() = resumed.set(true)
+    fun start() {
+        resumed.set(true)
+        isTimerRunning = true
+        isTimerPaused = false
+    }
 
-    fun pauseTimer() = resumed.set(false)
+    fun pause() {
+        resumed.set(false)
+        isTimerRunning = false
+        isTimerPaused = true
+    }
 
-    fun resetTimer() = stopped.set(true)
+    fun reset() {
+        stopped.set(true)
+        isTimerRunning = false
+        isTimerPaused = false
+    }
 }

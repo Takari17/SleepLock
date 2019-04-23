@@ -5,12 +5,11 @@ import com.example.sleeplock.R
 const val ACTION_PLAY = "play"
 const val ACTION_PAUSE = "pause"
 const val ACTION_RESET = "reset"
-const val ACTION_FORCE_STOP = "force stop"
 const val CHANNEL_ID = "MyService"
-const val CURRENT_TIME = "current time"
-const val SHARED_PREFS = "shared preferences"
-const val IS_SERVICE_RUNNING = "is service running boolean"
+const val INDEX = "index"
 const val MILLIS = "millis"
+const val NOTIFICATION_ID = 1001
+
 
 
 val ITEM_PIC = listOf(

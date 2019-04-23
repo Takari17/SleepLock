@@ -11,19 +11,17 @@ class SoundPlayer(context: Context, index: Int) {
 
     init { setSound(context, index) }
 
-    // todo change to just start, pause and reset, same for the timer
-    fun startMediaPlayer() {
+    fun start() {
         sound.start()
         sound.isLooping = true
     }
 
-    fun pauseMediaPlayer() = sound.pause()
+    fun pause() = sound.pause()
 
-    fun resetMediaPlayer() = sound.release()
-
+    fun reset() = sound.release()
 
     private fun setSound(context: Context, index: Int) {
-        // Creates sound bases off position of Recycler View item click, call before you play your sound
+        // Creates sound bases off position of Recycler View item click
 
         for (i in WHITE_NOISE.indices) {
 

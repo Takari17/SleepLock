@@ -1,4 +1,4 @@
-package com.example.sleeplock.ui.adapters
+package com.example.sleeplock.ui
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
-import com.example.sleeplock.model.service.foregroundTimerRunning
+import com.example.sleeplock.feature.isTimerRunning
 import com.example.sleeplock.utils.warnOrSuccessToast
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.recycler_view_layout.view.*
@@ -42,7 +42,7 @@ class MyAdapter(private val context: Context, private val image: List<Int>, priv
         init {
             itemView.setOnClickListener {
                 itemIndex.onNext(adapterPosition)
-                foregroundTimerRunning.warnOrSuccessToast(context) // timer not running = success, else warning
+                isTimerRunning.warnOrSuccessToast(context) // will show a warning toast if the timer is running
             }
         }
     }

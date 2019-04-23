@@ -2,7 +2,6 @@ package com.example.sleeplock.ui.fragments
 
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,10 +11,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
-import com.example.sleeplock.model.service.foregroundTimerRunning
-import com.example.sleeplock.model.service.isServiceRunning
-import com.example.sleeplock.model.service.serviceTime
-import com.example.sleeplock.model.service.serviceTimerPaused
+import com.example.sleeplock.model.isServiceRunning
 import com.example.sleeplock.ui.Animate
 import com.example.sleeplock.ui.TimeOptionDialog
 import com.example.sleeplock.utils.ITEM_PIC
@@ -88,26 +84,18 @@ class MainFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (isServiceRunning) startAnimation(0) // animation is instant
+
+        viewModel.bindToService()
     }
 
-    override fun onPause() {
-        super.onPause()
-        viewModel.maybeStartService()
+    override fun onStart() {
+        super.onStart()
+        if (isServiceRunning) viewModel.restoreState()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         viewModel.dispose()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.destroyService()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        foregroundTimerRunning = false
     }
 
 
@@ -128,20 +116,16 @@ class MainFragment : Fragment() {
 
     // Live Data Observers
 
-    private fun observeCurrentTime(): Observer<String> { // Updates our text view with the current time
-        return Observer { time -> current_time_text_view.text = time }
+    private fun observeCurrentTime(): Observer<Long> { // Updates our text view with the current time
+        return Observer { millis -> current_time_text_view.text = millis.formatTime() }
     }
 
-    private fun observeServiceTime(): Observer<Long> { // Time selected from dialog (in minutes as a long)
-        return Observer { millis ->
-            if (!foregroundTimerRunning) {
-                current_time_text_view.text = millis.formatTime()
-                viewModel.createAndObserveTimer(millis)
+    private fun observeTimerPaused(): Observer<Boolean>{
+        return Observer { viewModel.setButtonText(false) }
+    }
 
-                // starts or pauses the timer depending on the service's timer state
-                if(serviceTimerPaused) viewModel.pauseTimer() else viewModel.startTimer()
-            }
-        }
+    private fun observeTimerStarted(): Observer<Boolean>{
+        return Observer { viewModel.setButtonText(true) }
     }
 
     private fun observeUserSelectedTime(): Observer<Long> { // Time chosen from dialog
@@ -160,9 +144,7 @@ class MainFragment : Fragment() {
     }
 
     private fun observeEnabledDisabled(): Observer<Boolean> { // Sets button clickability
-        return Observer { aBoolean ->
-            start_pause_button.isEnabled = aBoolean
-        }
+        return Observer { aBoolean -> start_pause_button.isEnabled = aBoolean }
     }
 
     private fun observeButtonText(): Observer<String> { // Sets button text
@@ -173,7 +155,7 @@ class MainFragment : Fragment() {
         return Observer {
             reverseAnimation()
             resetCardViewData()
-            viewModel.resetButton()
+            viewModel.resetAll()
         }
     }
 
@@ -188,10 +170,12 @@ class MainFragment : Fragment() {
 
         viewModel.getButtonText().observe(viewLifecycleOwner, observeButtonText())
 
+        viewModel.getTimerStarted().observe(viewLifecycleOwner, observeTimerStarted())
+
+        viewModel.getTimerPaused().observe(viewLifecycleOwner, observeTimerPaused())
+
         viewModel.getTimerCompleted().observe(viewLifecycleOwner, observeTimerCompleted())
 
         dialog.getUserSelectedTime().observe(viewLifecycleOwner, observeUserSelectedTime())
-
-        serviceTime.observe(viewLifecycleOwner, observeServiceTime())
     }
 }

@@ -1,4 +1,4 @@
-package com.example.sleeplock.model.service
+package com.example.sleeplock.model
 
 import android.content.BroadcastReceiver
 import android.content.Context

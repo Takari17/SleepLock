@@ -73,7 +73,6 @@ class Animate {
     }
 
 
-
     @TargetApi(Build.VERSION_CODES.O)
     fun reverseTranslateAll(startButton: View, resetButton: View, fab: View) {
         val animSet = AnimatorSet()

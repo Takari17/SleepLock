@@ -6,9 +6,6 @@ apply plugin: 'kotlin-android-extensions'
 
 
 android {
-    packagingOptions {
-        exclude 'META-INF/atomicfu.kotlin_module'
-    }
 
     compileSdkVersion 28
     defaultConfig {
@@ -19,7 +16,6 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-
     }
     buildTypes {
         release {
@@ -29,7 +25,16 @@ android {
 
         }
     }
-    productFlavors {
+    productFlavors {}
+
+    packagingOptions {
+        exclude 'META-INF/atomicfu.kotlin_module'
+    }
+
+    android {
+        kotlinOptions {
+            jvmTarget = '1.8'
+        }
     }
 }
 

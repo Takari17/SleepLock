@@ -44,5 +44,4 @@ fun showFinishedToast(context: Context, start: Boolean) {
     }
 }
 
-
-
+fun Context.getResourceString(id: Int): String = this.resources.getString(id)
