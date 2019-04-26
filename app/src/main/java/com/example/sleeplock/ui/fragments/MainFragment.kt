@@ -93,12 +93,6 @@ class MainFragment : Fragment() {
         if (isServiceRunning) viewModel.restoreState()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        viewModel.dispose()
-    }
-
-
     private fun startAnimation(duration: Long = 500) {
         if (!viewModel.reverseAnim) {
             animate.translateAll(start_pause_button, reset_button, fab, duration)
@@ -120,11 +114,11 @@ class MainFragment : Fragment() {
         return Observer { millis -> current_time_text_view.text = millis.formatTime() }
     }
 
-    private fun observeTimerPaused(): Observer<Boolean>{
+    private fun observeTimerPaused(): Observer<Boolean> {
         return Observer { viewModel.setButtonText(false) }
     }
 
-    private fun observeTimerStarted(): Observer<Boolean>{
+    private fun observeTimerStarted(): Observer<Boolean> {
         return Observer { viewModel.setButtonText(true) }
     }
 

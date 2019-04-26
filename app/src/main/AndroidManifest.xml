@@ -22,8 +22,6 @@
         <service android:name=".model.MyService"/>
         <receiver android:name=".model.NotificationBroadcastReceiver"/>
 
-
-
     </application>
 
 </manifest>

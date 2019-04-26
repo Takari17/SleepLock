@@ -12,7 +12,11 @@ import com.example.sleeplock.model.Repository
 import com.example.sleeplock.model.isServiceRunning
 import com.example.sleeplock.ui.itemIndex
 import com.example.sleeplock.utils.getResourceString
+import com.jakewharton.rxrelay2.BehaviorRelay
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.Observables
 import io.reactivex.rxkotlin.subscribeBy
+
 
 class MyViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -29,8 +33,8 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     fun getButtonText(): LiveData<String> = buttonText
 
     // From repository
-
     fun getCurrentTime() = repository.getCurrentTime()
+
     fun getTimerStarted() = repository.getTimerStarted()
     fun getTimerPaused() = repository.getTimerPaused()
     fun getTimerCompleted() = repository.getTimerCompleted()
@@ -38,8 +42,29 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = Repository(application)
 
-    private var isTimeChosen = false
-    private var isSoundChosen = false
+    private val compositeDisposable = CompositeDisposable()
+
+    private var isTimeChosen = BehaviorRelay.createDefault(false)
+    private var isSoundChosen = BehaviorRelay.createDefault(false)
+
+    /*
+    If the time and sound are chosen the start button will turn light blue and will be enabled(clickable), else it will turn dull/dark blue
+    and will be disabled until the user selects both a time and a sound
+     */
+    private val isTimeAndSoundChosen =
+        Observables.combineLatest(isTimeChosen, isSoundChosen) { timeChosen, soundChosen ->
+            if (timeChosen && soundChosen) {
+                buttonEnabled.value = true
+                setButtonColor(true)
+            } else {
+                buttonEnabled.value = false
+                setButtonColor(false)
+            }
+        }
+            .doOnSubscribe { disposable -> compositeDisposable.addAll(disposable) }
+            .subscribe()
+
+
     var startButtonClicked = true // used for switching from start/pause functionality
     var reverseAnim = false
 
@@ -47,30 +72,19 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     var millis: Long? = null
     var index: Int? = null
 
+    private val itemSelected =
+        itemIndex.doOnSubscribe { disposable -> compositeDisposable.addAll(disposable) }
+            .subscribeBy { index ->
+                this.index = index
+                isSoundChosen.accept(true)
 
-    private val itemSelected = itemIndex.subscribeBy { index ->
+                if (!isTimerRunning) clickedItemIndex.value = index // only updates card view data if the timer isn't running
+            }
 
-        this.index = index
-
-        isSoundChosen = true
-
-        buttonEnabled.value = isTimeAndSoundChosen()
-        setButtonColor(isTimeAndSoundChosen())
-
-        if (!isTimerRunning) clickedItemIndex.value = index // only updates card view data if the timer isn't running
-    }
-
-
-    fun dispose() = itemSelected.dispose()
 
     fun passDialogTime(millis: Long) {
-
         this.millis = millis
-
-        isTimeChosen = true
-
-        buttonEnabled.value = isTimeAndSoundChosen()
-        setButtonColor(isTimeAndSoundChosen())
+        isTimeChosen.accept(true)
     }
 
     private fun startSoundAndTimer() {
@@ -95,8 +109,6 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun bindToService() = repository.bindToService()
-
-    private fun isTimeAndSoundChosen(): Boolean = isTimeChosen && isSoundChosen // Both must be true to evaluate to true
 
     private fun setButtonColor(isTimeAndSoundChosen: Boolean) {
         if (isTimeAndSoundChosen) {
@@ -141,15 +153,15 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun resetBooleans() {
         // resets booleans to default state
-        isTimeChosen = false
-        isSoundChosen = false
+        isTimeChosen.accept(false)
+        isSoundChosen.accept(false)
         startButtonClicked = true
     }
 
     private fun resetButton() {
         buttonText.value = getApplication<Application>().getResourceString(R.string.start)
-        setButtonColor(false)
-        buttonEnabled.value = false
+        isSoundChosen.accept(false)
+        isTimeChosen.accept(false)
     }
 
     fun restoreState() {
@@ -163,11 +175,15 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
 
         setButtonColor(true)
 
-        buttonEnabled.value = true
-
-        isSoundChosen = true
-        isTimeChosen = true
+        isSoundChosen.accept(true)
+        isTimeChosen.accept(true)
 
         clickedItemIndex.value = index
+    }
+
+
+    override fun onCleared() {
+        super.onCleared()
+        compositeDisposable.clear()
     }
 }

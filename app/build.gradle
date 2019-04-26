@@ -56,9 +56,14 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0-alpha04'
     annotationProcessor 'androidx.lifecycle:lifecycle-compiler:2.1.0-alpha04'
 
-    //Rx Kotlin & Java
-    implementation 'io.reactivex.rxjava2:rxkotlin:2.2.0'
+    //Rx Java
     implementation "io.reactivex.rxjava2:rxjava:2.2.7"
+    
+    //Rx Kotlin
+    implementation 'io.reactivex.rxjava2:rxkotlin:2.2.0'
+
+    // Rx Relay
+    implementation 'com.jakewharton.rxrelay2:rxrelay:2.1.0'
 
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.0'

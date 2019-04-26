@@ -9,10 +9,10 @@ import com.bumptech.glide.Glide
 import com.example.sleeplock.R
 import com.example.sleeplock.feature.isTimerRunning
 import com.example.sleeplock.utils.warnOrSuccessToast
-import io.reactivex.subjects.BehaviorSubject
+import com.jakewharton.rxrelay2.BehaviorRelay
 import kotlinx.android.synthetic.main.recycler_view_layout.view.*
 
-val itemIndex = BehaviorSubject.create<Int>()
+val itemIndex = BehaviorRelay.create<Int>()
 
 class MyAdapter(private val context: Context, private val image: List<Int>, private val text: List<String>) :
     RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
@@ -41,7 +41,7 @@ class MyAdapter(private val context: Context, private val image: List<Int>, priv
 
         init {
             itemView.setOnClickListener {
-                itemIndex.onNext(adapterPosition)
+                itemIndex.accept(adapterPosition)
                 isTimerRunning.warnOrSuccessToast(context) // will show a warning toast if the timer is running
             }
         }
