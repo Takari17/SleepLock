@@ -110,9 +110,13 @@ class MyService : Service() {
             0, activityIntent, 0
         )
 
-        val playIntent = getBroadcastReceiverIntent()
-        playIntent.action = ACTION_PLAY
-        pendingPlayIntent = createPendingIntent(playIntent)
+        //todo why are we doing this in this method? Do it on init since we only seen to set its values ONCE
+
+        val playIntent = getBroadcastReceiverIntent().apply {
+            action = ACTION_PLAY
+            pendingPauseIntent = createPendingIntent(this)
+        }
+
 
         val pauseIntent = getBroadcastReceiverIntent()
         pauseIntent.action = ACTION_PAUSE

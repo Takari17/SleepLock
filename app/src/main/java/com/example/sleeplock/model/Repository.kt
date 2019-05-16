@@ -77,6 +77,7 @@ class Repository(private val application: Application) {
         isBound.removeSource(myService.getIsBound())
     }
 
+    //todo do we unbind from this service?
     private val serviceConnection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
