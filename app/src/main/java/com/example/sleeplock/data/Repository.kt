@@ -1,7 +1,7 @@
 package com.example.sleeplock.data
 
-import android.app.Application
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
@@ -12,11 +12,14 @@ import com.example.sleeplock.data.service.isServiceRunning
 import com.example.sleeplock.utils.ACTION_PLAY
 import com.example.sleeplock.utils.INDEX
 import com.example.sleeplock.utils.MILLIS
+import javax.inject.Inject
 
 
-class Repository(private val application: Application) {
+class Repository @Inject constructor(
+    private val context: Context
+) {
 
-    private val serviceIntent: Intent = Intent(application, MyService::class.java)
+    private val serviceIntent: Intent = Intent(context, MyService::class.java)
 
     lateinit var myService: MyService
 
@@ -48,7 +51,7 @@ class Repository(private val application: Application) {
             putExtra(MILLIS, millis)
             putExtra(INDEX, index)
         }
-        application.startService(serviceIntent)
+        context.startService(serviceIntent)
         isServiceRunning = true
         bindToService()
     }
@@ -60,7 +63,7 @@ class Repository(private val application: Application) {
     fun resetSoundAndTimer() = myService.resetTimer()
 
     fun bindToService() {
-        if (isServiceRunning) application.bindService(serviceIntent, serviceConnection, 0)
+        if (isServiceRunning) context.bindService(serviceIntent, serviceConnection, 0)
     }
 
     private fun addLiveDataSources() {

@@ -1,10 +1,10 @@
 package com.example.sleeplock.ui.viewmodel
 
-import android.app.Application
+import android.content.Context
 import android.graphics.Color
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.example.sleeplock.R
 import com.example.sleeplock.data.Repository
 import com.example.sleeplock.data.features.isTimerPaused
@@ -15,10 +15,16 @@ import com.example.sleeplock.utils.getResourceString
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.Observables
+import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 
 
-class MyViewModel(application: Application) : AndroidViewModel(application) {
+class MainViewModel @Inject constructor(
+    private val context: Context,
+    private val repository: Repository
+) : ViewModel() {
 
     // Observed by Main Fragment
     private val clickedItemIndex = MutableLiveData<Int>() // item clicked from recycler view
@@ -39,9 +45,6 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     fun getTimerPaused() = repository.getTimerPaused()
     fun getTimerCompleted() = repository.getTimerCompleted()
 
-
-    private val repository = Repository(application)
-
     private val compositeDisposable = CompositeDisposable()
 
     private var isTimeChosen = BehaviorRelay.createDefault(false)
@@ -51,18 +54,19 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     If the time and sound are chosen the start button will turn light blue and will be enabled(clickable), else it will turn dull/dark blue
     and will be disabled until the user selects both a time and a sound
      */
-    private val isTimeAndSoundChosen =
-        Observables.combineLatest(isTimeChosen, isSoundChosen) { timeChosen, soundChosen ->
+    private fun isTimeAndSoundChosen() {
+        compositeDisposable += Observables.combineLatest(isTimeChosen, isSoundChosen) { timeChosen, soundChosen ->
             if (timeChosen && soundChosen) {
-                buttonEnabled.value = true
+                buttonEnabled.postValue(true)
                 setButtonColor(true)
             } else {
-                buttonEnabled.value = false
+                buttonEnabled.postValue(false)
                 setButtonColor(false)
             }
         }
-            .doOnSubscribe { disposable -> compositeDisposable.addAll(disposable) }
+            .subscribeOn(Schedulers.io())
             .subscribe()
+    }
 
 
     var startButtonClicked = true // used for switching from start/pause functionality
@@ -72,14 +76,21 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     var millis: Long? = null
     var index: Int? = null
 
-    private val itemSelected =
-        itemIndex.doOnSubscribe { disposable -> compositeDisposable.addAll(disposable) }
+    init {
+        isTimeAndSoundChosen()
+        itemSelected()
+    }
+
+    private fun itemSelected() {
+        compositeDisposable += itemIndex
             .subscribeBy { index ->
                 this.index = index
                 isSoundChosen.accept(true)
 
-                if (!isTimerRunning) clickedItemIndex.value = index // only updates card view data if the timer isn't running
+                if (!isTimerRunning) clickedItemIndex.value =
+                    index // only updates card view data if the timer isn't running
             }
+    }
 
 
     fun passDialogTime(millis: Long) {
@@ -120,9 +131,9 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setButtonText(isButtonStart: Boolean) {
         return if (isButtonStart) {
-            buttonText.value = getApplication<Application>().getResourceString(R.string.pause)
+            buttonText.value = context.getResourceString(R.string.pause)
         } else {
-            buttonText.value = getApplication<Application>().getResourceString(R.string.resume)
+            buttonText.value = context.getResourceString(R.string.resume)
         }
     }
 
@@ -159,7 +170,7 @@ class MyViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun resetButton() {
-        buttonText.value = getApplication<Application>().getResourceString(R.string.start)
+        buttonText.value = context.getResourceString(R.string.start)
         isSoundChosen.accept(false)
         isTimeChosen.accept(false)
     }

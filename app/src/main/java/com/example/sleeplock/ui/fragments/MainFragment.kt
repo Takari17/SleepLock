@@ -14,7 +14,7 @@ import com.example.sleeplock.R
 import com.example.sleeplock.data.service.isServiceRunning
 import com.example.sleeplock.ui.common.Animate
 import com.example.sleeplock.ui.common.TimeOptionDialog
-import com.example.sleeplock.ui.viewmodel.MyViewModel
+import com.example.sleeplock.ui.viewmodel.MainViewModel
 import com.example.sleeplock.utils.ITEM_PIC
 import com.example.sleeplock.utils.ITEM_TEXT
 import com.example.sleeplock.utils.formatTime
@@ -23,7 +23,7 @@ import kotlinx.android.synthetic.main.fragment_main.*
 
 class MainFragment : Fragment() {
 
-    private lateinit var viewModel: MyViewModel
+    private lateinit var viewModel: MainViewModel
     private val dialog = TimeOptionDialog()
     private val animate = Animate()
 
@@ -38,7 +38,7 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel = ViewModelProviders.of(activity!!).get(MyViewModel::class.java)
+        viewModel = ViewModelProviders.of(activity!!).get(MainViewModel::class.java)
 
         observeAllLiveData()
 
