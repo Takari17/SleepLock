@@ -1,4 +1,4 @@
-package com.example.sleeplock.model
+package com.example.sleeplock.data.service
 
 import android.app.Notification
 import android.app.NotificationManager
@@ -13,8 +13,9 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.sleeplock.R
-import com.example.sleeplock.feature.SoundPlayer
-import com.example.sleeplock.feature.Timer
+import com.example.sleeplock.data.features.SoundPlayer
+import com.example.sleeplock.data.features.Timer
+import com.example.sleeplock.data.receiver.NotificationBroadcastReceiver
 import com.example.sleeplock.ui.MainActivity
 import com.example.sleeplock.ui.isAppInForeground
 import com.example.sleeplock.utils.*

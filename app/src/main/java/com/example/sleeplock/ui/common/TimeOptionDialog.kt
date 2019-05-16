@@ -1,4 +1,4 @@
-package com.example.sleeplock.ui
+package com.example.sleeplock.ui.common
 
 import android.app.AlertDialog
 import android.app.Dialog

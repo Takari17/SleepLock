@@ -1,4 +1,4 @@
-package com.example.sleeplock.ui
+package com.example.sleeplock.ui.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
-import com.example.sleeplock.feature.isTimerRunning
+import com.example.sleeplock.data.features.isTimerRunning
 import com.example.sleeplock.utils.warnOrSuccessToast
 import com.jakewharton.rxrelay2.BehaviorRelay
 import kotlinx.android.synthetic.main.recycler_view_layout.view.*

@@ -11,13 +11,13 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
-import com.example.sleeplock.model.isServiceRunning
-import com.example.sleeplock.ui.Animate
-import com.example.sleeplock.ui.TimeOptionDialog
+import com.example.sleeplock.data.service.isServiceRunning
+import com.example.sleeplock.ui.common.Animate
+import com.example.sleeplock.ui.common.TimeOptionDialog
+import com.example.sleeplock.ui.viewmodel.MyViewModel
 import com.example.sleeplock.utils.ITEM_PIC
 import com.example.sleeplock.utils.ITEM_TEXT
 import com.example.sleeplock.utils.formatTime
-import com.example.sleeplock.viewmodel.MyViewModel
 import kotlinx.android.synthetic.main.fragment_main.*
 
 

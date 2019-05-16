@@ -1,4 +1,4 @@
-package com.example.sleeplock.viewmodel
+package com.example.sleeplock.ui.viewmodel
 
 import android.app.Application
 import android.graphics.Color
@@ -6,11 +6,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.sleeplock.R
-import com.example.sleeplock.feature.isTimerPaused
-import com.example.sleeplock.feature.isTimerRunning
-import com.example.sleeplock.model.Repository
-import com.example.sleeplock.model.isServiceRunning
-import com.example.sleeplock.ui.itemIndex
+import com.example.sleeplock.data.Repository
+import com.example.sleeplock.data.features.isTimerPaused
+import com.example.sleeplock.data.features.isTimerRunning
+import com.example.sleeplock.data.service.isServiceRunning
+import com.example.sleeplock.ui.adapter.itemIndex
 import com.example.sleeplock.utils.getResourceString
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.disposables.CompositeDisposable

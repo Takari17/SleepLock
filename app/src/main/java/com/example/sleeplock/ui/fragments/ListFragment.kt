@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.sleeplock.R
-import com.example.sleeplock.ui.MyAdapter
+import com.example.sleeplock.ui.adapter.MyAdapter
 import com.example.sleeplock.utils.ITEM_PIC
 import com.example.sleeplock.utils.ITEM_TEXT
 import kotlinx.android.synthetic.main.fragment_list.*

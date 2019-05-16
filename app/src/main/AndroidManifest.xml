@@ -19,8 +19,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name=".model.MyService"/>
-        <receiver android:name=".model.NotificationBroadcastReceiver"/>
+        <service android:name=".data.service.MyService"/>
+        <receiver android:name=".data.receiver.NotificationBroadcastReceiver"/>
 
     </application>
 

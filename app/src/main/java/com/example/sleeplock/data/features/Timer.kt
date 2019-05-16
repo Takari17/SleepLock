@@ -1,4 +1,4 @@
-package com.example.sleeplock.feature
+package com.example.sleeplock.data.features
 
 import com.example.sleeplock.utils.convertMilliToSeconds
 import io.reactivex.Flowable

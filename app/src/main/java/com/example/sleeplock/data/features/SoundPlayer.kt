@@ -1,4 +1,4 @@
-package com.example.sleeplock.feature
+package com.example.sleeplock.data.features
 
 import android.content.Context
 import android.media.MediaPlayer

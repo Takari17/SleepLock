@@ -1,4 +1,4 @@
-package com.example.sleeplock.ui
+package com.example.sleeplock.ui.common
 
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator

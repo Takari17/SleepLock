@@ -1,4 +1,4 @@
-package com.example.sleeplock.model
+package com.example.sleeplock.data
 
 import android.app.Application
 import android.content.ComponentName
@@ -7,6 +7,8 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import com.example.sleeplock.data.service.MyService
+import com.example.sleeplock.data.service.isServiceRunning
 import com.example.sleeplock.utils.ACTION_PLAY
 import com.example.sleeplock.utils.INDEX
 import com.example.sleeplock.utils.MILLIS
