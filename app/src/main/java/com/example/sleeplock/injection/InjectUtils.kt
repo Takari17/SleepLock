@@ -1,17 +1,18 @@
 package com.example.sleeplock.injection
 
-import androidx.activity.viewModels
-import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
 /*
-Higher Order Function that takes a view model and instantiates it
- */
+Higher order extension function that allows dagger to inject viewModels.
 
-inline fun <reified T : ViewModel> FragmentActivity.injectViewModel(
+Scoped to the underlying activity, not the fragment itsself
+ */
+inline fun <reified T : ViewModel> Fragment.activityViewModelFactory(
     crossinline provider: () -> T
-) = viewModels<T> {
+) = activityViewModels<T> {
     object : ViewModelProvider.Factory {
         override fun <T : ViewModel?> create(modelClass: Class<T>): T =
             provider() as T

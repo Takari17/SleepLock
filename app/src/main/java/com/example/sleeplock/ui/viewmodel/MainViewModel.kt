@@ -2,6 +2,7 @@ package com.example.sleeplock.ui.viewmodel
 
 import android.content.Context
 import android.graphics.Color
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,7 +12,6 @@ import com.example.sleeplock.data.features.isTimerPaused
 import com.example.sleeplock.data.features.isTimerRunning
 import com.example.sleeplock.data.service.isServiceRunning
 import com.example.sleeplock.utils.getResourceString
-import com.example.sleeplock.utils.warnOrSuccessToast
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.Observables
@@ -89,10 +89,8 @@ class MainViewModel @Inject constructor(
 
                     if (!isTimerRunning) clickedItemIndex.value =
                         index // only updates card view data if the timer isn't running
-
-                    isTimerRunning.warnOrSuccessToast(context) // will show a warning toast if the timer is running
                 },
-                onError = {}
+                onError = { Log.d("zwi", "Error in: $it")}
             )
     }
 
@@ -127,9 +125,9 @@ class MainViewModel @Inject constructor(
 
     private fun setButtonColor(isTimeAndSoundChosen: Boolean) {
         if (isTimeAndSoundChosen) {
-            buttonColor.value = Color.parseColor("#4dd0e1")  // light blue
+            buttonColor.postValue(Color.parseColor("#4dd0e1"))  // light blue
         } else {
-            buttonColor.value = Color.parseColor("#0B3136") // dark/dull blue
+            buttonColor.postValue(Color.parseColor("#0B3136")) // dark/dull blue
         }
     }
 

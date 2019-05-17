@@ -8,13 +8,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
 import com.example.sleeplock.data.service.isServiceRunning
+import com.example.sleeplock.injection.Application
+import com.example.sleeplock.injection.activityViewModelFactory
 import com.example.sleeplock.ui.common.Animate
 import com.example.sleeplock.ui.common.TimeOptionDialog
-import com.example.sleeplock.ui.viewmodel.MainViewModel
 import com.example.sleeplock.utils.ITEM_PIC
 import com.example.sleeplock.utils.ITEM_TEXT
 import com.example.sleeplock.utils.formatTime
@@ -23,7 +23,7 @@ import kotlinx.android.synthetic.main.fragment_main.*
 
 class MainFragment : Fragment() {
 
-    private lateinit var viewModel: MainViewModel
+    private val viewModel by activityViewModelFactory { Application.applicationComponent.mainViewModel }
     private val dialog = TimeOptionDialog()
     private val animate = Animate()
 
@@ -37,8 +37,6 @@ class MainFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        viewModel = ViewModelProviders.of(activity!!).get(MainViewModel::class.java)
 
         observeAllLiveData()
 

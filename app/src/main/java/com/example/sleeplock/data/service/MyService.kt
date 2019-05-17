@@ -9,6 +9,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Binder
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -186,7 +187,8 @@ class MyService : Service() {
                 timerCompleted.postValue(true)
 
                 resetAll()
-            }
+            },
+            onError = { Log.d ("zwi", "Error observing the timer: $it")}
         )
     }
 
