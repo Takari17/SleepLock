@@ -49,13 +49,6 @@ class MainActivity : AppCompatActivity() {
         override fun getCount(): Int = 2
     }
 
-
-
-    override fun onStart() {
-        super.onStart()
-        isAppInForeground = true
-    }
-
     override fun onResume() {
         super.onResume()
         isAppInForeground = true
@@ -63,11 +56,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        isAppInForeground = false
-    }
-
-    override fun onStop() {
-        super.onStop()
         isAppInForeground = false
     }
 }

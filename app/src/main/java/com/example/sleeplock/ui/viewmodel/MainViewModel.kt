@@ -10,8 +10,8 @@ import com.example.sleeplock.data.Repository
 import com.example.sleeplock.data.features.isTimerPaused
 import com.example.sleeplock.data.features.isTimerRunning
 import com.example.sleeplock.data.service.isServiceRunning
-import com.example.sleeplock.ui.adapter.itemIndex
 import com.example.sleeplock.utils.getResourceString
+import com.example.sleeplock.utils.warnOrSuccessToast
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.Observables
@@ -78,18 +78,22 @@ class MainViewModel @Inject constructor(
 
     init {
         isTimeAndSoundChosen()
-        itemSelected()
     }
 
-    private fun itemSelected() {
+    fun subscribeToItemIndex(itemIndex: BehaviorRelay<Int>) {
         compositeDisposable += itemIndex
-            .subscribeBy { index ->
-                this.index = index
-                isSoundChosen.accept(true)
+            .subscribeBy(
+                onNext = { index ->
+                    this.index = index
+                    isSoundChosen.accept(true)
 
-                if (!isTimerRunning) clickedItemIndex.value =
-                    index // only updates card view data if the timer isn't running
-            }
+                    if (!isTimerRunning) clickedItemIndex.value =
+                        index // only updates card view data if the timer isn't running
+
+                    isTimerRunning.warnOrSuccessToast(context) // will show a warning toast if the timer is running
+                },
+                onError = {}
+            )
     }
 
 

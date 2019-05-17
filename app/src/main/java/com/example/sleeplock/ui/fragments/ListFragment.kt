@@ -9,11 +9,15 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.sleeplock.R
 import com.example.sleeplock.ui.adapter.MyAdapter
+import com.example.sleeplock.ui.viewmodel.MainViewModel
 import com.example.sleeplock.utils.ITEM_PIC
 import com.example.sleeplock.utils.ITEM_TEXT
 import kotlinx.android.synthetic.main.fragment_list.*
 
 class ListFragment : Fragment() {
+
+    private val myAdapter = MyAdapter(ITEM_PIC, ITEM_TEXT)
+    private lateinit var viewModel: MainViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -27,7 +31,8 @@ class ListFragment : Fragment() {
         recycler_view.apply {
             setHasFixedSize(true)
             layoutManager = GridLayoutManager(context, 2)
-            adapter = MyAdapter(context, ITEM_PIC, ITEM_TEXT)
+            adapter = myAdapter
         }
+        viewModel.subscribeToItemIndex(myAdapter.itemIndex)
     }
 }
