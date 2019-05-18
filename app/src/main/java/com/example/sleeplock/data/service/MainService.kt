@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.graphics.Color
+import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
@@ -13,25 +14,23 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.sleeplock.R
-import com.example.sleeplock.data.features.SoundPlayer
 import com.example.sleeplock.data.features.Timer
+import com.example.sleeplock.data.features.WhiteNoise
 import com.example.sleeplock.data.receiver.NotificationBroadcastReceiver
 import com.example.sleeplock.ui.MainActivity
 import com.example.sleeplock.ui.isAppInForeground
 import com.example.sleeplock.utils.*
 import io.reactivex.rxkotlin.subscribeBy
-import javax.inject.Singleton
 
-class MyService : Service() {
+class MainService : Service() {
 
     private val binder = LocalBinder()
 
     private var isTimerAndSoundCreated = false
-
     private val isMainServiceRunning = MutableLiveData<Boolean>(false)
 
     private lateinit var timer: Timer
-    private lateinit var soundPlayer: SoundPlayer
+    private lateinit var whiteNoise: WhiteNoise
 
     private var playOrPause = 0
 
@@ -46,14 +45,6 @@ class MyService : Service() {
     private val timerCompleted = MutableLiveData<Boolean>()
     private val isBound = MutableLiveData<Boolean>()
 
-    // Only exposes immutable properties
-    fun getCurrentTime(): LiveData<Long> = currentTime
-
-    fun getTimerStarted(): LiveData<Boolean> = timerStarted
-    fun getTimerPaused(): LiveData<Boolean> = timerPaused
-    fun getTimerCompleted(): LiveData<Boolean> = timerCompleted
-    fun getIsBound(): LiveData<Boolean> = isBound
-    fun getIsServiceRunning(): LiveData<Boolean> = isMainServiceRunning
 
     override fun onCreate() {
         super.onCreate()
@@ -152,7 +143,7 @@ class MyService : Service() {
     }
 
     private fun createSound(index: Int) {
-        soundPlayer = SoundPlayer(this, index)
+        whiteNoise = WhiteNoise(MediaPlayer(), this, index)
     }
 
     private fun createAndObserveTimer(millis: Long) {
@@ -166,11 +157,11 @@ class MyService : Service() {
             onComplete = {
 
                 //todo thought we deleted coroutine dependencies
-//                GlobalScope.launch(Dispatchers.Main) { showFinishedToast(this@MyService, true) }
+//                GlobalScope.launch(Dispatchers.Main) { showFinishedToast(this@MainService, true) }
 
                 currentTime.postValue(0)
 
-                soundPlayer.reset()
+                whiteNoise.reset()
                 timerCompleted.postValue(true)
 
                 resetAll()
@@ -180,13 +171,13 @@ class MyService : Service() {
     }
 
     fun startSoundAndTimer() {
-        soundPlayer.start()
+        whiteNoise.start()
         timer.start()
         timerStarted.postValue(true)
     }
 
     fun pauseSoundAndTimer() {
-        soundPlayer.pause()
+        whiteNoise.pause()
         timer.pause()
         timerPaused.postValue(true)
     }
@@ -199,6 +190,19 @@ class MyService : Service() {
         stopSelf()
         stopForeground(true)
     }
+
+    // Only exposes immutable properties
+    fun getCurrentTime(): LiveData<Long> = currentTime
+
+    fun getTimerStarted(): LiveData<Boolean> = timerStarted
+
+    fun getTimerPaused(): LiveData<Boolean> = timerPaused
+
+    fun getTimerCompleted(): LiveData<Boolean> = timerCompleted
+
+    fun getIsBound(): LiveData<Boolean> = isBound
+
+    fun getIsServiceRunning(): LiveData<Boolean> = isMainServiceRunning
 
     private fun createActivityPendingIntent(): PendingIntent =
         Intent(this, MainActivity::class.java).let { activityIntent ->
@@ -224,6 +228,6 @@ class MyService : Service() {
     }
 
     inner class LocalBinder : Binder() {
-        fun getService(): MyService = this@MyService
+        fun getService(): MainService = this@MainService
     }
 }

@@ -1,9 +1,29 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package com.example.sleeplock.utils
 
 import android.content.Context
+import android.net.Uri
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.example.sleeplock.R
 import es.dmoral.toasty.Toasty
 import java.util.*
+
+/*
+Higher order extension function that allows dagger to inject viewModels.
+Scoped to the underlying activity, not the fragment itsself
+ */
+inline fun <reified T : ViewModel> Fragment.activityViewModelFactory(
+    crossinline provider: () -> T
+) = activityViewModels<T> {
+    object : ViewModelProvider.Factory {
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T =
+            provider() as T
+    }
+}
 
 // Conversion methods
 fun Int.convertHoursToMin(extraMinutes: Int = 0): Int = (this * 60) + extraMinutes
@@ -45,3 +65,5 @@ fun showFinishedToast(context: Context, start: Boolean) {
 }
 
 fun Context.getResourceString(id: Int): String = this.resources.getString(id)
+
+fun Int.toUri(): Uri = Uri.parse("android.resource://com.example.sleeplock/raw/$$this")

@@ -85,7 +85,6 @@ class MainViewModel @Inject constructor(
         compositeDisposable += itemIndex
             .subscribeBy(
                 onNext = { index ->
-                    Log.d("zwi", "Index returns: $index")
                     this.index = index
                     isSoundChosen.accept(true)
 
@@ -103,7 +102,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun startSoundAndTimer() {
-        // Only called if millis & index  != null
+        //The start button is disabled until the user selects an index and millis
         repository.startSoundAndTimer(millis!!, index!!)
         startButtonClicked = false
     }

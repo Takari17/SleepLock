@@ -11,11 +11,11 @@ import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
 import com.example.sleeplock.injection.Application.Companion.applicationComponent
-import com.example.sleeplock.injection.activityViewModelFactory
 import com.example.sleeplock.ui.common.Animate
 import com.example.sleeplock.ui.common.TimeOptionDialog
 import com.example.sleeplock.utils.ITEM_PIC
 import com.example.sleeplock.utils.ITEM_TEXT
+import com.example.sleeplock.utils.activityViewModelFactory
 import com.example.sleeplock.utils.formatTime
 import kotlinx.android.synthetic.main.fragment_main.*
 

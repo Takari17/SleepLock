@@ -20,7 +20,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name=".data.service.MyService"/>
+        <service android:name=".data.service.MainService"/>
         <receiver android:name=".data.receiver.NotificationBroadcastReceiver"/>
 
     </application>

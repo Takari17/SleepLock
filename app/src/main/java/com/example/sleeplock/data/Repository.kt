@@ -7,7 +7,7 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import com.example.sleeplock.data.service.MyService
+import com.example.sleeplock.data.service.MainService
 import com.example.sleeplock.utils.ACTION_PLAY
 import com.example.sleeplock.utils.INDEX
 import com.example.sleeplock.utils.MILLIS
@@ -15,15 +15,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 
-//todo ensure the service is not started unless index and millis are not null
 @Singleton
 class Repository @Inject constructor(
     private val context: Context
 ) {
 
-    private val serviceIntent: Intent = Intent(context, MyService::class.java)
+    private val serviceIntent: Intent = Intent(context, MainService::class.java)
 
-    private var myService: MyService? = null
+    private var mainService: MainService? = null
 
     var isServiceRunning = false
 
@@ -60,12 +59,12 @@ class Repository @Inject constructor(
         bindToServiceIfRunning()
     }
 
-    fun pauseSoundAndTimer() = myService?.pauseSoundAndTimer()
+    fun pauseSoundAndTimer() = mainService?.pauseSoundAndTimer()
 
-    fun resumeSoundAndTimer() = myService?.startSoundAndTimer()
+    fun resumeSoundAndTimer() = mainService?.startSoundAndTimer()
 
 
-    fun resetSoundAndTimer() = myService?.resetSoundAndTimer()
+    fun resetSoundAndTimer() = mainService?.resetSoundAndTimer()
 
     fun bindToServiceIfRunning() {
         if (isServiceRunning) context.bindService(serviceIntent, serviceConnection, 0)
@@ -73,7 +72,7 @@ class Repository @Inject constructor(
 
     private fun addLiveDataSources() {
         //todo remove these it's
-        myService?.let { service ->
+        mainService?.let { service ->
             currentTime.addSource(service.getCurrentTime()) { millis -> currentTime.value = millis }
             timerStarted.addSource(service.getTimerStarted()) { timerStarted.value = it }
             timerPaused.addSource(service.getTimerPaused()) { timerPaused.value = it }
@@ -84,7 +83,7 @@ class Repository @Inject constructor(
     }
 
     private fun removeLiveDataSources() {
-        myService?.let { service ->
+        mainService?.let { service ->
             currentTime.removeSource(service.getCurrentTime())
             timerStarted.removeSource(service.getTimerStarted())
             timerPaused.removeSource(service.getTimerPaused())
@@ -98,9 +97,9 @@ class Repository @Inject constructor(
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
 
-            val serviceReference = (service as MyService.LocalBinder).getService()
+            val serviceReference = (service as MainService.LocalBinder).getService()
 
-            myService = serviceReference
+            mainService = serviceReference
             addLiveDataSources()
         }
 
