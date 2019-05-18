@@ -9,23 +9,22 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
-import com.example.sleeplock.data.features.isTimerRunning
-import com.example.sleeplock.utils.warnOrSuccessToast
 import com.jakewharton.rxrelay2.BehaviorRelay
+import com.jakewharton.rxrelay2.PublishRelay
 import kotlinx.android.synthetic.main.recycler_view_layout.view.*
 
 class MyAdapter(
-    private val context: Context,
     private val image: List<Int>,
     private val text: List<String>
 ) :
     RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
     val itemIndex = BehaviorRelay.create<Int>()
+    val itemOnClickListener = PublishRelay.create<Boolean>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.recycler_view_layout, parent, false)
-        return MyViewHolder(context, view)
+        return MyViewHolder(view)
     }
 
     override fun getItemCount(): Int = image.size
@@ -40,14 +39,14 @@ class MyAdapter(
         holder.text.text = text[position]
     }
 
-    inner class MyViewHolder(context: Context, itemView: View) : RecyclerView.ViewHolder(itemView) {
+    inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val image: ImageView = itemView.item_image
         val text: TextView = itemView.item_text
 
         init {//Passes the index of the item clicked
             itemView.setOnClickListener {
                 itemIndex.accept(adapterPosition)
-                isTimerRunning.warnOrSuccessToast(context) // will show a warning toast if the timer is running
+                itemOnClickListener.accept(true)
             }
         }
     }
