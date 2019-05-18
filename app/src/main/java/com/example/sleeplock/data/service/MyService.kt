@@ -1,16 +1,15 @@
 package com.example.sleeplock.data.service
 
 import android.app.Notification
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.sleeplock.R
@@ -21,18 +20,15 @@ import com.example.sleeplock.ui.MainActivity
 import com.example.sleeplock.ui.isAppInForeground
 import com.example.sleeplock.utils.*
 import io.reactivex.rxkotlin.subscribeBy
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-
-var isServiceRunning = false
+import javax.inject.Singleton
 
 class MyService : Service() {
 
     private val binder = LocalBinder()
 
-    private var isTimerCreated = false
-    private var isSoundCreated = false
+    private var isTimerAndSoundCreated = false
+
+    private val isMainServiceRunning = MutableLiveData<Boolean>(false)
 
     private lateinit var timer: Timer
     private lateinit var soundPlayer: SoundPlayer
@@ -52,11 +48,22 @@ class MyService : Service() {
 
     // Only exposes immutable properties
     fun getCurrentTime(): LiveData<Long> = currentTime
+
     fun getTimerStarted(): LiveData<Boolean> = timerStarted
     fun getTimerPaused(): LiveData<Boolean> = timerPaused
     fun getTimerCompleted(): LiveData<Boolean> = timerCompleted
     fun getIsBound(): LiveData<Boolean> = isBound
+    fun getIsServiceRunning(): LiveData<Boolean> = isMainServiceRunning
 
+    override fun onCreate() {
+        super.onCreate()
+        isMainServiceRunning.postValue(true)
+
+        contentIntent = createActivityPendingIntent()
+        pendingPlayIntent = createBroadcastPendingIntent(ACTION_PLAY)
+        pendingPauseIntent = createBroadcastPendingIntent(ACTION_PAUSE)
+        pendingResetIntent = createBroadcastPendingIntent(ACTION_RESET)
+    }
 
     override fun onBind(intent: Intent?): IBinder? {
         isBound.value = true
@@ -80,65 +87,46 @@ class MyService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        isServiceRunning = true
+        //We ensure'd that no null values are sent to the service, but if they are than something went horribly wrong and it's better to crash the app
+        val millis: Long = intent?.extras?.getLong(MILLIS)!!
+        val index: Int = intent.extras?.getInt(INDEX)!!
 
-        val millis: Long? = intent?.extras?.getLong(MILLIS)
-        val index: Int? = intent?.extras?.getInt(INDEX)
+        // Prevents duplication on sound & timer
+        if (!isTimerAndSoundCreated) {
+            createAndObserveTimer(millis)
+            createSound(index)
+            isTimerAndSoundCreated = true
+        }
 
-        // Prevents duplication
-        if (!isTimerCreated) createAndObserveTimer(millis ?: 0)
-        if (!isSoundCreated && index != null) createSound(index)
-
-        when (intent?.action) {
+        when (intent.action) {
             ACTION_PLAY -> {
                 startSoundAndTimer()
                 playOrPause = 1
             }
-
             ACTION_PAUSE -> {
                 pauseSoundAndTimer()
                 playOrPause = 0
             }
-
             ACTION_RESET -> {
                 timer.reset() // will trigger reset all
                 return START_NOT_STICKY
             }
         }
 
-        val activityIntent = Intent(this, MainActivity::class.java)
-        contentIntent = PendingIntent.getActivity(
-            this,
-            0, activityIntent, 0
-        )
+        val time: String? = currentTime.value?.formatTime()
 
-        //todo why are we doing this in this method? Do it on init since we only seen to set its values ONCE
-
-        val playIntent = getBroadcastReceiverIntent().apply {
-            action = ACTION_PLAY
-            pendingPlayIntent = createPendingIntent(this)
-        }
-
-
-        val pauseIntent = getBroadcastReceiverIntent()
-        pauseIntent.action = ACTION_PAUSE
-        pendingPauseIntent = createPendingIntent(pauseIntent)
-
-        val resetIntent = getBroadcastReceiverIntent()
-        resetIntent.action = ACTION_RESET
-        pendingResetIntent = createPendingIntent(resetIntent)
-
-        val time = currentTime.value?.formatTime()
-
-        startForeground(NOTIFICATION_ID, getMyNotification(time?: "00:00", playOrPause))
-        return START_NOT_STICKY
+        startForeground(NOTIFICATION_ID, getMyNotification(time ?: "00:00", playOrPause))
+        return START_STICKY
     }
 
+    // Updates the notification content description with the text provided
     private fun updateNotification(text: String, playOrPause: Int) {
-        // Updates the notification content description with the text provided
         val notification = getMyNotification(text, playOrPause)
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(NOTIFICATION_ID, notification)
+
+        NotificationManagerCompat.from(this).apply {
+
+            notify(NOTIFICATION_ID, notification)
+        }
     }
 
     private fun getMyNotification(newText: String, playOrPause: Int): Notification {
@@ -165,12 +153,10 @@ class MyService : Service() {
 
     private fun createSound(index: Int) {
         soundPlayer = SoundPlayer(this, index)
-        isSoundCreated = true
     }
 
     private fun createAndObserveTimer(millis: Long) {
         timer = Timer(millis)
-        isTimerCreated = true
 
         timer.currentTime.subscribeBy(
             onNext = { timeInMilli ->
@@ -179,7 +165,8 @@ class MyService : Service() {
             },
             onComplete = {
 
-                GlobalScope.launch(Dispatchers.Main) { showFinishedToast(this@MyService, true) }
+                //todo thought we deleted coroutine dependencies
+//                GlobalScope.launch(Dispatchers.Main) { showFinishedToast(this@MyService, true) }
 
                 currentTime.postValue(0)
 
@@ -188,7 +175,7 @@ class MyService : Service() {
 
                 resetAll()
             },
-            onError = { Log.d ("zwi", "Error observing the timer: $it")}
+            onError = { Log.d("zwi", "Error observing the timer: $it") }
         )
     }
 
@@ -204,7 +191,7 @@ class MyService : Service() {
         timerPaused.postValue(true)
     }
 
-    fun resetTimer() = timer.reset() // sound is reset on timer complete
+    fun resetSoundAndTimer() = timer.reset() // sound is reset on timer complete
 
     private fun resetAll() {
         resetBooleans()
@@ -213,12 +200,18 @@ class MyService : Service() {
         stopForeground(true)
     }
 
-    private fun createPendingIntent(intent: Intent): PendingIntent {
-        return PendingIntent.getBroadcast(this, 0, intent, 0)
-    }
+    private fun createActivityPendingIntent(): PendingIntent =
+        Intent(this, MainActivity::class.java).let { activityIntent ->
+            PendingIntent.getActivity(
+                this, 0, activityIntent, 0
+            )
+        }
 
-    private fun getBroadcastReceiverIntent(): Intent {
-        return Intent(this, NotificationBroadcastReceiver::class.java)
+    private fun createBroadcastPendingIntent(action: String): PendingIntent {
+        val broadCastIntent = Intent(this, NotificationBroadcastReceiver::class.java).apply {
+            this.action = action
+        }
+        return PendingIntent.getBroadcast(this, 0, broadCastIntent, 0)
     }
 
     private fun terminateAll() {
@@ -226,8 +219,8 @@ class MyService : Service() {
     }
 
     private fun resetBooleans() {
-        isTimerCreated = false
-        isServiceRunning = false
+        isTimerAndSoundCreated = false
+        isMainServiceRunning.postValue(false)
     }
 
     inner class LocalBinder : Binder() {

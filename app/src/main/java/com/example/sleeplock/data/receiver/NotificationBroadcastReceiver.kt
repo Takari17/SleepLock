@@ -12,24 +12,11 @@ import com.example.sleeplock.utils.ACTION_RESET
 class NotificationBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val action = intent.action
-        val actionIntent = Intent(context, MyService::class.java)
 
-        when (action) {
-            ACTION_PLAY -> {
-                actionIntent.action = action
-                context.startService(actionIntent)
-            }
+        val serviceIntent = Intent(context, MyService::class.java)
 
-            ACTION_PAUSE -> {
-                actionIntent.action = action
-                context.startService(actionIntent)
-            }
+        serviceIntent.action = intent.action
 
-            ACTION_RESET -> {
-                actionIntent.action = action
-                context.startService(actionIntent)
-            }
-        }
+        context.startService(serviceIntent)
     }
 }

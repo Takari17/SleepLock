@@ -10,7 +10,6 @@ import com.example.sleeplock.R
 import com.example.sleeplock.data.Repository
 import com.example.sleeplock.data.features.isTimerPaused
 import com.example.sleeplock.data.features.isTimerRunning
-import com.example.sleeplock.data.service.isServiceRunning
 import com.example.sleeplock.utils.getResourceString
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.disposables.CompositeDisposable
@@ -31,12 +30,14 @@ class MainViewModel @Inject constructor(
     private val buttonEnabled = MutableLiveData<Boolean>()
     private val buttonColor = MutableLiveData<Int>()
     private val buttonText = MutableLiveData<String>()
+    private val startAnimation = MutableLiveData<Long>() //todo want a better name for this
 
 
     fun getClickedItemIndex(): LiveData<Int> = clickedItemIndex
     fun getButtonEnabled(): LiveData<Boolean> = buttonEnabled
     fun getButtonColor(): LiveData<Int> = buttonColor
     fun getButtonText(): LiveData<String> = buttonText
+    fun getStartAnimation(): LiveData<Long> = startAnimation
 
     // From repository
     fun getCurrentTime() = repository.getCurrentTime()
@@ -47,8 +48,8 @@ class MainViewModel @Inject constructor(
 
     private val compositeDisposable = CompositeDisposable()
 
-    private var isTimeChosen = BehaviorRelay.createDefault(false)
-    private var isSoundChosen = BehaviorRelay.createDefault(false)
+    private val isTimeChosen = BehaviorRelay.createDefault(false)
+    private val isSoundChosen = BehaviorRelay.createDefault(false)
 
     /*
     If the time and sound are chosen the start button will turn light blue and will be enabled(clickable), else it will turn dull/dark blue
@@ -122,7 +123,7 @@ class MainViewModel @Inject constructor(
         repository.resetSoundAndTimer()
     }
 
-    fun bindToService() = repository.bindToService()
+    fun bindToServiceIfRunning() = repository.bindToServiceIfRunning()
 
     private fun setButtonColor(isTimeAndSoundChosen: Boolean) {
         if (isTimeAndSoundChosen) {
@@ -147,7 +148,7 @@ class MainViewModel @Inject constructor(
 
 
     private fun startButtonClick() {
-        if (isServiceRunning) resumeSoundAndTimer() else startSoundAndTimer()
+        if (repository.isServiceRunning) resumeSoundAndTimer() else startSoundAndTimer()
         setButtonText(true)
     }
 
@@ -163,6 +164,8 @@ class MainViewModel @Inject constructor(
     fun resetAll() {
         resetBooleans()
         resetButton()
+        millis = null
+        index = null
     }
 
     private fun resetBooleans() {
@@ -178,7 +181,7 @@ class MainViewModel @Inject constructor(
         isTimeChosen.accept(false)
     }
 
-    fun restoreState() {
+    private fun restoreState() {
         startButtonClicked = if (isTimerPaused) {
             setButtonText(false)
             true
@@ -195,6 +198,13 @@ class MainViewModel @Inject constructor(
         clickedItemIndex.value = index
     }
 
+    fun fragmentActivityCreated(){
+        if (repository.isServiceRunning) startAnimation.value = 0
+    }
+
+    fun onFragmentStart(){
+       if (repository.isServiceRunning) restoreState()
+    }
 
     override fun onCleared() {
         super.onCleared()

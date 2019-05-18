@@ -10,7 +10,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
-import com.example.sleeplock.data.service.isServiceRunning
 import com.example.sleeplock.injection.Application.Companion.applicationComponent
 import com.example.sleeplock.injection.activityViewModelFactory
 import com.example.sleeplock.ui.common.Animate
@@ -52,6 +51,8 @@ class MainFragment : Fragment() {
         }
 
         reset_button.setOnClickListener { viewModel.resetButtonClick() }
+
+        viewModel.fragmentActivityCreated()
     }
 
     private fun showDialog() {
@@ -81,14 +82,13 @@ class MainFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        if (isServiceRunning) startAnimation(0) // animation is instant
-
-        viewModel.bindToService()
+        //todo shoudnt this be onStart?
+        viewModel.bindToServiceIfRunning()
     }
 
     override fun onStart() {
         super.onStart()
-        if (isServiceRunning) viewModel.restoreState()
+        viewModel.onFragmentStart()
     }
 
     private fun startAnimation(duration: Long = 500) {
@@ -155,6 +155,11 @@ class MainFragment : Fragment() {
         }
     }
 
+    private fun observeAnimation(): Observer<Long> =
+        Observer { duration ->
+            startAnimation(duration) // animation is instant
+        }
+
     private fun observeAllLiveData() {
         viewModel.getCurrentTime().observe(viewLifecycleOwner, observeCurrentTime())
 
@@ -171,6 +176,8 @@ class MainFragment : Fragment() {
         viewModel.getTimerPaused().observe(viewLifecycleOwner, observeTimerPaused())
 
         viewModel.getTimerCompleted().observe(viewLifecycleOwner, observeTimerCompleted())
+
+        viewModel.getStartAnimation().observe(viewLifecycleOwner, observeAnimation())
 
         dialog.getUserSelectedTime().observe(viewLifecycleOwner, observeUserSelectedTime())
     }
