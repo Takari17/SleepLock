@@ -12,6 +12,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.sleeplock.R
 import com.example.sleeplock.data.features.Timer
@@ -20,6 +21,8 @@ import com.example.sleeplock.data.receiver.NotificationBroadcastReceiver
 import com.example.sleeplock.ui.MainActivity
 import com.example.sleeplock.ui.isAppInForeground
 import com.example.sleeplock.utils.*
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.subscribeBy
 
 class MainService : Service() {
@@ -31,6 +34,7 @@ class MainService : Service() {
 
     private lateinit var timer: Timer
     private lateinit var whiteNoise: WhiteNoise
+    private val compositeDisposable = CompositeDisposable()
 
     private var playOrPause = 0
 
@@ -40,10 +44,10 @@ class MainService : Service() {
     private lateinit var pendingResetIntent: PendingIntent
 
     private val currentTime = MutableLiveData<Long>()
-    private val timerStarted = MutableLiveData<Boolean>()
-    private val timerPaused = MutableLiveData<Boolean>()
-    private val timerCompleted = MutableLiveData<Boolean>()
     private val isBound = MutableLiveData<Boolean>()
+    private val isTimerRunning = MediatorLiveData<Boolean>()
+    private var isTimerPaused = MediatorLiveData<Boolean>()
+    private val isTimerCompleted = MutableLiveData<Boolean>()
 
 
     override fun onCreate() {
@@ -63,17 +67,13 @@ class MainService : Service() {
 
     override fun onUnbind(intent: Intent?): Boolean {
         isBound.value = false // will remove the mediator Live Data's sources in the Repository
+        compositeDisposable.clear()
         return super.onUnbind(intent)
     }
 
     override fun onRebind(intent: Intent?) {
         super.onRebind(intent)
         isBound.value = true
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        isBound.value = false
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -149,7 +149,7 @@ class MainService : Service() {
     private fun createAndObserveTimer(millis: Long) {
         timer = Timer(millis)
 
-        timer.currentTime.subscribeBy(
+        compositeDisposable += timer.currentTime.subscribeBy(
             onNext = { timeInMilli ->
                 currentTime.postValue(timeInMilli)
                 updateNotification(timeInMilli.formatTime(), playOrPause)
@@ -162,24 +162,24 @@ class MainService : Service() {
                 currentTime.postValue(0)
 
                 whiteNoise.reset()
-                timerCompleted.postValue(true)
+                isTimerCompleted.postValue(true)
 
                 resetAll()
             },
             onError = { Log.d("zwi", "Error observing the timer: $it") }
         )
+
+        addTimerStatusSource(timer)
     }
 
     fun startSoundAndTimer() {
         whiteNoise.start()
         timer.start()
-        timerStarted.postValue(true)
     }
 
     fun pauseSoundAndTimer() {
         whiteNoise.pause()
         timer.pause()
-        timerPaused.postValue(true)
     }
 
     fun resetSoundAndTimer() = timer.reset() // sound is reset on timer complete
@@ -191,18 +191,19 @@ class MainService : Service() {
         stopForeground(true)
     }
 
-    // Only exposes immutable properties
+    // Only exposes immutable Live Data properties
     fun getCurrentTime(): LiveData<Long> = currentTime
 
-    fun getTimerStarted(): LiveData<Boolean> = timerStarted
+    fun getIsTimerRunning(): LiveData<Boolean> = isTimerRunning
 
-    fun getTimerPaused(): LiveData<Boolean> = timerPaused
+    fun getIsTimerPaused(): LiveData<Boolean> = isTimerPaused
 
-    fun getTimerCompleted(): LiveData<Boolean> = timerCompleted
+    fun getIsTimerCompleted(): LiveData<Boolean> = isTimerCompleted
 
     fun getIsBound(): LiveData<Boolean> = isBound
 
     fun getIsServiceRunning(): LiveData<Boolean> = isMainServiceRunning
+
 
     private fun createActivityPendingIntent(): PendingIntent =
         Intent(this, MainActivity::class.java).let { activityIntent ->
@@ -218,13 +219,29 @@ class MainService : Service() {
         return PendingIntent.getBroadcast(this, 0, broadCastIntent, 0)
     }
 
-    private fun terminateAll() {
-        android.os.Process.killProcess(android.os.Process.myPid())
+    private fun addTimerStatusSource(timer: Timer) {
+        isTimerRunning.addSource(timer.isTimerRunning) { isRunning -> isTimerRunning.value = isRunning }
+        isTimerPaused.addSource(timer.isTimerPaused) { isPaused -> isTimerPaused.value = isPaused }
+    }
+
+    private fun removeTimerStatusSource(timer: Timer) {
+        isTimerRunning.removeSource(timer.isTimerRunning)
+        isTimerPaused.removeSource(timer.isTimerPaused)
     }
 
     private fun resetBooleans() {
         isTimerAndSoundCreated = false
         isMainServiceRunning.postValue(false)
+    }
+
+    private fun terminateAll() {
+        android.os.Process.killProcess(android.os.Process.myPid())
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        isBound.value = false
+        removeTimerStatusSource(timer)
     }
 
     inner class LocalBinder : Binder() {

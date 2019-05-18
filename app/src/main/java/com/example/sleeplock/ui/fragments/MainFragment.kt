@@ -112,6 +112,7 @@ class MainFragment : Fragment() {
         return Observer { millis -> current_time_text_view.text = millis.formatTime() }
     }
 
+    //todo why the hell do we just hard code these values, create new methods if you need to bc this is confusing AS FUCK
     private fun observeTimerPaused(): Observer<Boolean> {
         return Observer { viewModel.setButtonText(false) }
     }
@@ -171,11 +172,11 @@ class MainFragment : Fragment() {
 
         viewModel.getButtonText().observe(viewLifecycleOwner, observeButtonText())
 
-        viewModel.getTimerStarted().observe(viewLifecycleOwner, observeTimerStarted())
+        viewModel.getIsTimerRunning().observe(viewLifecycleOwner, observeTimerStarted())
 
-        viewModel.getTimerPaused().observe(viewLifecycleOwner, observeTimerPaused())
+        viewModel.getIsTimerPaused().observe(viewLifecycleOwner, observeTimerPaused())
 
-        viewModel.getTimerCompleted().observe(viewLifecycleOwner, observeTimerCompleted())
+        viewModel.getIsTimerCompleted().observe(viewLifecycleOwner, observeTimerCompleted())
 
         viewModel.getStartAnimation().observe(viewLifecycleOwner, observeAnimation())
 

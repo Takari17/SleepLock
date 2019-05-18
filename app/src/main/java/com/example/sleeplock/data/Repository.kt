@@ -28,24 +28,26 @@ class Repository @Inject constructor(
 
     // Sources = services Live Data objects
     private val currentTime = MediatorLiveData<Long>()
-    private val timerStarted = MediatorLiveData<Boolean>()
-    private val timerPaused = MediatorLiveData<Boolean>()
-    private val timerCompleted = MediatorLiveData<Boolean>()
+    private val isTimerRunning = MediatorLiveData<Boolean>()
+    private var isTimerPaused = MediatorLiveData<Boolean>()
+    private var isTimerCompleted = MediatorLiveData<Boolean>()
     private val isBound = MediatorLiveData<Boolean>()
     private val serviceStatus = MediatorLiveData<Boolean>()
 
 
-    fun getCurrentTime(): LiveData<Long> = currentTime
-    fun getTimerStarted(): LiveData<Boolean> = timerStarted
-    fun getTimerPaused(): LiveData<Boolean> = timerPaused
-    fun getTimerCompleted(): LiveData<Boolean> = timerCompleted
-
-
     init { // remove observers if the service unbinds
         isBound.observeForever { isBinded ->
-            if (!isBinded) removeLiveDataSources()// todo thinkin we do this onStop instead of through LD
+            if (!isBinded) removeServiceLiveDataSources()// todo thinkin we do this onStop instead of through LD
         }
     }
+
+    fun getCurrentTime(): LiveData<Long> = currentTime
+
+    fun getIsTimerRunning(): LiveData<Boolean> = isTimerRunning
+
+    fun getIsTimerPaused(): LiveData<Boolean> = isTimerPaused
+
+    fun getIsTimerCompleted(): LiveData<Boolean> = isTimerCompleted
 
 
     fun startSoundAndTimer(millis: Long, index: Int) {
@@ -63,35 +65,54 @@ class Repository @Inject constructor(
 
     fun resumeSoundAndTimer() = mainService?.startSoundAndTimer()
 
-
     fun resetSoundAndTimer() = mainService?.resetSoundAndTimer()
 
     fun bindToServiceIfRunning() {
         if (isServiceRunning) context.bindService(serviceIntent, serviceConnection, 0)
     }
 
-    private fun addLiveDataSources() {
-        //todo remove these it's
-        mainService?.let { service ->
-            currentTime.addSource(service.getCurrentTime()) { millis -> currentTime.value = millis }
-            timerStarted.addSource(service.getTimerStarted()) { timerStarted.value = it }
-            timerPaused.addSource(service.getTimerPaused()) { timerPaused.value = it }
-            timerCompleted.addSource(service.getTimerCompleted()) { timerCompleted.value = it }
-            isBound.addSource(service.getIsBound()) { isBound.value = it }
-            serviceStatus.addSource(service.getIsServiceRunning()) {isRunning -> isServiceRunning = isRunning}
+    private fun addServiceLiveDataSources(service: MainService) {
+
+        currentTime.addSource(service.getCurrentTime()) { millis ->
+            currentTime.value = millis
+        }
+
+        isTimerRunning.addSource(service.getIsTimerRunning()) { isRunning ->
+            isTimerRunning.value = isRunning
+        }
+
+        isTimerPaused.addSource(service.getIsTimerPaused()) { isPaused ->
+            isTimerPaused.value = isPaused
+        }
+
+        isTimerCompleted.addSource(service.getIsTimerCompleted()) { isCompleted ->
+            isTimerCompleted.value = isCompleted
+        }
+
+        isBound.addSource(service.getIsBound()) { isServiceBound ->
+            isBound.value = isServiceBound
+        }
+
+        serviceStatus.addSource(service.getIsServiceRunning()) { isRunning ->
+            isServiceRunning = isRunning
+
         }
     }
 
-    private fun removeLiveDataSources() {
+    private fun removeServiceLiveDataSources() =
         mainService?.let { service ->
             currentTime.removeSource(service.getCurrentTime())
-            timerStarted.removeSource(service.getTimerStarted())
-            timerPaused.removeSource(service.getTimerPaused())
-            timerCompleted.removeSource(service.getTimerCompleted())
+
+            isTimerRunning.removeSource(service.getIsTimerRunning())
+
+            isTimerPaused.removeSource(service.getIsTimerPaused())
+
+            isTimerCompleted.removeSource(service.getIsTimerCompleted())
+
             isBound.removeSource(service.getIsBound())
+
             serviceStatus.removeSource(service.getIsServiceRunning())
         }
-    }
 
     private val serviceConnection = object : ServiceConnection {
 
@@ -99,8 +120,9 @@ class Repository @Inject constructor(
 
             val serviceReference = (service as MainService.LocalBinder).getService()
 
+            addServiceLiveDataSources(serviceReference)
+
             mainService = serviceReference
-            addLiveDataSources()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {}

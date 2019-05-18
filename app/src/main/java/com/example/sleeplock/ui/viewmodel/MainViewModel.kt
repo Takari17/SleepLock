@@ -8,8 +8,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.sleeplock.R
 import com.example.sleeplock.data.Repository
-import com.example.sleeplock.data.features.isTimerPaused
-import com.example.sleeplock.data.features.isTimerRunning
 import com.example.sleeplock.utils.getResourceString
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.disposables.CompositeDisposable
@@ -31,20 +29,6 @@ class MainViewModel @Inject constructor(
     private val buttonColor = MutableLiveData<Int>()
     private val buttonText = MutableLiveData<String>()
     private val startAnimation = MutableLiveData<Long>() //todo want a better name for this
-
-
-    fun getClickedItemIndex(): LiveData<Int> = clickedItemIndex
-    fun getButtonEnabled(): LiveData<Boolean> = buttonEnabled
-    fun getButtonColor(): LiveData<Int> = buttonColor
-    fun getButtonText(): LiveData<String> = buttonText
-    fun getStartAnimation(): LiveData<Long> = startAnimation
-
-    // From repository
-    fun getCurrentTime() = repository.getCurrentTime()
-
-    fun getTimerStarted() = repository.getTimerStarted()
-    fun getTimerPaused() = repository.getTimerPaused()
-    fun getTimerCompleted() = repository.getTimerCompleted()
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -88,10 +72,10 @@ class MainViewModel @Inject constructor(
                     this.index = index
                     isSoundChosen.accept(true)
 
-                    if (!isTimerRunning) clickedItemIndex.value =
-                        index // only updates card view data if the timer isn't running
+                    //todo we can set clicked item index to mediator live data and do this logic inside it's observer
+                    if (getIsTimerRunning().value == false) clickedItemIndex.value = index // only updates card view data if the timer isn't running
                 },
-                onError = { Log.d("zwi", "Error in: $it")}
+                onError = { Log.d("zwi", "Error in: $it") }
             )
     }
 
@@ -181,7 +165,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun restoreState() {
-        startButtonClicked = if (isTimerPaused) {
+        startButtonClicked = if (getIsTimerPaused().value == true) {
             setButtonText(false)
             true
         } else {
@@ -197,12 +181,32 @@ class MainViewModel @Inject constructor(
         clickedItemIndex.value = index
     }
 
-    fun fragmentActivityCreated(){
+    fun getClickedItemIndex(): LiveData<Int> = clickedItemIndex
+
+    fun getButtonEnabled(): LiveData<Boolean> = buttonEnabled
+
+    fun getButtonColor(): LiveData<Int> = buttonColor
+
+    fun getButtonText(): LiveData<String> = buttonText
+
+    fun getStartAnimation(): LiveData<Long> = startAnimation
+
+
+    fun getCurrentTime() = repository.getCurrentTime()
+
+    fun getIsTimerRunning() = repository.getIsTimerRunning()
+
+    fun getIsTimerPaused() = repository.getIsTimerPaused()
+
+    fun getIsTimerCompleted() = repository.getIsTimerCompleted()
+
+
+    fun fragmentActivityCreated() {
         if (repository.isServiceRunning) startAnimation.value = 0
     }
 
-    fun onFragmentStart(){
-       if (repository.isServiceRunning) restoreState()
+    fun onFragmentStart() {
+        if (repository.isServiceRunning) restoreState()
     }
 
     override fun onCleared() {

@@ -4,26 +4,25 @@ import android.content.Context
 import android.media.MediaPlayer
 import com.example.sleeplock.utils.WHITE_NOISE
 import com.example.sleeplock.utils.toUri
-import javax.inject.Inject
 
-class WhiteNoise @Inject constructor(
+class WhiteNoise(
     private val mediaPlayer: MediaPlayer,
     context: Context,
     index: Int
-) {
+) : Operable {
 
     init {
         setSound(context, index)
     }
 
-    fun start() {
+    override fun start() {
         mediaPlayer.isLooping = true
         mediaPlayer.start()
     }
 
-    fun pause() = mediaPlayer.pause()
+    override fun pause() = mediaPlayer.pause()
 
-    fun reset() = mediaPlayer.release()
+    override fun reset() = mediaPlayer.release()
 
     private fun setSound(context: Context, index: Int) {
         // Creates sound bases off position of Recycler View item click
