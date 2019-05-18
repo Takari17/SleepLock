@@ -116,7 +116,7 @@ class MyService : Service() {
 
         val playIntent = getBroadcastReceiverIntent().apply {
             action = ACTION_PLAY
-            pendingPauseIntent = createPendingIntent(this)
+            pendingPlayIntent = createPendingIntent(this)
         }
 
 

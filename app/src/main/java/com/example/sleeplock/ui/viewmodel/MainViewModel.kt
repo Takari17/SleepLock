@@ -84,6 +84,7 @@ class MainViewModel @Inject constructor(
         compositeDisposable += itemIndex
             .subscribeBy(
                 onNext = { index ->
+                    Log.d("zwi", "Index returns: $index")
                     this.index = index
                     isSoundChosen.accept(true)
 

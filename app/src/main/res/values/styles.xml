@@ -4,9 +4,9 @@
 
     *<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">#2FA3B1</item>
-        <item name="colorPrimaryDark">#266870</item>
-        <item name="colorAccent">#00E5FF</item>
+        <item name="colorPrimary">#00838f</item>
+        <item name="colorPrimaryDark">#006064</item>
+        <item name="colorAccent">#00acc1</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

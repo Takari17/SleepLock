@@ -11,7 +11,7 @@ import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
 import com.example.sleeplock.data.service.isServiceRunning
-import com.example.sleeplock.injection.Application
+import com.example.sleeplock.injection.Application.Companion.applicationComponent
 import com.example.sleeplock.injection.activityViewModelFactory
 import com.example.sleeplock.ui.common.Animate
 import com.example.sleeplock.ui.common.TimeOptionDialog
@@ -23,7 +23,7 @@ import kotlinx.android.synthetic.main.fragment_main.*
 
 class MainFragment : Fragment() {
 
-    private val viewModel by activityViewModelFactory { Application.applicationComponent.mainViewModel }
+    private val viewModel by activityViewModelFactory { applicationComponent.mainViewModel }
     private val dialog = TimeOptionDialog()
     private val animate = Animate()
 
@@ -128,7 +128,11 @@ class MainFragment : Fragment() {
     }
 
     private fun observeItemIndex(): Observer<Int> { // sets card view text and image to the item selected in the recycler view
-        return Observer { index -> updateCardViewData(index) }
+        return Observer { index ->
+            index?.let {
+                updateCardViewData(index)
+            }
+        }
     }
 
     private fun observeButtonColor(): Observer<Int> { // sets the button color
