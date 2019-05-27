@@ -2,35 +2,38 @@ package com.example.sleeplock.data.features
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.net.Uri
 import com.example.sleeplock.utils.WHITE_NOISE
-import com.example.sleeplock.utils.toUri
 
+/**
+ * Plays a sound from the "WHITE_NOISE" constant depending on the index passed through the constructor.
+ */
 class WhiteNoise(
     private val mediaPlayer: MediaPlayer,
     context: Context,
     index: Int
-) : Operable {
+) {
 
     init {
         setSound(context, index)
     }
 
-    override fun start() {
-        mediaPlayer.isLooping = true
+    fun start() {
         mediaPlayer.start()
+        mediaPlayer.isLooping = true
     }
 
-    override fun pause() = mediaPlayer.pause()
+    fun pause() = mediaPlayer.pause()
 
-    override fun reset() = mediaPlayer.release()
+    fun reset() = mediaPlayer.release()
 
+    // Creates sound bases off position of Recycler View item click
     private fun setSound(context: Context, index: Int) {
-        // Creates sound bases off position of Recycler View item click
         for (i in WHITE_NOISE.indices) {
             if (i == index) {
                 mediaPlayer.apply {
-                    setDataSource(context, WHITE_NOISE[i].toUri())
-                    prepareAsync()
+                    setDataSource(context, Uri.parse("android.resource://com.example.sleeplock/raw/${WHITE_NOISE[i]}"))
+                    prepare()
                 }
             }
         }

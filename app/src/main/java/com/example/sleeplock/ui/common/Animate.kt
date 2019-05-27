@@ -7,43 +7,46 @@ import android.os.Build
 import android.view.View
 import androidx.core.animation.doOnStart
 
+/**
+ * Handles the animation in the MainFragment when the user clicks on the startPauseButton.
+ */
 class Animate {
 
-    private fun translationLeft(view: View, durationMillis: Long = 500): ValueAnimator {
-        return ValueAnimator.ofFloat(0f, -170f).apply {
+    // Durations
+    companion object {
+        const val DEFAULT: Long = 500
+        const val INSTANT: Long = 0
+    }
+
+    private fun translationLeft(view: View, durationMillis: Long = 500): ValueAnimator =
+        ValueAnimator.ofFloat(0f, -170f).apply {
             duration = durationMillis
 
             addUpdateListener { animation -> view.translationX = animation.animatedValue as Float }
         }
-    }
 
-    private fun translationRight(view: View, durationMillis: Long = 500): ValueAnimator {
-        return ValueAnimator.ofFloat(0f, 170f).apply {
+    private fun translationRight(view: View, durationMillis: Long = 500): ValueAnimator =
+        ValueAnimator.ofFloat(0f, 170f).apply {
             duration = durationMillis
 
             addUpdateListener { animation -> view.translationX = animation.animatedValue as Float }
         }
-    }
 
-    private fun translationDown(view: View, durationMillis: Long = 500): ValueAnimator {
-        return ValueAnimator.ofFloat(0f, 112.5f).apply {
+    private fun translationDown(view: View, durationMillis: Long = 500): ValueAnimator =
+        ValueAnimator.ofFloat(0f, 112.5f).apply {
             duration = durationMillis
 
             addUpdateListener { animation -> view.translationY = animation.animatedValue as Float }
         }
-    }
 
-    private fun fadeOut(view: View, durationMillis: Long = 500): ValueAnimator {
-        // view un-clickable when faded out, becomes clickable when fadeIn() is called
-
-        return ValueAnimator.ofFloat(1f, 0f).apply {
+    private fun fadeOut(view: View, durationMillis: Long = 500): ValueAnimator =
+        ValueAnimator.ofFloat(1f, 0f).apply {
             duration = durationMillis
 
             addUpdateListener { animation -> view.alpha = animation.animatedValue as Float }
 
             doOnStart { view.isClickable = false }
         }
-    }
 
     private fun fadeIn(view: View, durationMillis: Long = 500): ValueAnimator {
         view.visibility = View.VISIBLE
@@ -58,56 +61,46 @@ class Animate {
     }
 
 
-    fun translateAll(startButton: View, resetButton: View, fab: View, durationMillis: Long = 500) {
-        val animSet = AnimatorSet()
+    fun translateAll(startButton: View, resetButton: View, fab: View, durationMillis: Long = 500) =
 
-        animSet.playTogether(
-            translationLeft(startButton, durationMillis),
-            translationDown(resetButton, durationMillis),
-            translationRight(resetButton, durationMillis),
-            fadeIn(resetButton, durationMillis),
-            fadeOut(fab, durationMillis)
-        )
-
-        animSet.start()
-    }
-
+        AnimatorSet().apply {
+            playTogether(
+                translationLeft(startButton, durationMillis),
+                translationDown(resetButton, durationMillis),
+                translationRight(resetButton, durationMillis),
+                fadeIn(resetButton, durationMillis),
+                fadeOut(fab, durationMillis)
+            )
+        }.start()
 
     @TargetApi(Build.VERSION_CODES.O)
-    fun reverseTranslateAll(startButton: View, resetButton: View, fab: View) {
-        val animSet = AnimatorSet()
+    fun reverseTranslateAll(startButton: View, resetButton: View, fab: View) =
 
-        animSet.playTogether(
-            translationLeft(startButton),
-            translationDown(resetButton),
-            translationRight(resetButton),
-            fadeOut(resetButton),
-            fadeIn(fab)
-        )
-
-        animSet.reverse()
-    }
+        AnimatorSet().apply {
+            playTogether(
+                translationLeft(startButton),
+                translationDown(resetButton),
+                translationRight(resetButton),
+                fadeOut(resetButton),
+                fadeIn(fab)
+            )
+        }.reverse()
 
 
-    fun fadeInAll(resetButton: View, fab: View, durationMillis: Long = 500) {
-        val animSet = AnimatorSet()
+    fun fadeInAll(resetButton: View, fab: View, durationMillis: Long = 500) =
+        AnimatorSet().apply {
+            playTogether(
+                fadeIn(resetButton, durationMillis),
+                fadeOut(fab, durationMillis)
+            )
+        }.start()
 
-        animSet.playTogether(
-            fadeIn(resetButton, durationMillis),
-            fadeOut(fab, durationMillis)
-        )
 
-        animSet.start()
-    }
-
-    fun fadeOutAll(resetButton: View, fab: View) {
-        val animSet = AnimatorSet()
-
-        animSet.playTogether(
-            fadeOut(resetButton),
-            fadeIn(fab)
-        )
-
-        animSet.start()
-    }
+    fun fadeOutAll(resetButton: View, fab: View) =
+        AnimatorSet().apply {
+            playTogether(
+                fadeOut(resetButton),
+                fadeIn(fab)
+            )
+        }.start()
 }

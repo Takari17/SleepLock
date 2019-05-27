@@ -5,71 +5,77 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import com.example.sleeplock.data.local.SharedPrefs
 import com.example.sleeplock.data.service.MainService
+import com.example.sleeplock.data.service.isMainServiceRunning
 import com.example.sleeplock.utils.ACTION_PLAY
 import com.example.sleeplock.utils.INDEX
 import com.example.sleeplock.utils.MILLIS
+import com.jakewharton.rxrelay2.PublishRelay
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.plusAssign
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
+/**
+ *Communicates and returns data from MainService.
+ */
 @Singleton
 class Repository @Inject constructor(
-    private val context: Context
+    private val context: Context,
+    val sharedPrefs: SharedPrefs
 ) {
 
     private val serviceIntent: Intent = Intent(context, MainService::class.java)
 
+    private val compositeDisposable = CompositeDisposable()
+
     private var mainService: MainService? = null
 
-    var isServiceRunning = false
+    var wasTimerStarted = false
 
-    // Sources = services Live Data objects
     private val currentTime = MediatorLiveData<Long>()
     private val isTimerRunning = MediatorLiveData<Boolean>()
-    private var isTimerPaused = MediatorLiveData<Boolean>()
-    private var isTimerCompleted = MediatorLiveData<Boolean>()
-    private val isBound = MediatorLiveData<Boolean>()
-    private val serviceStatus = MediatorLiveData<Boolean>()
-
-
-    init { // remove observers if the service unbinds
-        isBound.observeForever { isBinded ->
-            if (!isBinded) removeServiceLiveDataSources()// todo thinkin we do this onStop instead of through LD
-        }
-    }
+    val isTimerCompleted = PublishRelay.create<Boolean>()
 
     fun getCurrentTime(): LiveData<Long> = currentTime
-
     fun getIsTimerRunning(): LiveData<Boolean> = isTimerRunning
 
-    fun getIsTimerPaused(): LiveData<Boolean> = isTimerPaused
-
-    fun getIsTimerCompleted(): LiveData<Boolean> = isTimerCompleted
-
-
+    // Service will start and play the sound and timer.
     fun startSoundAndTimer(millis: Long, index: Int) {
-        // service will start and play the sound and timer
         serviceIntent.apply {
             action = ACTION_PLAY
             putExtra(MILLIS, millis)
             putExtra(INDEX, index)
         }
-        context.startService(serviceIntent)
-        bindToServiceIfRunning()
+
+        context.apply {
+            startService(serviceIntent)
+            bindService(serviceIntent, serviceConnection, 0)
+        }
     }
 
     fun pauseSoundAndTimer() = mainService?.pauseSoundAndTimer()
 
-    fun resumeSoundAndTimer() = mainService?.startSoundAndTimer()
+    fun resumeSoundAndTimer() = mainService?.resumeSoundAndTimer()
 
     fun resetSoundAndTimer() = mainService?.resetSoundAndTimer()
 
     fun bindToServiceIfRunning() {
-        if (isServiceRunning) context.bindService(serviceIntent, serviceConnection, 0)
+        if (isMainServiceRunning)
+            context.bindService(serviceIntent, serviceConnection, 0)
     }
+
+    fun unbindFromServiceIfRunning() {
+        if (isMainServiceRunning)
+            context.unbindService(serviceConnection)
+    }
+
 
     private fun addServiceLiveDataSources(service: MainService) {
 
@@ -80,49 +86,45 @@ class Repository @Inject constructor(
         isTimerRunning.addSource(service.getIsTimerRunning()) { isRunning ->
             isTimerRunning.value = isRunning
         }
-
-        isTimerPaused.addSource(service.getIsTimerPaused()) { isPaused ->
-            isTimerPaused.value = isPaused
-        }
-
-        isTimerCompleted.addSource(service.getIsTimerCompleted()) { isCompleted ->
-            isTimerCompleted.value = isCompleted
-        }
-
-        isBound.addSource(service.getIsBound()) { isServiceBound ->
-            isBound.value = isServiceBound
-        }
-
-        serviceStatus.addSource(service.getIsServiceRunning()) { isRunning ->
-            isServiceRunning = isRunning
-
-        }
     }
 
-    private fun removeServiceLiveDataSources() =
-        mainService?.let { service ->
-            currentTime.removeSource(service.getCurrentTime())
+    fun removeServiceLiveDataSources() = mainService?.let { service ->
 
-            isTimerRunning.removeSource(service.getIsTimerRunning())
+        currentTime.removeSource(service.getCurrentTime())
 
-            isTimerPaused.removeSource(service.getIsTimerPaused())
+        isTimerRunning.removeSource(service.getIsTimerRunning())
+    }
 
-            isTimerCompleted.removeSource(service.getIsTimerCompleted())
+    // Cleared in the MainViewModel's onClear() callback.
+    fun clearDisposables() = compositeDisposable.clear()
 
-            isBound.removeSource(service.getIsBound())
 
-            serviceStatus.removeSource(service.getIsServiceRunning())
-        }
-
+    /*
+    When bound the Repo observes the services Live Data objects and subscribes to all Observables.
+     */
     private val serviceConnection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
 
-            val serviceReference = (service as MainService.LocalBinder).getService()
+            (service as MainService.LocalBinder).getService().also { serviceReference ->
+                mainService = serviceReference
 
-            addServiceLiveDataSources(serviceReference)
+                addServiceLiveDataSources(serviceReference)
 
-            mainService = serviceReference
+                compositeDisposable += serviceReference.isTimerCompleted
+                    .subscribeOn(Schedulers.io())
+                    .subscribeBy(
+                        onNext = { isCompleted -> isTimerCompleted.accept(isCompleted) },
+                        onError = { Log.d("zwi", "Error observing isTimerCompleted in Repository: $it") }
+                    )
+
+                compositeDisposable += serviceReference.getWasTimerStarted()
+                    .subscribeOn(Schedulers.io())
+                    .subscribeBy(
+                        onNext = { wasStarted -> wasTimerStarted = wasStarted },
+                        onError = { Log.d("zwi", "Error observing wasTimerStarted in Repository: $it") }
+                    )
+            }
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {}

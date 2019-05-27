@@ -10,15 +10,13 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
+import com.example.sleeplock.data.service.isMainServiceRunning
 import com.example.sleeplock.injection.Application.Companion.applicationComponent
 import com.example.sleeplock.ui.common.Animate
 import com.example.sleeplock.ui.common.TimeOptionDialog
-import com.example.sleeplock.utils.ITEM_PIC
-import com.example.sleeplock.utils.ITEM_TEXT
 import com.example.sleeplock.utils.activityViewModelFactory
 import com.example.sleeplock.utils.formatTime
 import kotlinx.android.synthetic.main.fragment_main.*
-
 
 class MainFragment : Fragment() {
 
@@ -26,33 +24,30 @@ class MainFragment : Fragment() {
     private val dialog = TimeOptionDialog()
     private val animate = Animate()
 
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
+    ): View? =
+        inflater.inflate(R.layout.fragment_main, container, false)
 
-        return inflater.inflate(R.layout.fragment_main, container, false)
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        observeAllLiveData()
+        if (isMainServiceRunning) startAnimation(Animate.INSTANT)
+
+        observeViewModelLiveData()
+
+        dialog.getUserSelectedTime().observe(viewLifecycleOwner, observeUserSelectedTime())
 
         fab.setOnClickListener { showDialog() }
 
-        start_pause_button.setOnClickListener {
-
-            if (viewModel.startButtonClicked) {
-                viewModel.startPauseButtonClick(true)
-                startAnimation()
-
-            } else viewModel.startPauseButtonClick(false)
+        startPauseButton.setOnClickListener {
+            viewModel.startPauseButtonClick(
+                viewModel.isTimerRunning.value ?: false
+            )
         }
 
-        reset_button.setOnClickListener { viewModel.resetButtonClick() }
-
-        viewModel.fragmentActivityCreated()
+        resetButton.setOnClickListener { viewModel.resetButtonClick() }
     }
 
     private fun showDialog() {
@@ -62,124 +57,95 @@ class MainFragment : Fragment() {
         }
     }
 
-    private fun updateCardViewData(index: Int) {
-        Glide.with(context!!)
-            .asBitmap()
-            .load(ITEM_PIC[index])
-            .into(card_view_pic)
-
-        card_view_text.text = ITEM_TEXT[index]
-    }
-
-    private fun resetCardViewData() {
-        Glide.with(context!!)
-            .asBitmap()
-            .load(R.drawable.nosound)
-            .into(card_view_pic)
-
-        card_view_text.text = resources.getString(R.string.no_sound)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        //todo shoudnt this be onStart?
-        viewModel.bindToServiceIfRunning()
-    }
 
     override fun onStart() {
         super.onStart()
-        viewModel.onFragmentStart()
+        viewModel.mainFragmentOnStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.mainFragmentOnStop()
     }
 
     private fun startAnimation(duration: Long = 500) {
-        if (!viewModel.reverseAnim) {
-            animate.translateAll(start_pause_button, reset_button, fab, duration)
-            animate.fadeInAll(reset_button, fab, duration)
-            viewModel.reverseAnim = !viewModel.reverseAnim
-        }
+        animate.translateAll(startPauseButton, resetButton, fab, duration)
+        animate.fadeInAll(resetButton, fab, duration)
     }
 
     private fun reverseAnimation() {
-        // called when timer finishes
-        animate.reverseTranslateAll(start_pause_button, reset_button, fab)
-        animate.fadeOutAll(reset_button, fab)
-        viewModel.reverseAnim = !viewModel.reverseAnim
+        animate.reverseTranslateAll(startPauseButton, resetButton, fab)
+        animate.fadeOutAll(resetButton, fab)
+    }
+
+
+    private fun observeViewModelLiveData() = viewModel.apply {
+        currentTime.observe(viewLifecycleOwner, observeCurrentTime())
+
+        isTimerRunning.observe(viewLifecycleOwner, observeIsTimerRunning())
+
+        getCardViewImage().observe(viewLifecycleOwner, observeCardViewImage())
+
+        getCardViewText().observe(viewLifecycleOwner, observeCardViewText())
+
+        getButtonEnabled().observe(viewLifecycleOwner, observeEnabledDisabled())
+
+        getButtonColor().observe(viewLifecycleOwner, observeButtonColor())
+
+        getButtonText().observe(viewLifecycleOwner, observeButtonText())
+
+        getStartAnimation().observe(viewLifecycleOwner, observeStartAnimation())
+
+        getReverseAnimation().observe(viewLifecycleOwner, observeReverseAnimation())
     }
 
     // Live Data Observers
+    private fun observeCurrentTime() =
+        Observer<Long> { millis -> currentTimeTextView.text = millis.formatTime() }
 
-    private fun observeCurrentTime(): Observer<Long> { // Updates our text view with the current time
-        return Observer { millis -> current_time_text_view.text = millis.formatTime() }
-    }
 
-    //todo why the hell do we just hard code these values, create new methods if you need to bc this is confusing AS FUCK
-    private fun observeTimerPaused(): Observer<Boolean> {
-        return Observer { viewModel.setButtonText(false) }
-    }
-
-    private fun observeTimerStarted(): Observer<Boolean> {
-        return Observer { viewModel.setButtonText(true) }
-    }
-
-    private fun observeUserSelectedTime(): Observer<Long> { // Time chosen from dialog
-        return Observer { millis ->
-            current_time_text_view.text = millis.formatTime()
-            viewModel.passDialogTime(millis)
-        }
-    }
-
-    private fun observeItemIndex(): Observer<Int> { // sets card view text and image to the item selected in the recycler view
-        return Observer { index ->
-            index?.let {
-                updateCardViewData(index)
+    private fun observeIsTimerRunning() =
+        Observer<Boolean?> { isRunning ->
+            isRunning?.let {
+                viewModel.setButtonText(isRunning)
             }
         }
-    }
 
-    private fun observeButtonColor(): Observer<Int> { // sets the button color
-        return Observer { color -> start_pause_button.setTextColor(color) }
-    }
-
-    private fun observeEnabledDisabled(): Observer<Boolean> { // Sets button clickability
-        return Observer { aBoolean -> start_pause_button.isEnabled = aBoolean }
-    }
-
-    private fun observeButtonText(): Observer<String> { // Sets button text
-        return Observer { text -> start_pause_button.text = text }
-    }
-
-    private fun observeTimerCompleted(): Observer<Boolean> {
-        return Observer {
-            reverseAnimation()
-            resetCardViewData()
-            viewModel.resetAll()
-        }
-    }
-
-    private fun observeAnimation(): Observer<Long> =
-        Observer { duration ->
-            startAnimation(duration) // animation is instant
+    private fun observeUserSelectedTime() =
+        Observer<Long> { millis ->
+            currentTimeTextView.text = millis.formatTime()
+            viewModel.passDialogTime(millis)
         }
 
-    private fun observeAllLiveData() {
-        viewModel.getCurrentTime().observe(viewLifecycleOwner, observeCurrentTime())
+    private fun observeCardViewImage() =
+        Observer<Int?> { drawable ->
+            drawable?.let {
+                Glide.with(context!!)
+                    .asBitmap()
+                    .load(drawable)
+                    .into(cardViewPic)
+            }
+        }
 
-        viewModel.getClickedItemIndex().observe(viewLifecycleOwner, observeItemIndex())
+    private fun observeCardViewText() =
+        Observer<String?> { newText ->
+            newText?.let {
+                cardViewText.text = newText
+            }
+        }
 
-        viewModel.getButtonEnabled().observe(viewLifecycleOwner, observeEnabledDisabled())
+    private fun observeStartAnimation() =
+        Observer<Long> { duration -> startAnimation(duration) }
 
-        viewModel.getButtonColor().observe(viewLifecycleOwner, observeButtonColor())
+    private fun observeReverseAnimation() =
+        Observer<Boolean> { reverseAnimation() }
 
-        viewModel.getButtonText().observe(viewLifecycleOwner, observeButtonText())
+    private fun observeButtonColor() =
+        Observer<Int?> { color -> color?.let { startPauseButton.setTextColor(color) } }
 
-        viewModel.getIsTimerRunning().observe(viewLifecycleOwner, observeTimerStarted())
+    private fun observeEnabledDisabled() =
+        Observer<Boolean?> { shouldEnable -> shouldEnable?.let { startPauseButton.isEnabled = shouldEnable } }
 
-        viewModel.getIsTimerPaused().observe(viewLifecycleOwner, observeTimerPaused())
-
-        viewModel.getIsTimerCompleted().observe(viewLifecycleOwner, observeTimerCompleted())
-
-        viewModel.getStartAnimation().observe(viewLifecycleOwner, observeAnimation())
-
-        dialog.getUserSelectedTime().observe(viewLifecycleOwner, observeUserSelectedTime())
-    }
+    private fun observeButtonText() =
+        Observer<String?> { text -> text?.let { startPauseButton.text = text } }
 }

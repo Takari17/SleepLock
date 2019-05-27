@@ -1,6 +1,5 @@
 package com.example.sleeplock.ui.adapter
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,37 +12,41 @@ import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import kotlinx.android.synthetic.main.recycler_view_layout.view.*
 
+/**
+ * Displays the sound options available to the user.
+ */
 class MyAdapter(
-    private val image: List<Int>,
-    private val text: List<String>
+    private val imageList: List<Int>,
+    private val textList: List<String>
 ) :
     RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
     val itemIndex = BehaviorRelay.create<Int>()
     val itemOnClickListener = PublishRelay.create<Boolean>()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.recycler_view_layout, parent, false)
-        return MyViewHolder(view)
-    }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder =
+        LayoutInflater.from(parent.context).inflate(R.layout.recycler_view_layout, parent, false).let { view ->
+            MyViewHolder(view)
+        }
 
-    override fun getItemCount(): Int = image.size
+
+    override fun getItemCount(): Int = imageList.size
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
         Glide.with(holder.itemView.context)
             .asBitmap()
-            .load(image[position])
+            .load(imageList[position])
             .into(holder.image)
 
-        holder.text.text = text[position]
+        holder.text.text = textList[position]
     }
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val image: ImageView = itemView.item_image
-        val text: TextView = itemView.item_text
+        val image: ImageView = itemView.itemPic
+        val text: TextView = itemView.itemText
 
-        init {//Passes the index of the item clicked
+        init {
             itemView.setOnClickListener {
                 itemIndex.accept(adapterPosition)
                 itemOnClickListener.accept(true)

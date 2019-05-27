@@ -20,4 +20,6 @@
     <string name="sound_selected">Sound Selected</string>
     <string name="timer_finished">Timer Finished</string>
     <string name="reset_the_timer">Reset the Timer</string>
+    <string name="subText">Sound Options</string>
+    <string name="contentTitle">Sleep Lock</string>
 </resources>

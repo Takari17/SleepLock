@@ -1,64 +1,70 @@
 package com.example.sleeplock.data.features
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.sleeplock.utils.convertMilliToSeconds
-import io.reactivex.Flowable
-import io.reactivex.schedulers.Schedulers
+import com.jakewharton.rxrelay2.BehaviorRelay
+import com.jakewharton.rxrelay2.PublishRelay
+import io.reactivex.Observable
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
-class Timer(millis: Long) : Operable {
+/**
+ * Self explanatory class (at least I hope so...).
+ */
+class Timer(millis: Long) {
 
+    // In millis
     private val elapsedTime = AtomicLong()
-    private val resumed = AtomicBoolean()
-    private val stopped = AtomicBoolean()
+    // Used for stopping the timer at 0
+    private var startingTime: Int = 0
 
-    lateinit var currentTime: Flowable<Long>
+    // Default values
+    private val resumed = AtomicBoolean().also { it.set(false) }
+    private val stopped = AtomicBoolean().also { it.set(false) }
 
-    private var startingTime: Int = 0 // used for stopping the timer at 0
+    val wasTimerStarted = BehaviorRelay.createDefault(false)
+    val isTimerCompleted = PublishRelay.create<Boolean>()
+    private val isTimerRunning = MutableLiveData<Boolean>()
 
-    val isTimerRunning = MutableLiveData(false)
-    var isTimerPaused = MutableLiveData(false)
+
+    // Stop's if either reset() is called or if the elapse time reaches 0
+    val currentTime: Observable<Long> = Observable.interval(1, TimeUnit.SECONDS)
+        .takeWhile { !stopped.get() }
+        .takeWhile { millis -> startingTime != millis.toInt() }
+        .filter { resumed.get() }
+        .map { elapsedTime.addAndGet(-1000) }
+        .doOnComplete { reset() }
+
 
     init {
-        val seconds = millis.convertMilliToSeconds()
-        prepareTimer(seconds)
-        setTimer()
+        elapsedTime.addAndGet(millis)
+        startingTime = elapsedTime.toLong().convertMilliToSeconds()
     }
 
-    private fun prepareTimer(seconds: Int) {
-        elapsedTime.addAndGet((seconds * 1000).toLong())
-        startingTime = (elapsedTime.toLong()).convertMilliToSeconds()
-    }
-
-    private fun setTimer() {
-        resumed.set(false)
-        stopped.set(false)
-
-        currentTime = Flowable.interval(1, TimeUnit.SECONDS)
-            .takeWhile { !stopped.get() }
-            .takeWhile { aLong -> startingTime != (aLong).toInt() }
-            .filter { resumed.get() }
-            .map { elapsedTime.addAndGet(-1000) }
-            .subscribeOn(Schedulers.io())
-    }
-
-    override fun start() {
+    fun start() {
         resumed.set(true)
-        isTimerRunning.value = true
-        isTimerPaused.value = false
+        wasTimerStarted.accept(true)
+        isTimerRunning.postValue(true)
     }
 
-    override fun pause() {
+    fun resume() {
+        resumed.set(true)
+        isTimerRunning.postValue(true)
+    }
+
+    fun pause() {
         resumed.set(false)
-        isTimerRunning.value = false
-        isTimerPaused.value = true
+        isTimerRunning.postValue(false)
     }
 
-    override fun reset() {
+    fun reset() {
         stopped.set(true)
-        isTimerRunning.value = false
-        isTimerPaused.value = false
+        wasTimerStarted.accept(false)
+        isTimerRunning.postValue(null)
+        isTimerCompleted.accept(true)
     }
+
+    fun getIsTimerRunning(): LiveData<Boolean> = isTimerRunning
 }

@@ -13,7 +13,7 @@ import com.example.sleeplock.ui.fragments.MainFragment
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
 
-var isAppInForeground = true
+var isAppInBackground = false
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,9 +25,9 @@ class MainActivity : AppCompatActivity() {
 
         container.adapter = sectionsPagerAdapter
 
-        val viewPager = findViewById<ViewPager>(R.id.container)
-
-        viewPager.adapter = sectionsPagerAdapter
+        val viewPager = findViewById<ViewPager>(R.id.container).apply {
+            adapter = sectionsPagerAdapter
+        }
 
         val tabLayout = findViewById<TabLayout>(R.id.tabs)
 
@@ -37,25 +37,24 @@ class MainActivity : AppCompatActivity() {
 
     inner class SectionsPagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm) {
 
-        override fun getItem(position: Int): Fragment {
+        override fun getItem(position: Int): Fragment =
 
-            return when (position) {
+            when (position) {
                 0 -> MainFragment()
                 1 -> ListFragment()
                 else -> throw Resources.NotFoundException()
             }
-        }
 
         override fun getCount(): Int = 2
     }
 
-    override fun onResume() {
-        super.onResume()
-        isAppInForeground = true
+    override fun onStart() {
+        super.onStart()
+        isAppInBackground = false
     }
 
-    override fun onPause() {
-        super.onPause()
-        isAppInForeground = false
+    override fun onStop() {
+        super.onStop()
+        isAppInBackground = true
     }
 }

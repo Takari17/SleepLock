@@ -2,88 +2,80 @@ package com.example.sleeplock.data.service
 
 import android.app.Notification
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Intent
-import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.*
 import com.example.sleeplock.R
 import com.example.sleeplock.data.features.Timer
 import com.example.sleeplock.data.features.WhiteNoise
 import com.example.sleeplock.data.receiver.NotificationBroadcastReceiver
+import com.example.sleeplock.injection.Application.Companion.applicationComponent
 import com.example.sleeplock.ui.MainActivity
-import com.example.sleeplock.ui.isAppInForeground
+import com.example.sleeplock.ui.isAppInBackground
 import com.example.sleeplock.utils.*
+import com.jakewharton.rxrelay2.BehaviorRelay
+import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.schedulers.Schedulers
 
-class MainService : Service() {
+//Only modified within this service. Set to true in onCreate and set to false in onDestroy.
+var isMainServiceRunning = false
 
-    private val binder = LocalBinder()
+/**
+ * This service holds the Timer and WhiteNoise class and exposes timer callbacks and other
+ * related data so the Repository can observe the data.
+ */
+class MainService : LifecycleService() {
 
-    private var isTimerAndSoundCreated = false
-    private val isMainServiceRunning = MutableLiveData<Boolean>(false)
+    private val injector = applicationComponent
+
+    private val sharedPrefs = injector.sharedPrefs
 
     private lateinit var timer: Timer
     private lateinit var whiteNoise: WhiteNoise
+
     private val compositeDisposable = CompositeDisposable()
 
+    private var isTimerAndSoundCreated = false
     private var playOrPause = 0
 
-    private lateinit var contentIntent: PendingIntent
-    private lateinit var pendingPlayIntent: PendingIntent
-    private lateinit var pendingPauseIntent: PendingIntent
-    private lateinit var pendingResetIntent: PendingIntent
-
     private val currentTime = MutableLiveData<Long>()
-    private val isBound = MutableLiveData<Boolean>()
+    private val wasTimerStarted = BehaviorRelay.createDefault(false)
     private val isTimerRunning = MediatorLiveData<Boolean>()
-    private var isTimerPaused = MediatorLiveData<Boolean>()
-    private val isTimerCompleted = MutableLiveData<Boolean>()
+    val isTimerCompleted = PublishRelay.create<Boolean>()
 
+    private val showCompletedToast = MutableLiveData<Boolean>()
 
     override fun onCreate() {
         super.onCreate()
-        isMainServiceRunning.postValue(true)
-
-        contentIntent = createActivityPendingIntent()
-        pendingPlayIntent = createBroadcastPendingIntent(ACTION_PLAY)
-        pendingPauseIntent = createBroadcastPendingIntent(ACTION_PAUSE)
-        pendingResetIntent = createBroadcastPendingIntent(ACTION_RESET)
+        isMainServiceRunning = true
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        isBound.value = true
-        return binder
+    override fun onBind(intent: Intent): IBinder? {
+        super.onBind(intent)
+        return LocalBinder()
     }
 
-    override fun onUnbind(intent: Intent?): Boolean {
-        isBound.value = false // will remove the mediator Live Data's sources in the Repository
-        compositeDisposable.clear()
-        return super.onUnbind(intent)
+    init {
+        showCompletedToast.observe(this, Observer { showFinishedToast(this) })
     }
 
-    override fun onRebind(intent: Intent?) {
-        super.onRebind(intent)
-        isBound.value = true
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
-        //We ensure'd that no null values are sent to the service, but if they are than something went horribly wrong and it's better to crash the app
-        val millis: Long = intent?.extras?.getLong(MILLIS)!!
-        val index: Int = intent.extras?.getInt(INDEX)!!
-
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
         // Prevents duplication on sound & timer
         if (!isTimerAndSoundCreated) {
+
+            //We ensure'd that no null values are sent to the service, but if they are then something went HORRIBLY wrong and it's better to crash the app.
+            val millis: Long = intent.extras?.getLong(MILLIS)!!
+            val index: Int = intent.extras?.getInt(INDEX)!!
+
             createAndObserveTimer(millis)
             createSound(index)
             isTimerAndSoundCreated = true
@@ -99,80 +91,93 @@ class MainService : Service() {
                 playOrPause = 0
             }
             ACTION_RESET -> {
-                timer.reset() // will trigger reset all
+                resetSoundAndTimer() // will trigger reset all
                 return START_NOT_STICKY
             }
         }
 
         val time: String? = currentTime.value?.formatTime()
 
-        startForeground(NOTIFICATION_ID, getMyNotification(time ?: "00:00", playOrPause))
+        startForeground(NOTIFICATION_ID, getForegroundNotification(time ?: "00:00", playOrPause))
         return START_STICKY
     }
 
     // Updates the notification content description with the text provided
-    private fun updateNotification(text: String, playOrPause: Int) {
-        val notification = getMyNotification(text, playOrPause)
-
+    private fun updateNotification(text: String, playOrPause: Int) =
         NotificationManagerCompat.from(this).apply {
 
-            notify(NOTIFICATION_ID, notification)
+            notify(NOTIFICATION_ID, getForegroundNotification(text, playOrPause))
         }
-    }
 
-    private fun getMyNotification(newText: String, playOrPause: Int): Notification {
 
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.music)
-            .addAction(R.drawable.play, "Start", pendingPlayIntent)
-            .addAction(R.drawable.pause, "Pause", pendingPauseIntent)
-            .addAction(R.drawable.reset, "Reset", pendingResetIntent)
-            .setStyle(
+    private fun getForegroundNotification(newText: String, playOrPause: Int): Notification {
+
+        val contentIntent = createActivityPendingIntent()
+        val pendingPlayIntent = createBroadcastPendingIntent(ACTION_PLAY)
+        val pendingPauseIntent = createBroadcastPendingIntent(ACTION_PAUSE)
+        val pendingResetIntent = createBroadcastPendingIntent(ACTION_RESET)
+
+        return NotificationCompat.Builder(this, CHANNEL_ID).apply {
+            setSmallIcon(R.drawable.alarm_icon)
+            addAction(R.drawable.play, getResourceString(R.string.start), pendingPlayIntent)
+            addAction(R.drawable.pause, getResourceString(R.string.pause), pendingPauseIntent)
+            addAction(R.drawable.reset, getResourceString(R.string.reset), pendingResetIntent)
+            setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
                     .setShowActionsInCompactView(playOrPause, 2)  // index of the actions
             )
-            .setSubText("Sound Options")
-            .setContentTitle("Sleep Lock")
-            .setContentText(newText)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-            .setColor(Color.BLACK)
-            .setContentIntent(contentIntent)
-            .setOnlyAlertOnce(true)
-            .build()
+            setSubText(getResourceString(R.string.subText))
+            setContentTitle(getResourceString(R.string.contentTitle))
+            setContentText(newText)
+            setContentIntent(contentIntent)
+        }.build()
     }
+
 
     private fun createSound(index: Int) {
         whiteNoise = WhiteNoise(MediaPlayer(), this, index)
     }
 
+
     private fun createAndObserveTimer(millis: Long) {
         timer = Timer(millis)
 
-        compositeDisposable += timer.currentTime.subscribeBy(
-            onNext = { timeInMilli ->
-                currentTime.postValue(timeInMilli)
-                updateNotification(timeInMilli.formatTime(), playOrPause)
-            },
-            onComplete = {
+        compositeDisposable += timer.currentTime
+            .subscribeOn(Schedulers.io())
+            .subscribeBy(
+                onNext = { timeInMilli ->
+                    currentTime.postValue(timeInMilli)
+                    updateNotification(timeInMilli.formatTime(), playOrPause)
+                },
+                onError = { Log.d("zwi", "Error observing currentTime in MainService: $it") }
+            )
 
-                //todo thought we deleted coroutine dependencies
-//                GlobalScope.launch(Dispatchers.Main) { showFinishedToast(this@MainService, true) }
+        compositeDisposable += timer.isTimerCompleted
+            .subscribeOn(Schedulers.io())
+            .subscribeBy(
+                onNext = { completed ->
+                    showCompletedToast.postValue(completed)
+                    currentTime.postValue(0)
+                    isTimerCompleted.accept(completed)
+                    whiteNoise.reset()
+                    resetAll()
+                },
+                onError = { Log.d("zwi", "Error observing isTimerCompleted in MainService: $it") }
+            )
 
-                currentTime.postValue(0)
+        compositeDisposable += timer.wasTimerStarted
+            .subscribeOn(Schedulers.io())
+            .subscribeBy(
+                onNext = { wasStarted -> wasTimerStarted.accept(wasStarted) },
+                onError = { Log.d("zwi", "Error observing wasTimerStarted in MainService: $it") }
+            )
 
-                whiteNoise.reset()
-                isTimerCompleted.postValue(true)
-
-                resetAll()
-            },
-            onError = { Log.d("zwi", "Error observing the timer: $it") }
-        )
-
-        addTimerStatusSource(timer)
+        isTimerRunning.addSource(timer.getIsTimerRunning()) { isRunning ->
+            isTimerRunning.value = isRunning
+        }
     }
 
-    fun startSoundAndTimer() {
+    private fun startSoundAndTimer() {
         whiteNoise.start()
         timer.start()
     }
@@ -182,66 +187,56 @@ class MainService : Service() {
         timer.pause()
     }
 
-    fun resetSoundAndTimer() = timer.reset() // sound is reset on timer complete
+    fun resumeSoundAndTimer() {
+        whiteNoise.start()
+        timer.resume()
+    }
+
+    //Sound is reset on timer complete
+    fun resetSoundAndTimer() = timer.reset()
+
 
     private fun resetAll() {
-        resetBooleans()
-        if (!isAppInForeground) terminateAll() // will terminate app if it's in the background
+        sharedPrefs.resetAllData()
+        isTimerAndSoundCreated = false
+
         stopSelf()
         stopForeground(true)
+
+        if (isAppInBackground) terminateAll() // will terminate app if it's in the background
     }
 
     // Only exposes immutable Live Data properties
     fun getCurrentTime(): LiveData<Long> = currentTime
 
+    fun getWasTimerStarted(): BehaviorRelay<Boolean> = wasTimerStarted
+
     fun getIsTimerRunning(): LiveData<Boolean> = isTimerRunning
-
-    fun getIsTimerPaused(): LiveData<Boolean> = isTimerPaused
-
-    fun getIsTimerCompleted(): LiveData<Boolean> = isTimerCompleted
-
-    fun getIsBound(): LiveData<Boolean> = isBound
-
-    fun getIsServiceRunning(): LiveData<Boolean> = isMainServiceRunning
 
 
     private fun createActivityPendingIntent(): PendingIntent =
         Intent(this, MainActivity::class.java).let { activityIntent ->
             PendingIntent.getActivity(
-                this, 0, activityIntent, 0
+                this, 1, activityIntent, 0
             )
         }
 
-    private fun createBroadcastPendingIntent(action: String): PendingIntent {
-        val broadCastIntent = Intent(this, NotificationBroadcastReceiver::class.java).apply {
+    private fun createBroadcastPendingIntent(action: String): PendingIntent =
+        Intent(this, NotificationBroadcastReceiver::class.java).apply {
             this.action = action
+        }.let { broadcastIntent ->
+            PendingIntent.getBroadcast(this, 0, broadcastIntent, 0)
         }
-        return PendingIntent.getBroadcast(this, 0, broadCastIntent, 0)
-    }
 
-    private fun addTimerStatusSource(timer: Timer) {
-        isTimerRunning.addSource(timer.isTimerRunning) { isRunning -> isTimerRunning.value = isRunning }
-        isTimerPaused.addSource(timer.isTimerPaused) { isPaused -> isTimerPaused.value = isPaused }
-    }
+    private fun terminateAll() = android.os.Process.killProcess(android.os.Process.myPid())
 
-    private fun removeTimerStatusSource(timer: Timer) {
-        isTimerRunning.removeSource(timer.isTimerRunning)
-        isTimerPaused.removeSource(timer.isTimerPaused)
-    }
-
-    private fun resetBooleans() {
-        isTimerAndSoundCreated = false
-        isMainServiceRunning.postValue(false)
-    }
-
-    private fun terminateAll() {
-        android.os.Process.killProcess(android.os.Process.myPid())
-    }
+    private fun getResourceString(id: Int): String = resources.getString(id)
 
     override fun onDestroy() {
         super.onDestroy()
-        isBound.value = false
-        removeTimerStatusSource(timer)
+        compositeDisposable.clear()
+        isTimerRunning.removeSource(timer.getIsTimerRunning())
+        isMainServiceRunning = false
     }
 
     inner class LocalBinder : Binder() {

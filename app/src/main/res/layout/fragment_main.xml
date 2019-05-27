@@ -11,7 +11,7 @@
         tools:context=".ui.fragments.MainFragment">
 
     <TextView
-            android:id="@+id/current_time_text_view"
+            android:id="@+id/currentTimeTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -22,6 +22,7 @@
             android:text="@string/reset_time"
             android:textSize="90sp"
             android:singleLine="true"
+            android:fontFamily="sans-serif-light"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -29,7 +30,7 @@
             app:layout_constraintVertical_bias="0.254"/>
 
     <Button
-            android:id="@+id/start_pause_button"
+            android:id="@+id/startPauseButton"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -56,7 +57,7 @@
             android:src="@drawable/clockicon"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/current_time_text_view"
+            app:layout_constraintTop_toBottomOf="@+id/currentTimeTextView"
             app:layout_constraintVertical_bias="0.71000004" android:focusable="true" android:layout_marginRight="8dp"/>
 
     <androidx.cardview.widget.CardView
@@ -67,13 +68,13 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             app:cardCornerRadius="10dp"
-            app:layout_constraintBottom_toTopOf="@+id/reset_button"
+            app:layout_constraintBottom_toTopOf="@+id/resetButton"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/current_time_text_view"
+            app:layout_constraintTop_toBottomOf="@+id/currentTimeTextView"
             app:layout_constraintVertical_bias="0.8" android:layout_marginLeft="16dp">
 
         <ImageView
-                android:id="@+id/card_view_pic"
+                android:id="@+id/cardViewPic"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
@@ -81,7 +82,7 @@
     </androidx.cardview.widget.CardView>
 
     <TextView
-            android:id="@+id/card_view_text"
+            android:id="@+id/cardViewText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -94,7 +95,7 @@
             app:layout_constraintTop_toBottomOf="@+id/cardView"/>
 
     <Button
-            android:id="@+id/reset_button"
+            android:id="@+id/resetButton"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
@@ -103,8 +104,8 @@
             android:text="@string/reset"
             android:textColor="#4dd0e1"
             android:visibility="invisible"
-            app:layout_constraintBottom_toTopOf="@+id/start_pause_button"
-            app:layout_constraintEnd_toEndOf="@+id/start_pause_button"
-            app:layout_constraintStart_toStartOf="@+id/start_pause_button"
+            app:layout_constraintBottom_toTopOf="@+id/startPauseButton"
+            app:layout_constraintEnd_toEndOf="@+id/startPauseButton"
+            app:layout_constraintStart_toStartOf="@+id/startPauseButton"
             tools:text="Reset Button"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

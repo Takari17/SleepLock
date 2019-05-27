@@ -2,6 +2,10 @@ package com.example.sleeplock.utils
 
 import com.example.sleeplock.R
 
+/**
+Holds constants used throughout the code base.
+ */
+
 const val ACTION_PLAY = "play"
 const val ACTION_PAUSE = "pause"
 const val ACTION_RESET = "reset"
@@ -9,7 +13,13 @@ const val CHANNEL_ID = "MainService"
 const val INDEX = "index"
 const val MILLIS = "millis"
 const val NOTIFICATION_ID = 1001
-
+const val BUTTON_ENABLED = "button enabled"
+const val BUTTON_COLOR = "button color"
+const val BUTTON_TEXT = "button text"
+const val CARD_VIEW_IMAGE = "card view image"
+const val CARD_VIEW_TEXT = "card view text"
+const val IS_TIME_CHOSEN = "is time chosen"
+const val IS_SOUND_CHOSEN = "is sound chosen"
 
 
 val ITEM_PIC = listOf(
@@ -57,7 +67,7 @@ val WHITE_NOISE = listOf(
     R.raw.waterstream
 )
 
-val timeOptions =  arrayOf(
+val timeOptions = arrayOf(
     "Select Custom Time",
     "10 min",
     "20 min",

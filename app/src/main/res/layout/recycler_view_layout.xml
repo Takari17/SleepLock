@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--app:cardCornerRadius="10dp"-->
 
 <androidx.cardview.widget.CardView
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -20,7 +19,7 @@
 
         <ImageView
 
-                android:id="@+id/item_image"
+                android:id="@+id/itemPic"
                 android:layout_width="165dp"
                 android:layout_height="124dp"
                 android:scaleType="fitXY"
@@ -31,7 +30,7 @@
                 tools:srcCompat="@drawable/underwater"/>
 
         <TextView
-                android:id="@+id/item_text"
+                android:id="@+id/itemText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="#00838f"
@@ -40,9 +39,9 @@
                 android:text="Text"
                 android:textSize="24sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="@+id/item_image"
-                app:layout_constraintStart_toStartOf="@+id/item_image"
-                app:layout_constraintTop_toBottomOf="@+id/item_image"
+                app:layout_constraintEnd_toEndOf="@+id/itemPic"
+                app:layout_constraintStart_toStartOf="@+id/itemPic"
+                app:layout_constraintTop_toBottomOf="@+id/itemPic"
                 app:layout_constraintVertical_bias="1.0"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

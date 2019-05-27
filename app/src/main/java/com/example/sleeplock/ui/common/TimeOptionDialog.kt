@@ -18,58 +18,57 @@ class TimeOptionDialog : DialogFragment() {
     private val userSelectedTime = MutableLiveData<Long>()
     private var timeInMillis: Long = 0
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
 
-        val builder = AlertDialog.Builder(activity)
+        AlertDialog.Builder(activity).apply {
 
-        builder.setTitle("Select a Time")
+            setTitle("Select a Time")
 
-        builder.setSingleChoiceItems(timeOptions, -1) { _, which ->
-            // Replaces the current dialog with the new one
-            if (which == 0) {
-                dismiss()
-                showCustomDialog()
+            setSingleChoiceItems(timeOptions, -1) { _, which ->
+                /*
+                When which equals 0 that means the user selected the "Select Custom Time" dialog, so this dismisses
+                the current dialog and shows the new one.
+                 */
+                if (which == 0) {
+                    dismiss()
+                    showCustomTimeDialog()
 
-            } else {
-                val minutes = extractIntValues(timeOptions[which])
-                timeInMillis = minutes.convertMinToMilli()
+                } else {
+                    val minutes = extractIntValues(timeOptions[which])
+                    timeInMillis = minutes.convertMinToMilli()
+                }
+
             }
 
+            setPositiveButton("Set Time") { _, _ ->
+                userSelectedTime.value = timeInMillis
+            }
+
+            setNegativeButton("Cancel") { _, _ -> }
+
+            setIcon(R.drawable.lightblueclock)
+
+        }.create()
+
+
+    private fun showCustomTimeDialog() {
+
+        val customDialog = Dialog(context!!).apply {
+            setContentView(R.layout.custom_time_layout)
+            setTitle("Select a Time")
+
         }
 
-        builder.setPositiveButton("Set Time") { _, _ ->
-            userSelectedTime.value = timeInMillis
+        val numPickerHours = customDialog.numberpickerHours.apply {
+            maxValue = 23
+            minValue = 0
+        }
+        val numPickerMinutes = customDialog.numberPickerMin.apply {
+            maxValue = 59
+            minValue = 0
         }
 
-        builder.setNegativeButton("Cancel") { _, _ ->
-
-        }
-
-        builder.setIcon(R.drawable.lightblueclock)
-
-        return builder.create()
-    }
-
-
-    private fun showCustomDialog() {
-
-        val customDialog = Dialog(context!!)
-
-        customDialog.setContentView(R.layout.custom_time_layout)
-        customDialog.setTitle("Select a Time")
-
-        val numPickerHours = customDialog.number_picker_hours
-        val numPickerMinutes = customDialog.number_picker_minutes
-        val setTimeButton = customDialog.set_time_button
-
-
-        numPickerHours.maxValue = 23
-        numPickerHours.minValue = 0
-
-        numPickerMinutes.maxValue = 59
-        numPickerMinutes.minValue = 0
-
-        setTimeButton.setOnClickListener {
+        customDialog.setTimeButton.setOnClickListener {
 
             val hours = numPickerHours.value
             val minutes = numPickerMinutes.value
@@ -85,7 +84,7 @@ class TimeOptionDialog : DialogFragment() {
         return customDialog.show()
     }
 
-    // Separates the "Min" value from our array and returns only the Int value
+    // Removes any letters from a string and returns only the Int values.
     private fun extractIntValues(text: String): Int = Integer.valueOf(text.replace("[^0-9]".toRegex(), ""))
 
     fun getUserSelectedTime(): LiveData<Long> = userSelectedTime
