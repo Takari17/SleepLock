@@ -2,7 +2,7 @@ package com.example.sleeplock.utils
 
 import com.example.sleeplock.R
 
-/**
+/*
 Holds constants used throughout the code base.
  */
 
@@ -41,14 +41,14 @@ val ITEM_TEXT = listOf(
     "Rain",
     "OceanShore",
     "UnderWater",
-    "Morning",
+    "Morning Bliss",
     "Chirping Birds",
     "Peaceful Night",
     "Fan",
     "Helicopter",
     "Camp Fire",
     "Boiling Water",
-    "Plane",
+    "Above the Sky",
     "Water Stream"
 )
 
