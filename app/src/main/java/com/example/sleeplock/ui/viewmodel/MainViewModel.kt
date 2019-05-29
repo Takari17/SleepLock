@@ -18,8 +18,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
-
-/**
+/*
  * Shared by MainFragment and ListFragment, however this View Model primarily references the MainFragments properties. ListFragment
  * didn't have enough logic to warrant it's own View Model and it also needs to communicate with MainFragment so I made them share a
  * this View Model.

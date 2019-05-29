@@ -11,7 +11,7 @@ import com.example.sleeplock.R
 import es.dmoral.toasty.Toasty
 import java.util.*
 
-/**
+/*
  * Helper methods used throughout the codebase.
  */
 

@@ -11,7 +11,7 @@ import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.example.sleeplock.R
 import com.example.sleeplock.data.service.isMainServiceRunning
-import com.example.sleeplock.injection.Application.Companion.applicationComponent
+import com.example.sleeplock.Application.Companion.applicationComponent
 import com.example.sleeplock.ui.common.Animate
 import com.example.sleeplock.ui.common.TimeOptionDialog
 import com.example.sleeplock.utils.activityViewModelFactory

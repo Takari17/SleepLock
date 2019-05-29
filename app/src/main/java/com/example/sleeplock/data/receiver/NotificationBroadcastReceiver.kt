@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import com.example.sleeplock.data.service.MainService
 
-/**
+/*
  * Receives click events from the foreground notification buttons and triggers the onStartCommand
  * from MainService.
  */

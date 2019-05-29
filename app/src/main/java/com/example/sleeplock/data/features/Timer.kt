@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
-/**
+/*
  * Self explanatory class (at least I hope so...).
  */
 class Timer(millis: Long) {

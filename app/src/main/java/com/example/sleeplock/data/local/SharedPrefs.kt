@@ -5,7 +5,7 @@ import androidx.core.content.edit
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
+/*
  * Simply stores and returns data from Shared Preferences.
  */
 @Singleton

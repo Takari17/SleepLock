@@ -5,7 +5,7 @@ import android.media.MediaPlayer
 import android.net.Uri
 import com.example.sleeplock.utils.WHITE_NOISE
 
-/**
+/*
  * Plays a sound from the "WHITE_NOISE" constant depending on the index passed through the constructor.
  */
 class WhiteNoise(

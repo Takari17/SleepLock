@@ -7,7 +7,7 @@ import android.os.Build
 import android.view.View
 import androidx.core.animation.doOnStart
 
-/**
+/*
  * Handles the animation in the MainFragment when the user clicks on the startPauseButton.
  */
 class Animate {

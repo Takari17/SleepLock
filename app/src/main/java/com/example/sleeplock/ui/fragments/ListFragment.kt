@@ -10,7 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.sleeplock.R
-import com.example.sleeplock.injection.Application.Companion.applicationComponent
+import com.example.sleeplock.Application.Companion.applicationComponent
 import com.example.sleeplock.ui.adapter.MyAdapter
 import com.example.sleeplock.utils.*
 import io.reactivex.disposables.CompositeDisposable

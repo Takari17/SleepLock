@@ -12,7 +12,7 @@ import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import kotlinx.android.synthetic.main.recycler_view_layout.view.*
 
-/**
+/*
  * Displays the sound options available to the user.
  */
 class MyAdapter(

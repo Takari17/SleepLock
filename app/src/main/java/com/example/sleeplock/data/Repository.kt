@@ -22,7 +22,7 @@ import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
+/*
  *Communicates and returns data from MainService.
  */
 @Singleton

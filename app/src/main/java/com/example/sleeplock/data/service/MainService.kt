@@ -10,11 +10,11 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.*
+import com.example.sleeplock.Application.Companion.applicationComponent
 import com.example.sleeplock.R
 import com.example.sleeplock.data.features.Timer
 import com.example.sleeplock.data.features.WhiteNoise
 import com.example.sleeplock.data.receiver.NotificationBroadcastReceiver
-import com.example.sleeplock.injection.Application.Companion.applicationComponent
 import com.example.sleeplock.ui.MainActivity
 import com.example.sleeplock.ui.isAppInBackground
 import com.example.sleeplock.utils.*
@@ -25,10 +25,12 @@ import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 
-//Only modified within this service. Set to true in onCreate and set to false in onDestroy.
+/*Only modified within this service. Set to true in onCreate and set to false in onDestroy.
+*
+* */
 var isMainServiceRunning = false
 
-/**
+/*
  * This service holds the Timer and WhiteNoise class and exposes timer callbacks and other
  * related data so the Repository can observe the data.
  */
