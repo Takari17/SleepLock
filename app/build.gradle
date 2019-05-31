@@ -69,12 +69,15 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
 
     //Dagger 2
-    implementation 'com.google.dagger:dagger:2.22.1'
-    annotationProcessor 'com.google.dagger:dagger-compiler:2.22.1'
-    kapt 'com.google.dagger:dagger-android-processor:2.15'
-    kapt 'com.google.dagger:dagger-compiler:2.22.1'
+    implementation 'com.google.dagger:dagger:2.23'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.23'
+    kapt 'com.google.dagger:dagger-android-processor:2.23'
+    kapt 'com.google.dagger:dagger-compiler:2.23'
 
     //Fragment & Activity KTX
     implementation 'androidx.fragment:fragment-ktx:1.1.0-alpha09'
     implementation 'androidx.activity:activity-ktx:1.0.0-alpha08'
+
+    //ViewPropertyObjectAnimator
+    implementation 'com.bartoszlipinski:viewpropertyobjectanimator:1.4.5'
 }
