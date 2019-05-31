@@ -22,7 +22,7 @@ class MainFragment : Fragment() {
 
     private val viewModel by activityViewModelFactory { applicationComponent.mainViewModel }
     private val dialog = TimeOptionDialog()
-    private val animate = Animate()
+    private val animate by lazy { Animate(context!!) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -99,7 +99,7 @@ class MainFragment : Fragment() {
         getReverseAnimation().observe(viewLifecycleOwner, observeReverseAnimation())
     }
 
-    // Live Data Observers
+    //Live Data Observers
     private fun observeCurrentTime() =
         Observer<Long> { millis -> currentTimeTextView.text = millis.formatTime() }
 

@@ -1,106 +1,150 @@
 package com.example.sleeplock.ui.common
 
+import android.animation.Animator
 import android.animation.AnimatorSet
-import android.animation.ValueAnimator
-import android.annotation.TargetApi
+import android.animation.ObjectAnimator
+import android.content.Context
 import android.os.Build
+import android.util.TypedValue
 import android.view.View
-import androidx.core.animation.doOnStart
+import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator
 
 /*
  * Handles the animation in the MainFragment when the user clicks on the startPauseButton.
  */
-class Animate {
+class Animate(
+    private val context: Context
+) {
 
     // Durations
     companion object {
-        const val DEFAULT: Long = 500
+        const val DEFAULT: Long = 600
         const val INSTANT: Long = 0
     }
 
-    private fun translationLeft(view: View, durationMillis: Long = 500): ValueAnimator =
-        ValueAnimator.ofFloat(0f, -170f).apply {
-            duration = durationMillis
+    private fun translationLeft(view: View, duration: Long = 600): ObjectAnimator =
+        view.customTranslateX(-70f, duration)
 
-            addUpdateListener { animation -> view.translationX = animation.animatedValue as Float }
+    private fun reverseTranslationLeft(view: View): ObjectAnimator =
+        view.resetTranslateX()
+
+
+
+    private fun translationRight(view: View, duration: Long = 600): ObjectAnimator =
+        view.customTranslateX(80f, duration)
+
+    private fun reverseTranslationRight(view: View): ObjectAnimator =
+        view.resetTranslateX()
+
+
+
+    private fun translationDown(view: View, duration: Long = 600): ObjectAnimator =
+        view.customTranslateY(55.5f, duration)
+
+    private fun reverseTranslationDown(view: View): ObjectAnimator =
+        view.resetTranslateY()
+
+
+
+    private fun fadeOut(view: View, duration: Long = 600): ObjectAnimator =
+        view.customFadeAnimation(0f, duration)
+
+
+    private fun fadeIn(view: View, duration: Long = 600): ObjectAnimator =
+        view.customFadeAnimation(1f, duration).also {
+            view.visibility = View.VISIBLE
         }
 
-    private fun translationRight(view: View, durationMillis: Long = 500): ValueAnimator =
-        ValueAnimator.ofFloat(0f, 170f).apply {
-            duration = durationMillis
 
-            addUpdateListener { animation -> view.translationX = animation.animatedValue as Float }
-        }
-
-    private fun translationDown(view: View, durationMillis: Long = 500): ValueAnimator =
-        ValueAnimator.ofFloat(0f, 112.5f).apply {
-            duration = durationMillis
-
-            addUpdateListener { animation -> view.translationY = animation.animatedValue as Float }
-        }
-
-    private fun fadeOut(view: View, durationMillis: Long = 500): ValueAnimator =
-        ValueAnimator.ofFloat(1f, 0f).apply {
-            duration = durationMillis
-
-            addUpdateListener { animation -> view.alpha = animation.animatedValue as Float }
-
-            doOnStart { view.isClickable = false }
-        }
-
-    private fun fadeIn(view: View, durationMillis: Long = 500): ValueAnimator {
-        view.visibility = View.VISIBLE
-
-        return ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = durationMillis
-
-            addUpdateListener { animation -> view.alpha = animation.animatedValue as Float }
-
-            doOnStart { view.isClickable = true }
-        }
-    }
+    fun translateAll(startButton: View, resetButton: View, fab: View, durationMillis: Long = 600) =
+        animateTogether(
+            translationLeft(startButton, durationMillis),
+            translationDown(resetButton, durationMillis),
+            translationRight(resetButton, durationMillis),
+            fadeIn(resetButton, durationMillis),
+            fadeOut(fab, durationMillis)
+        ).start()
 
 
-    fun translateAll(startButton: View, resetButton: View, fab: View, durationMillis: Long = 500) =
-
-        AnimatorSet().apply {
-            playTogether(
-                translationLeft(startButton, durationMillis),
-                translationDown(resetButton, durationMillis),
-                translationRight(resetButton, durationMillis),
-                fadeIn(resetButton, durationMillis),
-                fadeOut(fab, durationMillis)
-            )
-        }.start()
-
-    @TargetApi(Build.VERSION_CODES.O)
+    /*
+    The reverse() method on the Animator Set is only supported on APi 26+ so I just decided
+    to create reverse animation methods for my translations instead.
+     */
     fun reverseTranslateAll(startButton: View, resetButton: View, fab: View) =
-
-        AnimatorSet().apply {
-            playTogether(
-                translationLeft(startButton),
-                translationDown(resetButton),
-                translationRight(resetButton),
+            animateTogether(
+                reverseTranslationLeft(startButton),
+                reverseTranslationDown(resetButton),
+                reverseTranslationRight(resetButton),
                 fadeOut(resetButton),
                 fadeIn(fab)
-            )
-        }.reverse()
+            ).start()
 
 
-    fun fadeInAll(resetButton: View, fab: View, durationMillis: Long = 500) =
-        AnimatorSet().apply {
-            playTogether(
-                fadeIn(resetButton, durationMillis),
-                fadeOut(fab, durationMillis)
-            )
-        }.start()
+    fun fadeInAll(resetButton: View, fab: View, durationMillis: Long = 600) =
+        animateTogether(
+            fadeIn(resetButton, durationMillis),
+            fadeOut(fab, durationMillis)
+        ).start()
 
 
     fun fadeOutAll(resetButton: View, fab: View) =
+        animateTogether(
+            fadeOut(resetButton),
+            fadeIn(fab)
+        ).start()
+
+    /*
+    Since the animation units are pixels I converted them to dp so the animation
+    scales accordingly with different devices.
+
+    So proud of these extension functions <3
+     */
+    private fun <T : View> T.customTranslateX(pxDistance: Float, duration: Long): ObjectAnimator =
+        ViewPropertyObjectAnimator.animate(this).apply {
+            translationX(pxDistance.toDp())
+            setDuration(duration)
+        }.get()
+
+
+    //Reset, as in return to your initial position
+    private fun <T : View> T.resetTranslateX(): ObjectAnimator =
+        ViewPropertyObjectAnimator.animate(this).apply {
+            translationX(0f.toDp())
+            setDuration(600)
+        }.get()
+
+
+    private fun <T : View> T.customTranslateY(pxDistance: Float, duration: Long): ObjectAnimator =
+        ViewPropertyObjectAnimator.animate(this).apply {
+            translationY(pxDistance.toDp())
+            setDuration(duration)
+        }.get()
+
+    private fun <T : View> T.resetTranslateY(): ObjectAnimator =
+        ViewPropertyObjectAnimator.animate(this).apply {
+            translationY(0f.toDp())
+            setDuration(600)
+        }.get()
+
+
+
+    private fun <T : View> T.customFadeAnimation(alpha: Float, duration: Long): ObjectAnimator =
+        ViewPropertyObjectAnimator.animate(this).apply {
+            alpha(alpha)
+            setDuration(duration)
+        }.get()
+
+
+    //Converts floats to dp
+    private fun Float.toDp(): Float =
+        TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, this,
+            context.resources.displayMetrics
+        )
+
+
+    private fun animateTogether(vararg animators: Animator): AnimatorSet =
         AnimatorSet().apply {
-            playTogether(
-                fadeOut(resetButton),
-                fadeIn(fab)
-            )
-        }.start()
+            playTogether(*animators)
+        }
 }
