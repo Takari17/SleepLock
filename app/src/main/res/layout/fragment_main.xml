@@ -18,7 +18,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
-            android:textColor="#b0bec5"
+            android:textColor="#e0f7fa"
             android:text="@string/reset_time"
             android:textSize="90sp"
             android:singleLine="true"
@@ -88,7 +88,7 @@
             android:gravity="center"
             android:text="@string/no_sound"
             android:textSize="18sp"
-            android:textColor="#b0bec5"
+            android:textColor="#e0f7fa"
 
             app:layout_constraintEnd_toEndOf="@+id/cardView"
             app:layout_constraintStart_toStartOf="@+id/cardView"
