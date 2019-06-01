@@ -4,6 +4,14 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <supports-screens
+        android:anyDensity="true"
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true"
+        />
+
     <application
             android:name=".Application"
             android:allowBackup="true"
