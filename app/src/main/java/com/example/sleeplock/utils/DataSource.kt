@@ -28,7 +28,7 @@ val ITEM_PIC = listOf(
     R.drawable.underwater,
     R.drawable.morningnature,
     R.drawable.birds,
-    R.drawable.naturenight,
+    R.drawable.night,
     R.drawable.fan,
     R.drawable.heli,
     R.drawable.fire,
