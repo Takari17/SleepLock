@@ -2,15 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.example.sleeplock">
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <supports-screens
-        android:anyDensity="true"
-        android:smallScreens="true"
-        android:normalScreens="true"
-        android:largeScreens="true"
-        android:xlargeScreens="true"
-        />
+            android:anyDensity="true"
+            android:smallScreens="true"
+            android:normalScreens="true"
+            android:largeScreens="true"
+            android:xlargeScreens="true"/>
 
     <application
             android:name=".Application"
@@ -23,7 +22,8 @@
         <activity android:name=".ui.MainActivity"
                   android:launchMode="singleTop"
                   android:screenOrientation="portrait"
-                  android:configChanges="orientation|keyboardHidden">
+                  android:configChanges="orientation|keyboardHidden"
+                  android:resizeableActivity="false">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
