@@ -7,10 +7,15 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.sleeplock.R
-import com.example.sleeplock.utils.*
+import com.example.sleeplock.utils.TimeOptions
+import com.example.sleeplock.utils.convertHoursToMin
+import com.example.sleeplock.utils.convertMinToMilli
+import com.example.sleeplock.utils.getResourceString
 import kotlinx.android.synthetic.main.custom_time_layout.*
 
-
+/*
+Dialog that prompts the user to select a time.`
+ */
 class TimeOptionDialog : DialogFragment() {
 
     private val userSelectedTime = MutableLiveData<Long>()
@@ -26,7 +31,7 @@ class TimeOptionDialog : DialogFragment() {
 
             setSingleChoiceItems(timeOptions, -1) { _, which ->
                 /*
-                When which equals 0 that means the user selected the "Select Custom Time" dialog, so this dismisses
+                When "which" is equal to 0 that means the user selected the "Select Custom Time" option so it dismisses
                 the current dialog and shows the new one.
                  */
                 if (which == 0) {
@@ -51,38 +56,34 @@ class TimeOptionDialog : DialogFragment() {
         }.create()
 
 
-    private fun showCustomTimeDialog() {
+    private fun showCustomTimeDialog() =
 
-        val customDialog = Dialog(context!!).apply {
+        Dialog(context!!).apply {
             setContentView(R.layout.custom_time_layout)
             setTitle(getResourceString(context, R.string.select_a_time))
 
-        }
+            val numPickerHours = numberPickerHours.apply {
+                maxValue = 23
+                minValue = 0
+            }
+            val numPickerMinutes = numberPickerMin.apply {
+                maxValue = 59
+                minValue = 0
+            }
 
-        val numPickerHours = customDialog.numberPickerHours.apply {
-            maxValue = 23
-            minValue = 0
-        }
-        val numPickerMinutes = customDialog.numberPickerMin.apply {
-            maxValue = 59
-            minValue = 0
-        }
+            setTimeButton.setOnClickListener {
 
-        customDialog.setTimeButton.setOnClickListener {
+                val hours = numPickerHours.value
+                val minutes = numPickerMinutes.value
 
-            val hours = numPickerHours.value
-            val minutes = numPickerMinutes.value
+                val totalMinutes = hours.convertHoursToMin(extraMinutes = minutes)
 
-            val totalMinutes = hours.convertHoursToMin(minutes)
+                timeInMillis = totalMinutes.convertMinToMilli()
 
-            timeInMillis = totalMinutes.convertMinToMilli()
-
-            userSelectedTime.value = timeInMillis
-            customDialog.dismiss()
-        }
-
-        return customDialog.show()
-    }
+                userSelectedTime.value = timeInMillis
+                dismiss()
+            }
+        }.show()
 
     // Removes any letters from a string and returns only the Int values.
     private fun extractIntValues(text: String): Int = Integer.valueOf(text.replace("[^0-9]".toRegex(), ""))

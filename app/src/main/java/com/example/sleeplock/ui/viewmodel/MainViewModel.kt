@@ -20,15 +20,15 @@ import javax.inject.Inject
 
 /*
  * Shared by MainFragment and ListFragment, however this View Model primarily references the MainFragments properties. ListFragment
- * didn't have enough logic to warrant it's own View Model and it also needs to communicate with MainFragment so I made them share a
- * this View Model.
+ * doesn't have enough logic to warrant it's own View Model and it also needs to communicate with MainFragment, so I made them share a
+ * this View Model instead.
  */
 class MainViewModel @Inject constructor(
     private val context: Context,
     private val repository: Repository
 ) : ViewModel() {
 
-
+    //Observed by MainFragment
     private val buttonEnabled = MutableLiveData<Boolean>()
     private val buttonColor = MutableLiveData<Int?>()
     private val buttonText = MutableLiveData<String?>()
@@ -40,18 +40,6 @@ class MainViewModel @Inject constructor(
     val currentTime = repository.getCurrentTime()
     val isTimerRunning = repository.getIsTimerRunning()
     private val isTimerCompleted = repository.isTimerCompleted
-
-
-    // Only exposes immutable Live Data
-    fun getButtonEnabled(): LiveData<Boolean> = buttonEnabled
-
-    fun getButtonColor(): LiveData<Int?> = buttonColor
-    fun getButtonText(): LiveData<String?> = buttonText
-    fun getCardViewImage(): LiveData<Int?> = cardViewImage
-    fun getCardViewText(): LiveData<String?> = cardViewText
-    fun getStartAnimation(): LiveData<Long> = startAnimation
-    fun getReverseAnimation(): LiveData<Boolean> = reverseAnimation
-    fun getDidTimerStart() = repository.wasTimerStarted
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -87,6 +75,7 @@ class MainViewModel @Inject constructor(
             .subscribe()
     }
 
+    //Emits when the timer in MainService.kt completes
     init {
         compositeDisposable += isTimerCompleted
             .subscribeBy(
@@ -98,12 +87,30 @@ class MainViewModel @Inject constructor(
             )
     }
 
+    // Only exposes immutable Live Data
+    fun getButtonEnabled(): LiveData<Boolean> = buttonEnabled
+
+    fun getButtonColor(): LiveData<Int?> = buttonColor
+
+    fun getButtonText(): LiveData<String?> = buttonText
+
+    fun getCardViewImage(): LiveData<Int?> = cardViewImage
+
+    fun getCardViewText(): LiveData<String?> = cardViewText
+
+    fun getStartAnimation(): LiveData<Long> = startAnimation
+
+    fun getReverseAnimation(): LiveData<Boolean> = reverseAnimation
+
+    fun getDidTimerStart() = repository.wasTimerStarted
+
+
     fun startPauseButtonClick(isTimerRunning: Boolean) =
         if (!isTimerRunning) startButtonClick(getDidTimerStart()) else pauseButtonClick()
 
 
-    private fun startButtonClick(isTimerStarted: Boolean) =
-        if (isTimerStarted) resumeSoundAndTimer()
+    private fun startButtonClick(wasTimerStarted: Boolean) =
+        if (wasTimerStarted) resumeSoundAndTimer()
         else {
             startSoundAndTimer()
             startAnimation.value = Animate.DEFAULT
@@ -144,17 +151,18 @@ class MainViewModel @Inject constructor(
         isTimeChosen.accept(true)
     }
 
-    fun subscribeToItemIndex(itemIndex: BehaviorRelay<Int>) {
-        compositeDisposable += itemIndex
+    //Observes recycler view onClickListener from ListFragment.kt
+    fun subscribeToItemIndex(recyclerViewOnClick: BehaviorRelay<Int>) {
+        compositeDisposable += recyclerViewOnClick
             .subscribeBy(
-                onNext = { index ->
+                onNext = { itemIndexClicked ->
 
-                    this.index = index
+                    this.index = itemIndexClicked
 
                     isSoundChosen.accept(true)
 
                     // Will only update card view data if the timer is NOT running.
-                    if (isTimerRunning.value != true) setCardViewData(index)
+                    if (isTimerRunning.value != true) setCardViewData(itemIndexClicked)
                 },
                 onError = { Log.d("zwi", "Error observing item index in view model: $it") }
             )

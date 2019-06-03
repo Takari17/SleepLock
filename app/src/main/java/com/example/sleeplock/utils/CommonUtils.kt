@@ -47,7 +47,6 @@ fun Long.formatTime(): String {
     }
 }
 
-
 fun showSoundSelectedToast(context: Context) =
     Toasty.success(context, R.string.sound_selected, Toasty.LENGTH_SHORT, true).show()
 

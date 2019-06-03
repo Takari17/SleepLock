@@ -44,7 +44,7 @@ class ListFragment : Fragment() {
             adapter = myAdapter
         }
 
-        viewModel.subscribeToItemIndex(myAdapter.itemIndex)
+        viewModel.subscribeToItemIndex(myAdapter.itemOnClickListener)
     }
 
     private fun showItemClickedToast(context: Context) =
@@ -54,7 +54,7 @@ class ListFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        compositeDisposable += myAdapter.itemOnClickListener
+        compositeDisposable += myAdapter.showClickedToast
             .subscribeBy(
                 onNext = { showItemClickedToast(context!!) },
                 onError = { Log.d("zwi", "Error observing recycler view itemClickListener: $it") }

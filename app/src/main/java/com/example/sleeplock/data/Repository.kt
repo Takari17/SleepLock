@@ -10,8 +10,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.example.sleeplock.data.local.SharedPrefs
 import com.example.sleeplock.data.service.MainService
-import com.example.sleeplock.data.service.isMainServiceRunning
-import com.example.sleeplock.utils.*
+import com.example.sleeplock.utils.INDEX
+import com.example.sleeplock.utils.IntentAction
+import com.example.sleeplock.utils.MILLIS
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
@@ -21,7 +22,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /*
- *Communicates and returns data from MainService.
+ *Communicates with, and returns data from, MainService.kt.
  */
 @Singleton
 class Repository @Inject constructor(
@@ -41,7 +42,9 @@ class Repository @Inject constructor(
     private val isTimerRunning = MediatorLiveData<Boolean>()
     val isTimerCompleted = PublishRelay.create<Boolean>()
 
+
     fun getCurrentTime(): LiveData<Long> = currentTime
+
     fun getIsTimerRunning(): LiveData<Boolean> = isTimerRunning
 
     // Service will start and play the sound and timer.
@@ -65,12 +68,12 @@ class Repository @Inject constructor(
     fun resetSoundAndTimer() = mainService?.resetSoundAndTimer()
 
     fun bindToServiceIfRunning() {
-        if (isMainServiceRunning)
+        if (MainService.isRunning)
             context.bindService(serviceIntent, serviceConnection, 0)
     }
 
     fun unbindFromServiceIfRunning() {
-        if (isMainServiceRunning)
+        if (MainService.isRunning)
             context.unbindService(serviceConnection)
     }
 
@@ -97,14 +100,14 @@ class Repository @Inject constructor(
     fun clearDisposables() = compositeDisposable.clear()
 
 
-    /*
-    When bound the Repo observes the services Live Data objects and subscribes to all Observables.
-     */
+    //When bound the Repository observes the services Live Data objects and subscribes to all Observables.
+
     private val serviceConnection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
 
             (service as MainService.LocalBinder).getService().also { serviceReference ->
+
                 mainService = serviceReference
 
                 addServiceLiveDataSources(serviceReference)

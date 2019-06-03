@@ -21,8 +21,15 @@ class MyAdapter(
 ) :
     RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
-    val itemIndex = BehaviorRelay.create<Int>()
-    val itemOnClickListener = PublishRelay.create<Boolean>()
+    //Emits the index of the item clicked
+    val itemOnClickListener = BehaviorRelay.create<Int>()
+
+    /*
+    Tells ListFragment.kt to show a toast on recycler view click, have to use a publish relay for this
+    else a toast will randomly appear onStart, even when the user hasn't done anything since behavior relays
+    hold the last value emitted..
+     */
+    val showClickedToast = PublishRelay.create<Boolean>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder =
         LayoutInflater.from(parent.context).inflate(R.layout.recycler_view_layout, parent, false).let { view ->
@@ -48,8 +55,8 @@ class MyAdapter(
 
         init {
             itemView.setOnClickListener {
-                itemIndex.accept(adapterPosition)
-                itemOnClickListener.accept(true)
+                itemOnClickListener.accept(adapterPosition)
+                showClickedToast.accept(true)
             }
         }
     }

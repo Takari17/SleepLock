@@ -9,9 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
-import com.example.sleeplock.R
-import com.example.sleeplock.data.service.isMainServiceRunning
 import com.example.sleeplock.Application.Companion.applicationComponent
+import com.example.sleeplock.R
+import com.example.sleeplock.data.service.MainService
 import com.example.sleeplock.ui.common.Animate
 import com.example.sleeplock.ui.common.TimeOptionDialog
 import com.example.sleeplock.utils.activityViewModelFactory
@@ -33,7 +33,7 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (isMainServiceRunning) startAnimation(Animate.INSTANT)
+        if (MainService.isRunning) startAnimation(Animate.INSTANT)
 
         observeViewModelLiveData()
 

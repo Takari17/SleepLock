@@ -3,12 +3,8 @@ package com.example.sleeplock.data.features
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
-import com.bumptech.glide.Glide.init
 import com.example.sleeplock.utils.ItemData
 
-/*
- * Plays a sound from the "WHITE_NOISE" constant depending on the index passed through the constructor.
- */
 class WhiteNoise(
     private val mediaPlayer: MediaPlayer,
     context: Context,
@@ -16,6 +12,7 @@ class WhiteNoise(
 ) {
 
     private val soundList = ItemData.getAllSoundReferences()
+
     init {
         setSound(context, index)
     }

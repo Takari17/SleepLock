@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
-import android.os.Build
 import android.util.TypedValue
 import android.view.View
 import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator
@@ -29,13 +28,11 @@ class Animate(
         view.resetTranslateX()
 
 
-
     private fun translationRight(view: View, duration: Long = 600): ObjectAnimator =
-        view.customTranslateX(80f, duration)
+        view.customTranslateX(75f, duration)
 
     private fun reverseTranslationRight(view: View): ObjectAnimator =
         view.resetTranslateX()
-
 
 
     private fun translationDown(view: View, duration: Long = 600): ObjectAnimator =
@@ -43,7 +40,6 @@ class Animate(
 
     private fun reverseTranslationDown(view: View): ObjectAnimator =
         view.resetTranslateY()
-
 
 
     private fun fadeOut(view: View, duration: Long = 600): ObjectAnimator =
@@ -68,16 +64,16 @@ class Animate(
 
     /*
     The reverse() method on the Animator Set is only supported on APi 26+ so I just decided
-    to create reverse animation methods for my translations instead.
+    to create custom reverse animation methods for my translations instead.
      */
     fun reverseTranslateAll(startButton: View, resetButton: View, fab: View) =
-            animateTogether(
-                reverseTranslationLeft(startButton),
-                reverseTranslationDown(resetButton),
-                reverseTranslationRight(resetButton),
-                fadeOut(resetButton),
-                fadeIn(fab)
-            ).start()
+        animateTogether(
+            reverseTranslationLeft(startButton),
+            reverseTranslationDown(resetButton),
+            reverseTranslationRight(resetButton),
+            fadeOut(resetButton),
+            fadeIn(fab)
+        ).start()
 
 
     fun fadeInAll(resetButton: View, fab: View, durationMillis: Long = 600) =
@@ -127,7 +123,6 @@ class Animate(
         }.get()
 
 
-
     private fun <T : View> T.customFadeAnimation(alpha: Float, duration: Long): ObjectAnimator =
         ViewPropertyObjectAnimator.animate(this).apply {
             alpha(alpha)
@@ -143,6 +138,7 @@ class Animate(
         )
 
 
+    // Thanks Zhuinden!
     private fun animateTogether(vararg animators: Animator): AnimatorSet =
         AnimatorSet().apply {
             playTogether(*animators)

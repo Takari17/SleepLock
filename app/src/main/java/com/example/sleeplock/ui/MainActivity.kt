@@ -1,5 +1,7 @@
 package com.example.sleeplock.ui
 
+import android.content.Context
+import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +18,11 @@ import kotlinx.android.synthetic.main.activity_main.*
 var isAppInBackground = false
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        fun createIntent(context: Context): Intent =
+            Intent(context, MainActivity::class.java)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

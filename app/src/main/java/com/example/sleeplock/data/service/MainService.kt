@@ -7,7 +7,6 @@ import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
-import android.view.textclassifier.SelectionEvent.ACTION_RESET
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.*
@@ -26,18 +25,17 @@ import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 
-/*Only modified within this service. Set to true in onCreate and set to false in onDestroy. */
-var isMainServiceRunning = false
-
 /*
- * This service holds the Timer and WhiteNoise class and exposes timer callbacks and other
- * related data so the Repository can observe the data.
+ * Holds a Timer and WhiteNoise instance for the Repository to observe
  */
 class MainService : LifecycleService() {
 
-    private val injector = applicationComponent
+    companion object {
+        /*Only modified within this service. Set to true in onCreate and set to false in onDestroy. */
+        var isRunning = false
+    }
 
-    private val sharedPrefs = injector.sharedPrefs
+    private val sharedPrefs = applicationComponent.sharedPrefs
 
     private lateinit var timer: Timer
     private lateinit var whiteNoise: WhiteNoise
@@ -56,7 +54,7 @@ class MainService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        isMainServiceRunning = true
+        isRunning = true
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -73,7 +71,7 @@ class MainService : LifecycleService() {
         // Prevents duplication on sound & timer
         if (!isTimerAndSoundCreated) {
 
-            //We ensure'd that no null values are sent to the service, but if they are then something went HORRIBLY wrong and it's better to crash the app.
+            //We ensure'd that no null values are sent to the service, however if they are then something went HORRIBLY wrong and it's better to just crash the app.
             val millis: Long = intent.extras?.getLong(MILLIS)!!
             val index: Int = intent.extras?.getInt(INDEX)!!
 
@@ -91,15 +89,15 @@ class MainService : LifecycleService() {
                 pauseSoundAndTimer()
                 playOrPause = 0
             }
-            IntentAction.PAUSE.name -> {
+            IntentAction.RESET.name -> {
                 resetSoundAndTimer() // will trigger reset all
                 return START_NOT_STICKY
             }
         }
 
-        val time: String? = currentTime.value?.formatTime()
+        val timeString: String? = currentTime.value?.formatTime()
 
-        startForeground(NOTIFICATION_ID, getForegroundNotification(time ?: "00:00", playOrPause))
+        startForeground(NOTIFICATION_ID, getForegroundNotification(timeString ?: "00:00", playOrPause))
         return START_STICKY
     }
 
@@ -113,6 +111,7 @@ class MainService : LifecycleService() {
 
     private fun getForegroundNotification(newText: String, playOrPause: Int): Notification {
 
+        // I can just use the pending intent methods in place of these variable usages but this style is more readable to me
         val contentIntent = createActivityPendingIntent()
         val pendingPlayIntent = createBroadcastPendingIntent(IntentAction.PLAY.name)
         val pendingPauseIntent = createBroadcastPendingIntent(IntentAction.PAUSE.name)
@@ -141,40 +140,41 @@ class MainService : LifecycleService() {
 
 
     private fun createAndObserveTimer(millis: Long) {
-        timer = Timer(millis)
+        timer = Timer(millis).apply {
 
-        compositeDisposable += timer.currentTime
-            .subscribeOn(Schedulers.io())
-            .subscribeBy(
-                onNext = { timeInMilli ->
-                    currentTime.postValue(timeInMilli)
-                    updateNotification(timeInMilli.formatTime(), playOrPause)
-                },
-                onError = { Log.d("zwi", "Error observing currentTime in MainService: $it") }
-            )
+            compositeDisposable += currentTime
+                .subscribeOn(Schedulers.io())
+                .subscribeBy(
+                    onNext = { timeInMilli ->
+                        this@MainService.currentTime.postValue(timeInMilli)
+                        updateNotification(timeInMilli.formatTime(), playOrPause)
+                    },
+                    onError = { Log.d("zwi", "Error observing currentTime in MainService: $it") }
+                )
 
-        compositeDisposable += timer.isTimerCompleted
-            .subscribeOn(Schedulers.io())
-            .subscribeBy(
-                onNext = { completed ->
-                    showCompletedToast.postValue(completed)
-                    currentTime.postValue(0)
-                    isTimerCompleted.accept(completed)
-                    whiteNoise.reset()
-                    resetAll()
-                },
-                onError = { Log.d("zwi", "Error observing isTimerCompleted in MainService: $it") }
-            )
+            compositeDisposable += isTimerCompleted
+                .subscribeOn(Schedulers.io())
+                .subscribeBy(
+                    onNext = { completed ->
+                        this@MainService.currentTime.postValue(0)
+                        this@MainService.isTimerCompleted.accept(completed)
+                        showCompletedToast.postValue(completed)
+                        whiteNoise.reset()
+                        resetAll()
+                    },
+                    onError = { Log.d("zwi", "Error observing isTimerCompleted in MainService: $it") }
+                )
 
-        compositeDisposable += timer.wasTimerStarted
-            .subscribeOn(Schedulers.io())
-            .subscribeBy(
-                onNext = { wasStarted -> wasTimerStarted.accept(wasStarted) },
-                onError = { Log.d("zwi", "Error observing wasTimerStarted in MainService: $it") }
-            )
+            compositeDisposable += wasTimerStarted
+                .subscribeOn(Schedulers.io())
+                .subscribeBy(
+                    onNext = { wasStarted -> this@MainService.wasTimerStarted.accept(wasStarted) },
+                    onError = { Log.d("zwi", "Error observing wasTimerStarted in MainService: $it") }
+                )
 
-        isTimerRunning.addSource(timer.getIsTimerRunning()) { isRunning ->
-            isTimerRunning.value = isRunning
+            isTimerRunning.addSource(getIsTimerRunning()) { isRunning ->
+                isTimerRunning.value = isRunning
+            }
         }
     }
 
@@ -204,7 +204,7 @@ class MainService : LifecycleService() {
         stopSelf()
         stopForeground(true)
 
-        if (isAppInBackground) terminateAll() // will terminate app if it's in the background
+        if (isAppInBackground) terminateAll()
     }
 
     // Only exposes immutable Live Data properties
@@ -216,19 +216,21 @@ class MainService : LifecycleService() {
 
 
     private fun createActivityPendingIntent(): PendingIntent =
-        Intent(this, MainActivity::class.java).let { activityIntent ->
-            PendingIntent.getActivity(
-                this, 1, activityIntent, 0
-            )
-        }
+        PendingIntent.getActivity(
+            this,
+            1,
+            MainActivity.createIntent(this),
+            0
+        )
 
-    //todo zwi's tips
     private fun createBroadcastPendingIntent(action: String): PendingIntent =
-        Intent(this, NotificationBroadcastReceiver::class.java).apply {
-            this.action = action
-        }.let { broadcastIntent ->
-            PendingIntent.getBroadcast(this, 0, broadcastIntent, 0)
-        }
+        PendingIntent.getBroadcast(
+            this,
+            0,
+            NotificationBroadcastReceiver.createIntent(this, action),
+            0
+        )
+
 
     private fun terminateAll() = android.os.Process.killProcess(android.os.Process.myPid())
 
@@ -236,7 +238,7 @@ class MainService : LifecycleService() {
         super.onDestroy()
         compositeDisposable.clear()
         isTimerRunning.removeSource(timer.getIsTimerRunning())
-        isMainServiceRunning = false
+        isRunning = false
     }
 
     inner class LocalBinder : Binder() {

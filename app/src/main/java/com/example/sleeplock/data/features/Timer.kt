@@ -15,15 +15,15 @@ import java.util.concurrent.atomic.AtomicLong
  */
 class Timer(millis: Long) {
 
-    // In millis
-    private val elapsedTime = AtomicLong()
-    // Used for stopping the timer at 0
-    private var startingTime: Int = 0
+    private val elapsedTime = AtomicLong() // In millis
+
+    private var startingTime: Int = 0 // Used for stopping the timer at 0
 
     // Default values
     private val resumed = AtomicBoolean().also { it.set(false) }
     private val stopped = AtomicBoolean().also { it.set(false) }
 
+    // Some useful callbacks we can observe
     val wasTimerStarted = BehaviorRelay.createDefault(false)
     val isTimerCompleted = PublishRelay.create<Boolean>()
     private val isTimerRunning = MutableLiveData<Boolean>()
