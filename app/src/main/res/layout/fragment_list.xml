@@ -6,7 +6,7 @@
         android:id="@+id/constraint_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#424242"
+        android:background="#2F3238"
         tools:context=".ui.fragments.ListFragment">
     <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
