@@ -33,7 +33,7 @@ class MainViewModel @Inject constructor(
     private val buttonColor = MutableLiveData<Int?>()
     private val buttonText = MutableLiveData<String?>()
     private val cardViewImage = MutableLiveData<Int?>(R.drawable.nosound)
-    private val cardViewText = MutableLiveData<String?>(getResourceString(R.string.no_sound))
+    private val cardViewText = MutableLiveData<String?>(getResourceString(context, R.string.no_sound))
     private val startAnimation = MutableLiveData<Long>()
     private val reverseAnimation = MutableLiveData<Boolean>()
 
@@ -134,7 +134,7 @@ class MainViewModel @Inject constructor(
     }
 
     private fun resetButton() {
-        buttonText.postValue(getResourceString(R.string.start))
+        buttonText.postValue(getResourceString(context, R.string.start))
         isSoundChosen.accept(false)
         isTimeChosen.accept(false)
     }
@@ -188,18 +188,20 @@ class MainViewModel @Inject constructor(
 
 
     fun setButtonText(isTimerRunning: Boolean) =
-        if (isTimerRunning) buttonText.value = getResourceString(R.string.pause)
-        else buttonText.value = getResourceString(R.string.resume)
+        if (isTimerRunning) buttonText.value = getResourceString(context, R.string.pause)
+        else buttonText.value = getResourceString(context, R.string.resume)
 
 
     private fun setCardViewData(index: Int) {
-        cardViewImage.postValue(ITEM_PIC[index])
-        cardViewText.postValue(ITEM_TEXT[index])
+        val imageList = ItemData.getAllImageReferences()
+        val textList = ItemData.getAllText(context)
+        cardViewImage.postValue(imageList[index])
+        cardViewText.postValue(textList[index])
     }
 
     private fun resetCardViewData() {
         cardViewImage.postValue(R.drawable.nosound)
-        cardViewText.postValue(getResourceString(R.string.no_sound))
+        cardViewText.postValue(getResourceString(context, R.string.no_sound))
     }
 
 
@@ -247,7 +249,6 @@ class MainViewModel @Inject constructor(
 
     private fun removeServiceLiveDataSources() = repository.removeServiceLiveDataSources()
 
-    private fun getResourceString(id: Int): String = context.resources.getString(id)
 
     fun mainFragmentOnStart() {
         bindToServiceIfRunning()

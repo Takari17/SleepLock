@@ -11,9 +11,7 @@ import androidx.lifecycle.MediatorLiveData
 import com.example.sleeplock.data.local.SharedPrefs
 import com.example.sleeplock.data.service.MainService
 import com.example.sleeplock.data.service.isMainServiceRunning
-import com.example.sleeplock.utils.ACTION_PLAY
-import com.example.sleeplock.utils.INDEX
-import com.example.sleeplock.utils.MILLIS
+import com.example.sleeplock.utils.*
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
@@ -49,7 +47,7 @@ class Repository @Inject constructor(
     // Service will start and play the sound and timer.
     fun startSoundAndTimer(millis: Long, index: Int) {
         serviceIntent.apply {
-            action = ACTION_PLAY
+            action = IntentAction.PLAY.name
             putExtra(MILLIS, millis)
             putExtra(INDEX, index)
         }

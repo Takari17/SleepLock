@@ -3,7 +3,8 @@ package com.example.sleeplock.data.features
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
-import com.example.sleeplock.utils.WHITE_NOISE
+import com.bumptech.glide.Glide.init
+import com.example.sleeplock.utils.ItemData
 
 /*
  * Plays a sound from the "WHITE_NOISE" constant depending on the index passed through the constructor.
@@ -14,6 +15,7 @@ class WhiteNoise(
     index: Int
 ) {
 
+    private val soundList = ItemData.getAllSoundReferences()
     init {
         setSound(context, index)
     }
@@ -29,10 +31,10 @@ class WhiteNoise(
 
     // Creates sound bases off position of Recycler View item click
     private fun setSound(context: Context, index: Int) {
-        for (i in WHITE_NOISE.indices) {
+        for (i in soundList.indices) {
             if (i == index) {
                 mediaPlayer.apply {
-                    setDataSource(context, Uri.parse("android.resource://com.example.sleeplock/raw/${WHITE_NOISE[i]}"))
+                    setDataSource(context, Uri.parse("android.resource://com.example.sleeplock/raw/${soundList[i]}"))
                     prepare()
                 }
             }

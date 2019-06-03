@@ -7,9 +7,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.sleeplock.R
-import com.example.sleeplock.utils.convertHoursToMin
-import com.example.sleeplock.utils.convertMinToMilli
-import com.example.sleeplock.utils.timeOptions
+import com.example.sleeplock.utils.*
 import kotlinx.android.synthetic.main.custom_time_layout.*
 
 
@@ -22,7 +20,9 @@ class TimeOptionDialog : DialogFragment() {
 
         AlertDialog.Builder(activity).apply {
 
-            setTitle("Select a Time")
+            setTitle(getResourceString(context, R.string.select_a_time))
+
+            val timeOptions = TimeOptions.getTimeOptions(context)
 
             setSingleChoiceItems(timeOptions, -1) { _, which ->
                 /*
@@ -40,11 +40,11 @@ class TimeOptionDialog : DialogFragment() {
 
             }
 
-            setPositiveButton("Set Time") { _, _ ->
+            setPositiveButton(getResourceString(context, R.string.set_time)) { _, _ ->
                 userSelectedTime.value = timeInMillis
             }
 
-            setNegativeButton("Cancel") { _, _ -> }
+            setNegativeButton(getResourceString(context, R.string.cancel)) { _, _ -> }
 
             setIcon(R.drawable.lightblueclock)
 
@@ -55,11 +55,11 @@ class TimeOptionDialog : DialogFragment() {
 
         val customDialog = Dialog(context!!).apply {
             setContentView(R.layout.custom_time_layout)
-            setTitle("Select a Time")
+            setTitle(getResourceString(context, R.string.select_a_time))
 
         }
 
-        val numPickerHours = customDialog.numberpickerHours.apply {
+        val numPickerHours = customDialog.numberPickerHours.apply {
             maxValue = 23
             minValue = 0
         }

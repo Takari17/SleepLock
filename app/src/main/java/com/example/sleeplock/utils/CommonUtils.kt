@@ -58,3 +58,5 @@ fun showWarningToast(context: Context) =
 
 fun showFinishedToast(context: Context) =
     Toasty.info(context, R.string.timer_finished, Toasty.LENGTH_SHORT, true).show()
+
+fun getResourceString(context: Context, id: Int): String = context.resources.getString(id)

@@ -7,6 +7,7 @@ import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import android.view.textclassifier.SelectionEvent.ACTION_RESET
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.*
@@ -25,9 +26,7 @@ import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 
-/*Only modified within this service. Set to true in onCreate and set to false in onDestroy.
-*
-* */
+/*Only modified within this service. Set to true in onCreate and set to false in onDestroy. */
 var isMainServiceRunning = false
 
 /*
@@ -84,15 +83,15 @@ class MainService : LifecycleService() {
         }
 
         when (intent.action) {
-            ACTION_PLAY -> {
+            IntentAction.PLAY.name -> {
                 startSoundAndTimer()
                 playOrPause = 1
             }
-            ACTION_PAUSE -> {
+            IntentAction.PAUSE.name -> {
                 pauseSoundAndTimer()
                 playOrPause = 0
             }
-            ACTION_RESET -> {
+            IntentAction.PAUSE.name -> {
                 resetSoundAndTimer() // will trigger reset all
                 return START_NOT_STICKY
             }
@@ -115,21 +114,21 @@ class MainService : LifecycleService() {
     private fun getForegroundNotification(newText: String, playOrPause: Int): Notification {
 
         val contentIntent = createActivityPendingIntent()
-        val pendingPlayIntent = createBroadcastPendingIntent(ACTION_PLAY)
-        val pendingPauseIntent = createBroadcastPendingIntent(ACTION_PAUSE)
-        val pendingResetIntent = createBroadcastPendingIntent(ACTION_RESET)
+        val pendingPlayIntent = createBroadcastPendingIntent(IntentAction.PLAY.name)
+        val pendingPauseIntent = createBroadcastPendingIntent(IntentAction.PAUSE.name)
+        val pendingResetIntent = createBroadcastPendingIntent(IntentAction.RESET.name)
 
         return NotificationCompat.Builder(this, CHANNEL_ID).apply {
             setSmallIcon(R.drawable.alarm_icon)
-            addAction(R.drawable.play, getResourceString(R.string.start), pendingPlayIntent)
-            addAction(R.drawable.pause, getResourceString(R.string.pause), pendingPauseIntent)
-            addAction(R.drawable.reset, getResourceString(R.string.reset), pendingResetIntent)
+            addAction(R.drawable.play, getResourceString(this@MainService, R.string.start), pendingPlayIntent)
+            addAction(R.drawable.pause, getResourceString(this@MainService, R.string.pause), pendingPauseIntent)
+            addAction(R.drawable.reset, getResourceString(this@MainService, R.string.reset), pendingResetIntent)
             setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
                     .setShowActionsInCompactView(playOrPause, 2)  // index of the actions
             )
-            setSubText(getResourceString(R.string.subText))
-            setContentTitle(getResourceString(R.string.contentTitle))
+            setSubText(getResourceString(this@MainService, R.string.subText))
+            setContentTitle(getResourceString(this@MainService, R.string.contentTitle))
             setContentText(newText)
             setContentIntent(contentIntent)
         }.build()
@@ -223,6 +222,7 @@ class MainService : LifecycleService() {
             )
         }
 
+    //todo zwi's tips
     private fun createBroadcastPendingIntent(action: String): PendingIntent =
         Intent(this, NotificationBroadcastReceiver::class.java).apply {
             this.action = action
@@ -231,8 +231,6 @@ class MainService : LifecycleService() {
         }
 
     private fun terminateAll() = android.os.Process.killProcess(android.os.Process.myPid())
-
-    private fun getResourceString(id: Int): String = resources.getString(id)
 
     override fun onDestroy() {
         super.onDestroy()
