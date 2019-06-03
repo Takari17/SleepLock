@@ -21,7 +21,7 @@ const val IS_SOUND_CHOSEN = "is sound chosen"
 
 enum class IntentAction {
     PLAY, PAUSE, RESET
-}
+    }
 
 enum class ItemData(
     val imageReference: Int,
