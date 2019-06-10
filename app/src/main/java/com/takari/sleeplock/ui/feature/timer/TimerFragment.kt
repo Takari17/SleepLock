@@ -1,4 +1,4 @@
-package com.example.sleeplock.ui.fragments
+package com.takari.sleeplock.ui.feature.timer
 
 
 import android.os.Bundle
@@ -9,18 +9,18 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
-import com.example.sleeplock.Application.Companion.applicationComponent
-import com.example.sleeplock.R
-import com.example.sleeplock.data.service.MainService
-import com.example.sleeplock.ui.common.Animate
-import com.example.sleeplock.ui.common.TimeOptionDialog
-import com.example.sleeplock.utils.activityViewModelFactory
-import com.example.sleeplock.utils.formatTime
+import com.takari.sleeplock.Application.Companion.applicationComponent
+import com.takari.sleeplock.R
+import com.takari.sleeplock.data.service.MainService
+import com.takari.sleeplock.ui.common.Animate
+import com.takari.sleeplock.ui.common.TimeOptionDialog
+import com.takari.sleeplock.utils.activityViewModelFactory
+import com.takari.sleeplock.utils.formatTime
 import kotlinx.android.synthetic.main.fragment_main.*
 
-class MainFragment : Fragment() {
+class TimerFragment : Fragment() {
 
-    private val viewModel by activityViewModelFactory { applicationComponent.mainViewModel }
+    private val viewModel by activityViewModelFactory { applicationComponent.timerViewModel }
     private val dialog = TimeOptionDialog()
     private val animate by lazy { Animate(context!!) }
 

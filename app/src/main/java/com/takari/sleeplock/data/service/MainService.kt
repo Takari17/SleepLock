@@ -1,4 +1,4 @@
-package com.example.sleeplock.data.service
+package com.takari.sleeplock.data.service
 
 import android.app.Notification
 import android.app.PendingIntent
@@ -10,16 +10,16 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.*
-import com.example.sleeplock.Application.Companion.applicationComponent
-import com.example.sleeplock.R
-import com.example.sleeplock.data.features.Timer
-import com.example.sleeplock.data.features.WhiteNoise
-import com.example.sleeplock.data.receiver.NotificationBroadcastReceiver
-import com.example.sleeplock.ui.MainActivity
-import com.example.sleeplock.ui.isAppInBackground
-import com.example.sleeplock.utils.*
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
+import com.takari.sleeplock.Application.Companion.applicationComponent
+import com.takari.sleeplock.R
+import com.takari.sleeplock.ui.feature.timer.Timer
+import com.takari.sleeplock.ui.feature.whitenoise.WhiteNoise
+import com.takari.sleeplock.data.receiver.NotificationBroadcastReceiver
+import com.takari.sleeplock.ui.MainActivity
+import com.takari.sleeplock.ui.isAppInBackground
+import com.takari.sleeplock.utils.*
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.subscribeBy

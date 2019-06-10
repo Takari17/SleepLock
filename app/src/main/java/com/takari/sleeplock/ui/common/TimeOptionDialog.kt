@@ -1,4 +1,4 @@
-package com.example.sleeplock.ui.common
+package com.takari.sleeplock.ui.common
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -6,11 +6,11 @@ import android.os.Bundle
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.sleeplock.R
-import com.example.sleeplock.utils.TimeOptions
-import com.example.sleeplock.utils.convertHoursToMin
-import com.example.sleeplock.utils.convertMinToMilli
-import com.example.sleeplock.utils.getResourceString
+import com.takari.sleeplock.R
+import com.takari.sleeplock.utils.TimeOptions
+import com.takari.sleeplock.utils.convertHoursToMin
+import com.takari.sleeplock.utils.convertMinToMilli
+import com.takari.sleeplock.utils.getResourceString
 import kotlinx.android.synthetic.main.custom_time_layout.*
 
 /*

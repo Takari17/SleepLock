@@ -1,9 +1,9 @@
-package com.example.sleeplock.data.receiver
+package com.takari.sleeplock.data.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.example.sleeplock.data.service.MainService
+import com.takari.sleeplock.data.service.MainService
 
 /*
  * Receives click events from the MainService.kt notification actions and triggers it's onStartCommand method

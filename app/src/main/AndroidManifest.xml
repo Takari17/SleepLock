@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.example.sleeplock">
+          package="com.takari.sleeplock">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
@@ -9,7 +9,7 @@
             android:smallScreens="true"
             android:normalScreens="true"
             android:largeScreens="true"
-            android:xlargeScreens="true"/>
+            android:xlargeScreens="false"/>
 
     <application
             android:name=".Application"

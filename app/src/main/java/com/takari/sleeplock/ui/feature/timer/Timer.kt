@@ -1,8 +1,8 @@
-package com.example.sleeplock.data.features
+package com.takari.sleeplock.ui.feature.timer
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.example.sleeplock.utils.convertMilliToSeconds
+import com.takari.sleeplock.utils.convertMilliToSeconds
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable

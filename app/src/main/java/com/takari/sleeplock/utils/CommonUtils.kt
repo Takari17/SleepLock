@@ -1,13 +1,13 @@
 @file:Suppress("UNCHECKED_CAST")
 
-package com.example.sleeplock.utils
+package com.takari.sleeplock.utils
 
 import android.content.Context
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.sleeplock.R
+import com.takari.sleeplock.R
 import es.dmoral.toasty.Toasty
 import java.util.*
 

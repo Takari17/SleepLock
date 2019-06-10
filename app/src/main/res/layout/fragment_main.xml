@@ -7,7 +7,7 @@
         android:background="#2F3238"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.fragments.MainFragment">
+        tools:context=".ui.feature.timer.TimerFragment">
 
     <TextView
             android:id="@+id/currentTimeTextView"

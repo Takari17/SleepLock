@@ -1,4 +1,4 @@
-package com.example.sleeplock.ui.viewmodel
+package com.takari.sleeplock.ui.feature.timer
 
 import android.content.Context
 import android.graphics.Color
@@ -6,10 +6,10 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.sleeplock.R
-import com.example.sleeplock.data.Repository
-import com.example.sleeplock.ui.common.Animate
-import com.example.sleeplock.utils.*
+import com.takari.sleeplock.R
+import com.takari.sleeplock.data.Repository
+import com.takari.sleeplock.ui.common.Animate
+import com.takari.sleeplock.utils.*
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.Observables
@@ -19,16 +19,16 @@ import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 /*
- * Shared by MainFragment and ListFragment, however this View Model primarily references the MainFragments properties. ListFragment
- * doesn't have enough logic to warrant it's own View Model and it also needs to communicate with MainFragment, so I made them share a
+ * Shared by TimerFragment and WhiteNoiseFragment, however this View Model primarily references TimerFragment's properties. WhiteNoiseFragment
+ * doesn't have enough logic to warrant it's own View Model and it also needs to communicate with TimerFragment so I made them share a
  * this View Model instead.
  */
-class MainViewModel @Inject constructor(
+class TimerViewModel @Inject constructor(
     private val context: Context,
     private val repository: Repository
 ) : ViewModel() {
 
-    //Observed by MainFragment
+    //Observed by TimerFragment
     private val buttonEnabled = MutableLiveData<Boolean>()
     private val buttonColor = MutableLiveData<Int?>()
     private val buttonText = MutableLiveData<String?>()
@@ -151,7 +151,7 @@ class MainViewModel @Inject constructor(
         isTimeChosen.accept(true)
     }
 
-    //Observes recycler view onClickListener from ListFragment.kt
+    //Observes recycler view onClickListener from WhiteNoiseFragment.ktment.kt
     fun subscribeToItemIndex(recyclerViewOnClick: BehaviorRelay<Int>) {
         compositeDisposable += recyclerViewOnClick
             .subscribeBy(

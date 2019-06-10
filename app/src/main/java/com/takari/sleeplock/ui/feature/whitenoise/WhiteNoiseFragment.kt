@@ -1,4 +1,4 @@
-package com.example.sleeplock.ui.fragments
+package com.takari.sleeplock.ui.feature.whitenoise
 
 
 import android.content.Context
@@ -9,24 +9,26 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.sleeplock.Application.Companion.applicationComponent
-import com.example.sleeplock.R
-import com.example.sleeplock.ui.adapter.MyAdapter
-import com.example.sleeplock.utils.ItemData
-import com.example.sleeplock.utils.activityViewModelFactory
-import com.example.sleeplock.utils.showSoundSelectedToast
-import com.example.sleeplock.utils.showWarningToast
+import com.takari.sleeplock.Application.Companion.applicationComponent
+import com.takari.sleeplock.R
+import com.takari.sleeplock.utils.ItemData
+import com.takari.sleeplock.utils.activityViewModelFactory
+import com.takari.sleeplock.utils.showSoundSelectedToast
+import com.takari.sleeplock.utils.showWarningToast
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.fragment_list.*
 
-class ListFragment : Fragment() {
+class WhiteNoiseFragment : Fragment() {
 
-    private val viewModel by activityViewModelFactory { applicationComponent.mainViewModel }
+    private val viewModel by activityViewModelFactory { applicationComponent.timerViewModel }
     private val compositeDisposable = CompositeDisposable()
     private val myAdapter by lazy {
-        MyAdapter(ItemData.getAllImageReferences(), ItemData.getAllText(context!!))
+        WhiteNoiseAdapter(
+            ItemData.getAllImageReferences(),
+            ItemData.getAllText(context!!)
+        )
     }
 
     override fun onCreateView(

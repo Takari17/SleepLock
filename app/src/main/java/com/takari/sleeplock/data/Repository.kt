@@ -1,4 +1,4 @@
-package com.example.sleeplock.data
+package com.takari.sleeplock.data
 
 import android.content.ComponentName
 import android.content.Context
@@ -8,11 +8,11 @@ import android.os.IBinder
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import com.example.sleeplock.data.local.SharedPrefs
-import com.example.sleeplock.data.service.MainService
-import com.example.sleeplock.utils.INDEX
-import com.example.sleeplock.utils.IntentAction
-import com.example.sleeplock.utils.MILLIS
+import com.takari.sleeplock.data.local.SharedPrefs
+import com.takari.sleeplock.data.service.MainService
+import com.takari.sleeplock.utils.INDEX
+import com.takari.sleeplock.utils.IntentAction
+import com.takari.sleeplock.utils.MILLIS
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.plusAssign
@@ -96,7 +96,7 @@ class Repository @Inject constructor(
         isTimerRunning.removeSource(service.getIsTimerRunning())
     }
 
-    // Cleared in the MainViewModel's onClear() callback.
+    // Cleared in the TimerViewModel's onClear() callback.
     fun clearDisposables() = compositeDisposable.clear()
 
 

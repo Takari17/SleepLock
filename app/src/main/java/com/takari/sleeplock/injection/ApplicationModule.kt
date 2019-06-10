@@ -1,4 +1,4 @@
-package com.example.sleeplock.injection
+package com.takari.sleeplock.injection
 
 import android.content.Context
 import android.content.SharedPreferences

@@ -1,12 +1,12 @@
-package com.example.sleeplock
+package com.takari.sleeplock
 
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
-import com.example.sleeplock.injection.ApplicationComponent
-import com.example.sleeplock.injection.DaggerApplicationComponent
-import com.example.sleeplock.utils.CHANNEL_ID
+import com.takari.sleeplock.injection.ApplicationComponent
+import com.takari.sleeplock.injection.DaggerApplicationComponent
+import com.takari.sleeplock.utils.CHANNEL_ID
 
 /*
 Exposes Dagger component globally for classes I do not own (e.g Activities & Services)

@@ -7,7 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#2F3238"
-        tools:context=".ui.fragments.ListFragment">
+        tools:context=".ui.feature.whitenoise.WhiteNoiseFragment">
     <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
             android:layout_height="0dp"

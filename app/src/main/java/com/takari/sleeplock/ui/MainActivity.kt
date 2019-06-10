@@ -1,4 +1,4 @@
-package com.example.sleeplock.ui
+package com.takari.sleeplock.ui
 
 import android.content.Context
 import android.content.Intent
@@ -9,9 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.example.sleeplock.R
-import com.example.sleeplock.ui.fragments.ListFragment
-import com.example.sleeplock.ui.fragments.MainFragment
+import com.takari.sleeplock.R
+import com.takari.sleeplock.ui.feature.whitenoise.WhiteNoiseFragment
+import com.takari.sleeplock.ui.feature.timer.TimerFragment
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -47,8 +47,8 @@ class MainActivity : AppCompatActivity() {
         override fun getItem(position: Int): Fragment =
 
             when (position) {
-                0 -> MainFragment()
-                1 -> ListFragment()
+                0 -> TimerFragment()
+                1 -> WhiteNoiseFragment()
                 else -> throw Resources.NotFoundException()
             }
 

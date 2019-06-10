@@ -1,4 +1,4 @@
-package com.example.sleeplock.ui.common
+package com.takari.sleeplock.ui.common
 
 import android.animation.Animator
 import android.animation.AnimatorSet
@@ -9,7 +9,7 @@ import android.view.View
 import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator
 
 /*
- * Handles the animation in the MainFragment when the user clicks on the startPauseButton.
+ * Handles the animation in the TimerFragment when the user clicks on the startPauseButton.
  */
 class Animate(
     private val context: Context

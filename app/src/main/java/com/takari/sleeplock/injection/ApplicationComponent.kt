@@ -1,9 +1,9 @@
-package com.example.sleeplock.injection
+package com.takari.sleeplock.injection
 
 import android.content.Context
-import com.example.sleeplock.data.Repository
-import com.example.sleeplock.data.local.SharedPrefs
-import com.example.sleeplock.ui.viewmodel.MainViewModel
+import com.takari.sleeplock.data.Repository
+import com.takari.sleeplock.data.local.SharedPrefs
+import com.takari.sleeplock.ui.feature.timer.TimerViewModel
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton
@@ -12,7 +12,7 @@ import javax.inject.Singleton
 @Component(modules = [ApplicationModule::class])
 interface ApplicationComponent {
 
-    val mainViewModel: MainViewModel
+    val timerViewModel: TimerViewModel
     val repository: Repository
     val sharedPrefs: SharedPrefs
 

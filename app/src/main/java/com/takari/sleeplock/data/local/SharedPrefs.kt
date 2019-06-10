@@ -1,4 +1,4 @@
-package com.example.sleeplock.data.local
+package com.takari.sleeplock.data.local
 
 import android.content.SharedPreferences
 import androidx.core.content.edit

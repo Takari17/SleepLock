@@ -1,7 +1,7 @@
-package com.example.sleeplock.utils
+package com.takari.sleeplock.utils
 
 import android.content.Context
-import com.example.sleeplock.R
+import com.takari.sleeplock.R
 
 /*
 Holds constants used throughout the code base.
