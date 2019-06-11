@@ -13,8 +13,8 @@ android {
         applicationId "com.takari.sleeplock"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 2
-        versionName "1.0"
+        versionCode 3
+        versionName "3.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -39,11 +39,11 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0-alpha05'
+    implementation 'androidx.appcompat:appcompat:1.1.0-beta01'
     implementation 'androidx.core:core-ktx:1.2.0-alpha01'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.1.0-alpha06'
+    implementation 'com.google.android.material:material:1.1.0-alpha07'
 
     //ViewModel and LiveData
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0-alpha01'
@@ -72,8 +72,8 @@ dependencies {
     kapt 'com.google.dagger:dagger-compiler:2.23'
 
     //Fragment & Activity KTX
-    implementation 'androidx.fragment:fragment-ktx:1.1.0-alpha09'
-    implementation 'androidx.activity:activity-ktx:1.0.0-alpha08'
+    implementation 'androidx.fragment:fragment-ktx:1.1.0-beta01'
+    implementation 'androidx.activity:activity-ktx:1.0.0-beta01'
 
     //ViewPropertyObjectAnimator
     implementation 'com.bartoszlipinski:viewpropertyobjectanimator:1.4.5'
