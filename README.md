@@ -19,4 +19,4 @@ You can simply download it [here](https://play.google.com/store/apps/details?id=
 If you wish to contribute to this project email me first at takariharrison@gmail.com
 
 ## Acknowledgments
-Pretty much everyonen on r/androiddev, especially [this guy.](https://github.com/Zhuinden)
+Pretty much everyone on r/androiddev, especially [this guy.](https://github.com/Zhuinden)
