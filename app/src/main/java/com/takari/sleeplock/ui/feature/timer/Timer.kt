@@ -1,36 +1,32 @@
 package com.takari.sleeplock.ui.feature.timer
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import com.takari.sleeplock.utils.convertMilliToSeconds
 import com.jakewharton.rxrelay2.BehaviorRelay
-import com.jakewharton.rxrelay2.PublishRelay
+import com.takari.sleeplock.utils.convertMilliToSeconds
 import io.reactivex.Observable
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
-/*
- * Self explanatory class (at least I hope so...).
- */
 class Timer(millis: Long) {
 
-    private val elapsedTime = AtomicLong() // In millis
+    private val elapsedTime = AtomicLong()
 
     private var startingTime: Int = 0 // Used for stopping the timer at 0
 
-    // Default values
     private val resumed = AtomicBoolean().also { it.set(false) }
+
     private val stopped = AtomicBoolean().also { it.set(false) }
 
-    // Some useful callbacks we can observe
-    val wasTimerStarted = BehaviorRelay.createDefault(false)
-    val isTimerCompleted = PublishRelay.create<Boolean>()
-    private val isTimerRunning = MutableLiveData<Boolean>()
+    val isTimerRunning = BehaviorRelay.create<Boolean>()
 
+    val hasTimerStarted = BehaviorRelay.create<Boolean>()
 
-    // Stop's if either reset() is called or if the elapse time reaches 0
-    val currentTime: Observable<Long> = Observable.interval(1, TimeUnit.SECONDS)
+    val hasTimerCompleted = BehaviorRelay.create<Boolean>()
+
+    /**
+    Stop's if either reset is called or if the elapse time reaches 0.
+     */
+    val countDownTimer: Observable<Long> = Observable.interval(1, TimeUnit.SECONDS)
         .takeWhile { !stopped.get() }
         .takeWhile { millis -> startingTime != millis.toInt() }
         .filter { resumed.get() }
@@ -45,26 +41,25 @@ class Timer(millis: Long) {
 
     fun start() {
         resumed.set(true)
-        wasTimerStarted.accept(true)
-        isTimerRunning.postValue(true)
+        isTimerRunning.accept(true)
+        hasTimerStarted.accept(true)
+        hasTimerCompleted.accept(false)
     }
 
     fun resume() {
         resumed.set(true)
-        isTimerRunning.postValue(true)
+        isTimerRunning.accept(true)
     }
 
     fun pause() {
         resumed.set(false)
-        isTimerRunning.postValue(false)
+        isTimerRunning.accept(false)
     }
 
     fun reset() {
         stopped.set(true)
-        wasTimerStarted.accept(false)
-        isTimerRunning.postValue(null)
-        isTimerCompleted.accept(true)
+        hasTimerStarted.accept(false)
+        isTimerRunning.accept(false)
+        hasTimerCompleted.accept(true)
     }
-
-    fun getIsTimerRunning(): LiveData<Boolean> = isTimerRunning
 }
