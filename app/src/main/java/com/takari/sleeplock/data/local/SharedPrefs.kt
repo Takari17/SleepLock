@@ -2,44 +2,61 @@ package com.takari.sleeplock.data.local
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.takari.sleeplock.utils.MILLIS
+import java.lang.Exception
+import java.lang.IllegalStateException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/*
- * Simply stores and returns data from Shared Preferences.
+/**
+ * Stores and returns data from Shared Preferences.
  */
 @Singleton
 class SharedPrefs @Inject constructor(
     private val sharedPrefs: SharedPreferences
 ) {
 
-    fun saveIntIfNonNull(key: String, int: Int?) = int?.also { nonNullInt ->
-        sharedPrefs.edit { putInt(key, nonNullInt) }
+    /**
+     * Saves either an Integer, String, or Boolean value to shared preferences if non null.
+     */
+    fun saveValueIfNonNull(key: String, value: Any?) {
+        value?.also { nonNullValue ->
+
+            when (value.javaClass.simpleName) {
+                SimpleJavaClassNames.Integer.name -> sharedPrefs.edit { putInt(key, nonNullValue as Int) }
+
+                SimpleJavaClassNames.String.name -> sharedPrefs.edit { putString(key, nonNullValue as String) }
+
+                SimpleJavaClassNames.Boolean.name -> sharedPrefs.edit { putBoolean(key, nonNullValue as Boolean) }
+
+                else -> throw Exception("Invalid type, the method can only save Integers, Strings and Booleans")
+            }
+        }
     }
 
-    fun saveStringIfNonNull(key: String, string: String?) = string?.also { nonNullString ->
-        sharedPrefs.edit { putString(key, nonNullString) }
-    }
 
-    fun saveBooleanIfNonNull(key: String, boolean: Boolean?) = boolean?.also { nonNullBoolean ->
-        sharedPrefs.edit { putBoolean(key, nonNullBoolean) }
-    }
+    /**
+    Returns a Integer value if it exist, if not it returns the default value.
+     */
+    fun getInt(key: String, defaultValue: Int): Int =
+        sharedPrefs.getInt(key, defaultValue)
 
-    fun getInt(key: String): Int? {
-        val int = sharedPrefs.getInt(key, 10)
-        return if (int == 10) null
-        else int
-    }
+    /**
+    Returns a String value if it exist, if not it returns the default value.
+     */
+    fun getString(key: String, defaultValue: String): String =
+        sharedPrefs.getString(key, defaultValue)
 
-    fun getString(key: String): String? {
-        val string = sharedPrefs.getString(key, "")
-        return if (string == "") null
-        else string
-    }
-
-    fun getBoolean(key: String, defaultValue: Boolean): Boolean? =
+    /**
+    Returns a Boolean value if it exist, if not it returns the default value.
+     */
+    fun getBoolean(key: String, defaultValue: Boolean): Boolean =
         sharedPrefs.getBoolean(key, defaultValue)
 
 
     fun resetAllData() = sharedPrefs.edit { clear() }
+
+    private enum class SimpleJavaClassNames{
+        Integer, String, Boolean
+    }
 }
