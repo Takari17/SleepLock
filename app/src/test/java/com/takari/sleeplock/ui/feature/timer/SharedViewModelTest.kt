@@ -14,8 +14,11 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.reactivex.plugins.RxJavaPlugins
 import io.reactivex.schedulers.Schedulers
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 
 
@@ -25,7 +28,7 @@ internal class SharedViewModelTest {
 
     private val context = mockk<Context>()
     private val repository = mockk<Repository>()
-    private var sharedViewModel: SharedViewModel? = null
+    private lateinit var sharedViewModel: SharedViewModel
 
 
     @BeforeAll
@@ -62,7 +65,7 @@ internal class SharedViewModelTest {
 
         repository.currentTime.accept(100)
 
-        assertEquals(100, sharedViewModel!!.getCurrentTime().blockingObserve())
+        assertEquals(100, sharedViewModel.getCurrentTime().blockingObserve())
     }
 
 
@@ -73,7 +76,7 @@ internal class SharedViewModelTest {
 
         repository.isTimerRunning.accept(true)
 
-        assertEquals("Pause", sharedViewModel!!.getTimerAction().blockingObserve())
+        assertEquals("Pause", sharedViewModel.getTimerAction().blockingObserve())
     }
 
     @Test
@@ -83,7 +86,7 @@ internal class SharedViewModelTest {
 
         repository.isTimerRunning.accept(false)
 
-        assertEquals("Resume", sharedViewModel!!.getTimerAction().blockingObserve())
+        assertEquals("Resume", sharedViewModel.getTimerAction().blockingObserve())
     }
 
 
@@ -94,7 +97,7 @@ internal class SharedViewModelTest {
 
         repository.isTimerRunning.accept(false)
 
-        assertEquals("Start", sharedViewModel!!.getTimerAction().blockingObserve())
+        assertEquals("Start", sharedViewModel.getTimerAction().blockingObserve())
     }
 
 
@@ -105,15 +108,15 @@ internal class SharedViewModelTest {
 
         assertEquals(
             ButtonState(false, "#0B3136"),
-            sharedViewModel!!.getButtonState().blockingObserve()
+            sharedViewModel.getButtonState().blockingObserve()
         )
 
         assertEquals(
             WhiteNoiseData(R.drawable.nosound, "No Sound", null),
-            sharedViewModel!!.getWhiteNoiseData().blockingObserve()
+            sharedViewModel.getWhiteNoiseData().blockingObserve()
         )
 
-        assertEquals("Start", sharedViewModel!!.getTimerAction().blockingObserve())
+        assertEquals("Start", sharedViewModel.getTimerAction().blockingObserve())
     }
 
     @Test
@@ -121,7 +124,7 @@ internal class SharedViewModelTest {
 
         repository.hasTimerStarted.accept(true)
 
-        assertEquals(Animate.DEFAULT, sharedViewModel!!.getAnimate().blockingObserve())
+        assertEquals(Animate.DEFAULT, sharedViewModel.getAnimate().blockingObserve())
     }
 
     @Test
@@ -129,42 +132,42 @@ internal class SharedViewModelTest {
 
         assertEquals(
             ButtonState(enabled = false, color = Color.DarkBlue.hexCode),
-            sharedViewModel!!.getButtonState().blockingObserve()
+            sharedViewModel.getButtonState().blockingObserve()
         )
     }
 
     @Test
     fun `buttonState should be false and dark blue if only sound is chosen`() {
 
-        sharedViewModel!!.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(0, "", null))
+        sharedViewModel.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(0, "", null))
 
         assertEquals(
             ButtonState(enabled = false, color = Color.DarkBlue.hexCode),
-            sharedViewModel!!.getButtonState().blockingObserve()
+            sharedViewModel.getButtonState().blockingObserve()
         )
     }
 
     @Test
     fun `buttonState should be false and dark blue if only time is chosen`() {
 
-        sharedViewModel!!.setTime(0)
+        sharedViewModel.setTime(0)
 
         assertEquals(
             ButtonState(enabled = false, color = Color.DarkBlue.hexCode),
-            sharedViewModel!!.getButtonState().blockingObserve()
+            sharedViewModel.getButtonState().blockingObserve()
         )
     }
 
     @Test
     fun `buttonState should be true and light blue if both time and sound are chosen`() {
 
-        sharedViewModel!!.setTime(0)
+        sharedViewModel.setTime(0)
 
-        sharedViewModel!!.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(0, "", null))
+        sharedViewModel.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(0, "", null))
 
         assertEquals(
             ButtonState(enabled = true, color = Color.LightBlue.hexCode),
-            sharedViewModel!!.getButtonState().blockingObserve()
+            sharedViewModel.getButtonState().blockingObserve()
         )
     }
 
@@ -178,10 +181,10 @@ internal class SharedViewModelTest {
 
         every { repository.hasTimerStartedBoolean() } returns false
 
-        sharedViewModel!!.setTime(0)
-        sharedViewModel!!.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(0, "", 0))
+        sharedViewModel.setTime(0)
+        sharedViewModel.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(0, "", 0))
 
-        sharedViewModel!!.startOrPauseTimer()
+        sharedViewModel.startOrPauseTimer()
 
         verify { repository.startSoundAndTimer(0, 0) }
     }
@@ -193,7 +196,7 @@ internal class SharedViewModelTest {
 
         every { repository.isTimerRunningBoolean() } returns true
 
-        sharedViewModel!!.startOrPauseTimer()
+        sharedViewModel.startOrPauseTimer()
 
         verify { repository.pauseSoundAndTimer() }
     }
@@ -207,7 +210,7 @@ internal class SharedViewModelTest {
 
         every { repository.hasTimerStartedBoolean() } returns true
 
-        sharedViewModel!!.startOrPauseTimer()
+        sharedViewModel.startOrPauseTimer()
 
         verify { repository.resumeSoundAndTimer() }
     }
@@ -217,14 +220,14 @@ internal class SharedViewModelTest {
 
         every { repository.isTimerRunningBoolean() } returns true
 
-        sharedViewModel!!.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(5, "Test", 5))
+        sharedViewModel.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(5, "Test", 5))
 
         assertEquals(
             WhiteNoiseData(
                 image = R.drawable.nosound,
                 name = getResourceString(context, R.string.no_sound),
                 sound = null
-            ), sharedViewModel!!.getWhiteNoiseData().value
+            ), sharedViewModel.getWhiteNoiseData().value
         )
     }
 
@@ -233,13 +236,13 @@ internal class SharedViewModelTest {
 
         every { repository.hasTimerStartedBoolean() } returns true
 
-        sharedViewModel!!.setToastData()
+        sharedViewModel.setToastData()
 
         assertEquals(
             ToastData(
                 type = ToastTypes.Warning.name,
                 stringID = R.string.reset_the_timer
-            ), sharedViewModel!!.getToast().value
+            ), sharedViewModel.getToast().value
         )
     }
 
@@ -248,13 +251,13 @@ internal class SharedViewModelTest {
 
         every { repository.hasTimerStartedBoolean() } returns false
 
-        sharedViewModel!!.setToastData()
+        sharedViewModel.setToastData()
 
         assertEquals(
             ToastData(
                 type = ToastTypes.Success.name,
                 stringID = R.string.sound_selected
-            ), sharedViewModel!!.getToast().value
+            ), sharedViewModel.getToast().value
         )
     }
 }
