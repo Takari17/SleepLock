@@ -7,22 +7,26 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
 import com.jakewharton.rxrelay2.BehaviorRelay
-import com.takari.sleeplock.data.feature.WhiteNoiseList
+import com.takari.sleeplock.data.SleepTimerService.Companion.TIME
+import com.takari.sleeplock.data.SleepTimerService.Companion.WHITE_NOISE
 import com.takari.sleeplock.data.local.SharedPrefs
-import com.takari.sleeplock.data.service.TimerService
+import com.takari.sleeplock.data.whitenoise.WhiteNoiseList
 import io.reactivex.rxkotlin.subscribeBy
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Controls and observes SleepTimerService as well as sets/gets data from shared preferences.
+ */
 @Singleton
 class Repository @Inject constructor(
     private val context: Context,
     private val sharedPrefs: SharedPrefs,
-    private var timerService: TimerService?,
+    private var sleepTimerService: SleepTimerService?,
     val whiteNoiseList: WhiteNoiseList
 ) {
 
-    private val serviceIntent: Intent = Intent(context, TimerService::class.java)
+    private val serviceIntent: Intent = Intent(context, SleepTimerService::class.java)
 
     // Used for chaining the observables from the Timer Service
     val currentTime = BehaviorRelay.create<Long>()
@@ -71,11 +75,11 @@ class Repository @Inject constructor(
     }
 
     /**
-     * Starts TimerService and plays the white noise and timer.
+     * Starts SleepTimerService and plays the white noise and timer.
      */
     fun startSoundAndTimer(millis: Long, whiteNoise: Int) {
         serviceIntent.apply {
-            action = TimerService.IntentAction.START.name
+            action = SleepTimerService.IntentAction.START.name
             putExtra(TIME, millis)
             putExtra(WHITE_NOISE, whiteNoise)
         }
@@ -86,46 +90,47 @@ class Repository @Inject constructor(
         }
     }
 
-    fun pauseSoundAndTimer() = timerService?.pauseSoundAndTimer()
+    fun pauseSoundAndTimer() = sleepTimerService?.pauseSoundAndTimer()
 
-    fun resumeSoundAndTimer() = timerService?.resumeSoundAndTimer()
+    fun resumeSoundAndTimer() = sleepTimerService?.resumeSoundAndTimer()
 
-    fun resetSoundAndTimer() = timerService?.resetSoundAndTimer()
+    fun resetSoundAndTimer() = sleepTimerService?.resetSoundAndTimer()
 
 
     /**
-    Subscribes to the exposed timer cllback observables from Timer Service.
+    Subscribes to the exposed timer callback observables from Timer Service.
      */
     private val serviceConnection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
 
-            val serviceReference = (service as TimerService.LocalBinder).getService()
+            val serviceReference = (service as SleepTimerService.LocalBinder).getService()
 
-            timerService = serviceReference
+            sleepTimerService = serviceReference
 
+            // These should already be on a background thread, also no need to dispose observables in model layer.
             serviceReference.getCurrentTime()
                 .subscribeBy(
-                    onNext = { time -> this@Repository.currentTime.accept(time) },
+                    onNext = { time -> currentTime.accept(time) },
                     onError = { Log.d("zwi", "Error observing currentTime in Repository: $it") }
                 )
 
             serviceReference.getIsTimerRunning()
                 .subscribeBy(
-                    onNext = { isRunning -> this@Repository.isTimerRunning.accept(isRunning) },
+                    onNext = { isRunning -> isTimerRunning.accept(isRunning) },
                     onError = { Log.d("zwi", "Error observing isRunning in Repository: $it") }
                 )
 
             serviceReference.getHasTimerStarted()
                 .subscribeBy(
-                    onNext = { hasStarted -> this@Repository.hasTimerStarted.accept(hasStarted) },
+                    onNext = { hasStarted -> hasTimerStarted.accept(hasStarted) },
                     onError = { Log.d("zwi", "Error observing hasStarted in Repository: $it") }
                 )
 
             serviceReference.getTimerCompleted()
                 .subscribeBy(
                     onNext = {
-                        this@Repository.timerCompleted.accept(Unit)
+                        timerCompleted.accept(Unit)
                         resetSharedPrefsData()
                     },
                     onError = { Log.d("zwi", "Error observing completed in Repository: $it") }
