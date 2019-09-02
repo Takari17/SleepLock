@@ -1,4 +1,4 @@
-package com.takari.sleeplock.ui.feature.timer
+package com.takari.sleeplock.data.feature
 
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.takari.sleeplock.utils.convertMilliToSeconds
@@ -17,14 +17,15 @@ class Timer(millis: Long) {
 
     private val stopped = AtomicBoolean().also { it.set(false) }
 
-    val isTimerRunning = BehaviorRelay.create<Boolean>()
+    private val isRunning = BehaviorRelay.create<Boolean>()
 
-    val hasTimerStarted = BehaviorRelay.create<Boolean>()
+    private val hasStarted = BehaviorRelay.create<Boolean>()
 
-    val hasTimerCompleted = BehaviorRelay.create<Boolean>()
+    private val completed = BehaviorRelay.create<Unit>()
 
     /**
-    Stop's if either reset is called or if the elapse time reaches 0.
+    Hot observable that emit's emits a count down timer, can be started, paused,
+    resumed and reseted. Stop's if either reset is called or if the elapse time reaches 0.
      */
     val countDownTimer: Observable<Long> = Observable.interval(1, TimeUnit.SECONDS)
         .takeWhile { !stopped.get() }
@@ -41,25 +42,30 @@ class Timer(millis: Long) {
 
     fun start() {
         resumed.set(true)
-        isTimerRunning.accept(true)
-        hasTimerStarted.accept(true)
-        hasTimerCompleted.accept(false)
+        isRunning.accept(true)
+        hasStarted.accept(true)
     }
 
     fun resume() {
         resumed.set(true)
-        isTimerRunning.accept(true)
+        isRunning.accept(true)
     }
 
     fun pause() {
         resumed.set(false)
-        isTimerRunning.accept(false)
+        isRunning.accept(false)
     }
 
     fun reset() {
         stopped.set(true)
-        hasTimerStarted.accept(false)
-        isTimerRunning.accept(false)
-        hasTimerCompleted.accept(true)
+        hasStarted.accept(false)
+        isRunning.accept(false)
+        completed.accept(Unit)
     }
+
+    fun getIsRunning(): Observable<Boolean> = isRunning
+
+    fun getHasStarted(): Observable<Boolean> = hasStarted
+
+    fun getCompleted(): Observable<Unit> = completed
 }
