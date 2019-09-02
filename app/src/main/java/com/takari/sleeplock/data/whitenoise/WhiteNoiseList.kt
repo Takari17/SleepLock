@@ -1,4 +1,4 @@
-package com.takari.sleeplock.data.feature
+package com.takari.sleeplock.data.whitenoise
 
 import android.content.Context
 import com.takari.sleeplock.R

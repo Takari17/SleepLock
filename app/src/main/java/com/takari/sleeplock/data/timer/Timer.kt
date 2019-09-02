@@ -1,4 +1,4 @@
-package com.takari.sleeplock.data.feature
+package com.takari.sleeplock.data.timer
 
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.takari.sleeplock.utils.convertMilliToSeconds
