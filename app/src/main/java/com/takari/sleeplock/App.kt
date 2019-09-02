@@ -6,15 +6,15 @@ import android.app.NotificationManager
 import android.os.Build
 import com.takari.sleeplock.injection.ApplicationComponent
 import com.takari.sleeplock.injection.DaggerApplicationComponent
-import com.takari.sleeplock.utils.CHANNEL_ID
 
-/*
-Exposes Dagger component globally for classes I do not own (e.g Activities & Services)
- */
-class Application : Application() {
+
+class App : Application() {
 
     companion object {
         lateinit var applicationComponent: ApplicationComponent
+
+        const val CHANNEL_ID = "custom channel if"
+
     }
 
     override fun onCreate() {
