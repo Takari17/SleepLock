@@ -2,9 +2,7 @@ package com.takari.sleeplock.data.local
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.takari.sleeplock.utils.MILLIS
 import java.lang.Exception
-import java.lang.IllegalStateException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,7 +43,7 @@ class SharedPrefs @Inject constructor(
     Returns a String value if it exist, if not it returns the default value.
      */
     fun getString(key: String, defaultValue: String): String =
-        sharedPrefs.getString(key, defaultValue)
+        sharedPrefs.getString(key, defaultValue)!!
 
     /**
     Returns a Boolean value if it exist, if not it returns the default value.
@@ -55,6 +53,7 @@ class SharedPrefs @Inject constructor(
 
 
     fun resetAllData() = sharedPrefs.edit { clear() }
+
 
     private enum class SimpleJavaClassNames{
         Integer, String, Boolean
