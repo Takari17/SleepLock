@@ -7,17 +7,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.takari.sleeplock.R
-import es.dmoral.toasty.Toasty
 import java.util.*
 
 /*
  * Helper methods used throughout the codebase.
  */
 
-/*
-Factory that returns a lazy view model reference, allows dagger to inject specific viewModels
-with their dependencies. Scoped to the underlying activity, not the fragment itsself.
+
+/**
+Factory that returns a lazy view model reference scoped to the underlying activity, not the fragment itsself.
  */
 inline fun <reified T : ViewModel> Fragment.activityViewModelFactory(
     crossinline provider: () -> T
@@ -28,14 +26,17 @@ inline fun <reified T : ViewModel> Fragment.activityViewModelFactory(
     }
 }
 
-// Conversion methods
+
 fun Int.convertHoursToMin(extraMinutes: Int = 0): Int = (this * 60) + extraMinutes
+
 
 fun Int.convertMinToMilli(): Long = (this * 60000).toLong()
 
+
 fun Long.convertMilliToSeconds(): Int = (this / 1000).toInt()
 
-fun Long.formatTime(): String {
+
+fun Long.milliTo24HourFormat(): String {
     val seconds = (this / 1000 % 60).toInt()
     val minutes = (this / (1000 * 60) % 60).toInt()
     val hours = (this / (1000 * 60 * 60) % 24).toInt()
@@ -47,15 +48,5 @@ fun Long.formatTime(): String {
     }
 }
 
-fun showSoundSelectedToast(context: Context) =
-    Toasty.success(context, R.string.sound_selected, Toasty.LENGTH_SHORT, true).show()
-
-
-fun showWarningToast(context: Context) =
-    Toasty.warning(context, R.string.reset_the_timer, Toasty.LENGTH_SHORT, true).show()
-
-
-fun showFinishedToast(context: Context) =
-    Toasty.info(context, R.string.timer_finished, Toasty.LENGTH_SHORT, true).show()
 
 fun getResourceString(context: Context, id: Int): String = context.resources.getString(id)

@@ -15,12 +15,12 @@ import com.takari.sleeplock.R
 import com.takari.sleeplock.ui.common.Animate
 import com.takari.sleeplock.ui.common.TimeOptionDialog
 import com.takari.sleeplock.utils.activityViewModelFactory
-import com.takari.sleeplock.utils.formatTime
+import com.takari.sleeplock.utils.milliTo24HourFormat
 import kotlinx.android.synthetic.main.timer_fragment.*
 
 
 class TimerFragment : Fragment() {
-    
+
     private val sharedViewModel by activityViewModelFactory { applicationComponent.sharedViewModel }
     private val timeOptionsDialog = TimeOptionDialog()
     private val animate by lazy { Animate(context!!) }
@@ -40,7 +40,7 @@ class TimerFragment : Fragment() {
 
 
         sharedViewModel.getCurrentTime().observe(viewLifecycleOwner, Observer { millis ->
-            currentTimeTextView.text = millis.formatTime()
+            currentTimeTextView.text = millis.milliTo24HourFormat()
         })
 
 
@@ -72,7 +72,7 @@ class TimerFragment : Fragment() {
 
 
         timeOptionsDialog.getUserSelectedTime().observe(viewLifecycleOwner, Observer { chosenTimeInMillis ->
-            currentTimeTextView.text = chosenTimeInMillis.formatTime()
+            currentTimeTextView.text = chosenTimeInMillis.milliTo24HourFormat()
             sharedViewModel.setTime(chosenTimeInMillis)
         })
     }

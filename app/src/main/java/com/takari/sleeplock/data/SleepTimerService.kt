@@ -16,7 +16,7 @@ import com.takari.sleeplock.data.timer.TimerBroadcastReceiver
 import com.takari.sleeplock.data.timer.Timer
 import com.takari.sleeplock.ui.MainActivity
 import com.takari.sleeplock.ui.isAppInBackground
-import com.takari.sleeplock.utils.formatTime
+import com.takari.sleeplock.utils.milliTo24HourFormat
 import com.takari.sleeplock.utils.getResourceString
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.subscribeBy
@@ -89,7 +89,7 @@ class SleepTimerService : Service() {
             }
         }
 
-        val timeString: String? = currentTime.value?.formatTime()
+        val timeString: String? = currentTime.value?.milliTo24HourFormat()
 
         startForeground(
             notificationID,
@@ -150,7 +150,7 @@ class SleepTimerService : Service() {
             .subscribeBy(
                 onNext = { timeInMilli ->
                     currentTime.accept(timeInMilli)
-                    updateNotification(timeInMilli.formatTime(), notificationAction)
+                    updateNotification(timeInMilli.milliTo24HourFormat(), notificationAction)
                 },
                 onError = { Log.d("zwi", "Error observing countDownTimer in SleepTimerService: $it") }
             )

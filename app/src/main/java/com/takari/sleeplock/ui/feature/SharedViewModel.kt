@@ -146,7 +146,7 @@ class SharedViewModel @Inject constructor(
     }
 
     /**
-    Resets the timer in TimerService and triggers an emission from timerCompleted in the Repository.
+    Resets the timer in SleepTimerService and triggers an emission from timerCompleted in the Repository.
      */
     fun resetSoundAndTimer() = repository.resetSoundAndTimer()
 

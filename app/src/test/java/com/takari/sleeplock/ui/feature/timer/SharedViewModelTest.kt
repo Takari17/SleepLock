@@ -55,7 +55,7 @@ internal class SharedViewModelTest {
         every { repository.isTimerRunning } returns BehaviorRelay.create()
         every { repository.timerCompleted } returns BehaviorRelay.create()
         every { repository.hasTimerStarted } returns BehaviorRelay.create()
-        every { repository.isTimerRunningBoolean() } returns false
+        every { repository.hasTimerStartedBoolean() } returns false
 
         sharedViewModel = SharedViewModel(context, repository)
     }
@@ -139,7 +139,7 @@ internal class SharedViewModelTest {
     @Test
     fun `buttonState should be false and dark blue if only sound is chosen`() {
 
-        sharedViewModel.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(0, "", null))
+        sharedViewModel.setWhiteNoiseDataIfTimerNotStarted(WhiteNoiseData(0, "", null))
 
         assertEquals(
             ButtonState(enabled = false, color = Color.DarkBlue.hexCode),
@@ -161,9 +161,11 @@ internal class SharedViewModelTest {
     @Test
     fun `buttonState should be true and light blue if both time and sound are chosen`() {
 
+        every { repository.isTimerRunningBoolean() } returns false
+
         sharedViewModel.setTime(0)
 
-        sharedViewModel.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(0, "", null))
+        sharedViewModel.setWhiteNoiseDataIfTimerNotStarted(WhiteNoiseData(0, "", null))
 
         assertEquals(
             ButtonState(enabled = true, color = Color.LightBlue.hexCode),
@@ -182,7 +184,7 @@ internal class SharedViewModelTest {
         every { repository.hasTimerStartedBoolean() } returns false
 
         sharedViewModel.setTime(0)
-        sharedViewModel.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(0, "", 0))
+        sharedViewModel.setWhiteNoiseDataIfTimerNotStarted(WhiteNoiseData(0, "", 0))
 
         sharedViewModel.startOrPauseTimer()
 
@@ -216,11 +218,11 @@ internal class SharedViewModelTest {
     }
 
     @Test
-    fun `whiteNoiseData should not update if timer is running`() {
+    fun `whiteNoiseData should not update if timer has started`() {
 
-        every { repository.isTimerRunningBoolean() } returns true
+        every { repository.hasTimerStartedBoolean() } returns true
 
-        sharedViewModel.setWhiteNoiseData_IfTimerNotRunning(WhiteNoiseData(5, "Test", 5))
+        sharedViewModel.setWhiteNoiseDataIfTimerNotStarted(WhiteNoiseData(5, "Test", 5))
 
         assertEquals(
             WhiteNoiseData(
