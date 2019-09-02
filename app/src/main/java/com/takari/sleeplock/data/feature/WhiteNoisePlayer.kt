@@ -2,17 +2,10 @@ package com.takari.sleeplock.data.feature
 
 import android.content.Context
 import android.media.MediaPlayer
-import android.net.Uri
 
-class WhiteNoisePlayer(
-    private val mediaPlayer: MediaPlayer,
-    private val whiteNoise: Int,
-    context: Context
-) {
+class WhiteNoisePlayer(whiteNoise: Int, context: Context) {
 
-    init {
-        setSound(context)
-    }
+    private val mediaPlayer = MediaPlayer.create(context, whiteNoise)
 
     fun start() {
         mediaPlayer.start()
@@ -23,13 +16,4 @@ class WhiteNoisePlayer(
 
     fun reset() = mediaPlayer.release()
 
-    private fun setSound(context: Context) {
-        mediaPlayer.apply {
-            setDataSource(
-                context,
-                Uri.parse("android.resource://com.takari.sleeplock/raw/$whiteNoise")
-            )
-            prepare()
-        }
-    }
 }
