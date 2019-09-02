@@ -1,52 +1,45 @@
 package com.takari.sleeplock.ui.feature.whitenoise
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.api.load
 import com.takari.sleeplock.R
-import com.jakewharton.rxrelay2.BehaviorRelay
-import com.jakewharton.rxrelay2.PublishRelay
-import kotlinx.android.synthetic.main.recycler_view_layout.view.*
+import com.takari.sleeplock.ui.feature.SharedViewModel
+import com.takari.sleeplock.ui.feature.WhiteNoiseData
+import kotlinx.android.synthetic.main.recycler_view_item_layout.view.*
 
-/*
- * Displays the sound options available to the user.
+
+/**
+ * Displays 12 selectable white sound options to the user.
  */
 class WhiteNoiseAdapter(
-    private val imageList: List<Int>,
-    private val textList: List<String>
+    private val sharedViewModel: SharedViewModel,
+    private val context: Context
 ) :
     RecyclerView.Adapter<WhiteNoiseAdapter.MyViewHolder>() {
 
-    //Emits the index of the item clicked
-    val itemOnClickListener = BehaviorRelay.create<Int>()
+    private val whiteNoiseList = sharedViewModel.getWhiteNoiseList()
 
-    /*
-    Tells WhiteNoiseFragment to show a toast on recycler view click, have to use a publish relay for this
-    else a toast will randomly appear onStart, even when the user hasn't done anything since behavior relays
-    emit the last value it receives..
-     */
-    val showClickedToast = PublishRelay.create<Boolean>()
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.recycler_view_item_layout, parent, false)
+        return MyViewHolder(view)
+    }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder =
-        LayoutInflater.from(parent.context).inflate(R.layout.recycler_view_layout, parent, false).let { view ->
-            MyViewHolder(view)
-        }
-
-
-    override fun getItemCount(): Int = imageList.size
+    override fun getItemCount(): Int = whiteNoiseList.getAllImages().size
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
-        Glide.with(holder.itemView.context)
-            .asBitmap()
-            .load(imageList[position])
-            .into(holder.image)
+        holder.apply {
+            image.load(whiteNoiseList.getAllImages()[position])
 
-        holder.text.text = textList[position]
+            text.text = whiteNoiseList.getAllNames(context)[position]
+        }
     }
 
     inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -55,9 +48,24 @@ class WhiteNoiseAdapter(
 
         init {
             itemView.setOnClickListener {
-                itemOnClickListener.accept(adapterPosition)
-                showClickedToast.accept(true)
+
+                val data = WhiteNoiseData(
+                    getItemImage(adapterPosition),
+                    getItemName(adapterPosition),
+                    getItemWhiteNoise(adapterPosition)
+                )
+
+                sharedViewModel.apply {
+                    setWhiteNoiseDataIfTimerNotStarted(data)
+                    setToastData()
+                }
             }
         }
+
+        private fun getItemImage(position: Int) = whiteNoiseList.getAllImages()[position]
+
+        private fun getItemName(position: Int) = whiteNoiseList.getAllNames(context)[position]
+
+        private fun getItemWhiteNoise(position: Int) = whiteNoiseList.getAllNoises()[position]
     }
 }

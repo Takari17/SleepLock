@@ -1,40 +1,29 @@
 package com.takari.sleeplock.ui.feature.whitenoise
 
 
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
-import com.takari.sleeplock.Application.Companion.applicationComponent
+import com.takari.sleeplock.App.Companion.applicationComponent
 import com.takari.sleeplock.R
-import com.takari.sleeplock.utils.ItemData
+import com.takari.sleeplock.ui.feature.ToastTypes
 import com.takari.sleeplock.utils.activityViewModelFactory
-import com.takari.sleeplock.utils.showSoundSelectedToast
-import com.takari.sleeplock.utils.showWarningToast
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.plusAssign
-import io.reactivex.rxkotlin.subscribeBy
-import kotlinx.android.synthetic.main.fragment_list.*
+import es.dmoral.toasty.Toasty
+import kotlinx.android.synthetic.main.whitenoise_fragment.*
 
 class WhiteNoiseFragment : Fragment() {
 
-    private val viewModel by activityViewModelFactory { applicationComponent.timerViewModel }
-    private val compositeDisposable = CompositeDisposable()
-    private val myAdapter by lazy {
-        WhiteNoiseAdapter(
-            ItemData.getAllImageReferences(),
-            ItemData.getAllText(context!!)
-        )
-    }
+    private val sharedViewModel by activityViewModelFactory { applicationComponent.sharedViewModel }
+    private val whiteNoiseAdapter by lazy { WhiteNoiseAdapter(sharedViewModel, context!!) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? =
-        inflater.inflate(R.layout.fragment_list, container, false)
+        inflater.inflate(R.layout.whitenoise_fragment, container, false)
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -43,28 +32,21 @@ class WhiteNoiseFragment : Fragment() {
         recyclerView.apply {
             setHasFixedSize(true)
             layoutManager = GridLayoutManager(context, 2)
-            adapter = myAdapter
+            adapter = whiteNoiseAdapter
         }
 
-        viewModel.subscribeToItemIndex(myAdapter.itemOnClickListener)
+
+        sharedViewModel.getToast().observe(viewLifecycleOwner, Observer { toast ->
+
+            if (toast.type == ToastTypes.Success.name) showClickedToast(toast.stringID)
+            else showWarningToast(toast.stringID)
+        })
     }
 
-    private fun showItemClickedToast(context: Context) =
-        if (viewModel.getDidTimerStart()) showWarningToast(context)
-        else showSoundSelectedToast(context)
+    private fun showClickedToast(stringID: Int) =
+        Toasty.success(context!!, stringID, Toasty.LENGTH_SHORT, true).show()
 
+    private fun showWarningToast(stringID: Int) =
+        Toasty.warning(context!!, stringID, Toasty.LENGTH_SHORT, true).show()
 
-    override fun onStart() {
-        super.onStart()
-        compositeDisposable += myAdapter.showClickedToast
-            .subscribeBy(
-                onNext = { showItemClickedToast(context!!) },
-                onError = { Log.d("zwi", "Error observing recycler view itemClickListener: $it") }
-            )
-    }
-
-    override fun onStop() {
-        super.onStop()
-        compositeDisposable.clear()
-    }
 }
