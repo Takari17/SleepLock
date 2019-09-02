@@ -6,53 +6,78 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
+import com.jakewharton.rxrelay2.BehaviorRelay
+import com.takari.sleeplock.data.feature.WhiteNoiseList
 import com.takari.sleeplock.data.local.SharedPrefs
-import com.takari.sleeplock.data.service.MainService
-import com.takari.sleeplock.utils.INDEX
-import com.takari.sleeplock.utils.IntentAction
-import com.takari.sleeplock.utils.MILLIS
-import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.plusAssign
+import com.takari.sleeplock.data.service.TimerService
 import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/*
- *Communicates with, and returns data from, MainService.kt.
- */
 @Singleton
 class Repository @Inject constructor(
     private val context: Context,
-    val sharedPrefs: SharedPrefs
+    private val sharedPrefs: SharedPrefs,
+    private var timerService: TimerService?,
+    val whiteNoiseList: WhiteNoiseList
 ) {
 
-    private val serviceIntent: Intent = Intent(context, MainService::class.java)
+    private val serviceIntent: Intent = Intent(context, TimerService::class.java)
 
-    private val compositeDisposable = CompositeDisposable()
+    // Used for chaining the observables from the Timer Service
+    val currentTime = BehaviorRelay.create<Long>()
 
-    private var mainService: MainService? = null
+    val isTimerRunning = BehaviorRelay.create<Boolean>()
 
-    var wasTimerStarted = false
+    val hasTimerStarted = BehaviorRelay.create<Boolean>()
 
-    private val currentTime = MediatorLiveData<Long>()
-    private val isTimerRunning = MediatorLiveData<Boolean>()
-    val isTimerCompleted = PublishRelay.create<Boolean>()
+    val timerCompleted = BehaviorRelay.create<Unit>()
 
 
-    fun getCurrentTime(): LiveData<Long> = currentTime
+    /**
+     * Gets the value of isTimerRunning and returns it. If it's null, instead of returning
+     * null it just returns false.
+     */
+    fun isTimerRunningBoolean(): Boolean =
+        if (isTimerRunning.value == null) false
+        else isTimerRunning.value!!
 
-    fun getIsTimerRunning(): LiveData<Boolean> = isTimerRunning
+    /**
+     * Gets the value of hasTimerStarted and returns it. If it's null, instead of returning
+     * null it just returns false.
+     */
+    fun hasTimerStartedBoolean(): Boolean =
+        if (hasTimerStarted.value == null) false
+        else hasTimerStarted.value!!
 
-    // Service will start and play the sound and timer.
-    fun startSoundAndTimer(millis: Long, index: Int) {
+    /**
+     * Saves a value in shared preferences if it's not null.
+     */
+    fun saveValueIfNonNull(key: String, value: Any?) {
+        sharedPrefs.saveValueIfNonNull(key, value)
+    }
+
+    fun getInt(key: String, defaultValue: Int): Int =
+        sharedPrefs.getInt(key, defaultValue)
+
+    fun getString(key: String, defaultValue: String): String =
+        sharedPrefs.getString(key, defaultValue)
+
+    fun getBoolean(key: String, defaultValue: Boolean): Boolean =
+        sharedPrefs.getBoolean(key, defaultValue)
+
+    fun resetSharedPrefsData() {
+        sharedPrefs.resetAllData()
+    }
+
+    /**
+     * Starts TimerService and plays the white noise and timer.
+     */
+    fun startSoundAndTimer(millis: Long, whiteNoise: Int) {
         serviceIntent.apply {
-            action = IntentAction.PLAY.name
-            putExtra(MILLIS, millis)
-            putExtra(INDEX, index)
+            action = TimerService.IntentAction.START.name
+            putExtra(TIME, millis)
+            putExtra(WHITE_NOISE, whiteNoise)
         }
 
         context.apply {
@@ -61,71 +86,51 @@ class Repository @Inject constructor(
         }
     }
 
-    fun pauseSoundAndTimer() = mainService?.pauseSoundAndTimer()
+    fun pauseSoundAndTimer() = timerService?.pauseSoundAndTimer()
 
-    fun resumeSoundAndTimer() = mainService?.resumeSoundAndTimer()
+    fun resumeSoundAndTimer() = timerService?.resumeSoundAndTimer()
 
-    fun resetSoundAndTimer() = mainService?.resetSoundAndTimer()
-
-    fun bindToServiceIfRunning() {
-        if (MainService.isRunning)
-            context.bindService(serviceIntent, serviceConnection, 0)
-    }
-
-    fun unbindFromServiceIfRunning() {
-        if (MainService.isRunning)
-            context.unbindService(serviceConnection)
-    }
+    fun resetSoundAndTimer() = timerService?.resetSoundAndTimer()
 
 
-    private fun addServiceLiveDataSources(service: MainService) {
-
-        currentTime.addSource(service.getCurrentTime()) { millis ->
-            currentTime.value = millis
-        }
-
-        isTimerRunning.addSource(service.getIsTimerRunning()) { isRunning ->
-            isTimerRunning.value = isRunning
-        }
-    }
-
-    fun removeServiceLiveDataSources() = mainService?.let { service ->
-
-        currentTime.removeSource(service.getCurrentTime())
-
-        isTimerRunning.removeSource(service.getIsTimerRunning())
-    }
-
-    // Cleared in the TimerViewModel's onClear() callback.
-    fun clearDisposables() = compositeDisposable.clear()
-
-
-    //When bound the Repository observes the services Live Data objects and subscribes to all Observables.
-
+    /**
+    Subscribes to the exposed timer cllback observables from Timer Service.
+     */
     private val serviceConnection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
 
-            (service as MainService.LocalBinder).getService().also { serviceReference ->
+            val serviceReference = (service as TimerService.LocalBinder).getService()
 
-                mainService = serviceReference
+            timerService = serviceReference
 
-                addServiceLiveDataSources(serviceReference)
+            serviceReference.getCurrentTime()
+                .subscribeBy(
+                    onNext = { time -> this@Repository.currentTime.accept(time) },
+                    onError = { Log.d("zwi", "Error observing currentTime in Repository: $it") }
+                )
 
-                compositeDisposable += serviceReference.isTimerCompleted
-                    .subscribeOn(Schedulers.io())
-                    .subscribeBy(
-                        onNext = { isCompleted -> isTimerCompleted.accept(isCompleted) },
-                        onError = { Log.d("zwi", "Error observing isTimerCompleted in Repository: $it") }
-                    )
+            serviceReference.getIsTimerRunning()
+                .subscribeBy(
+                    onNext = { isRunning -> this@Repository.isTimerRunning.accept(isRunning) },
+                    onError = { Log.d("zwi", "Error observing isRunning in Repository: $it") }
+                )
 
-                compositeDisposable += serviceReference.getWasTimerStarted()
-                    .subscribeOn(Schedulers.io())
-                    .subscribeBy(
-                        onNext = { wasStarted -> wasTimerStarted = wasStarted },
-                        onError = { Log.d("zwi", "Error observing wasTimerStarted in Repository: $it") }
-                    )
-            }
+            serviceReference.getHasTimerStarted()
+                .subscribeBy(
+                    onNext = { hasStarted -> this@Repository.hasTimerStarted.accept(hasStarted) },
+                    onError = { Log.d("zwi", "Error observing hasStarted in Repository: $it") }
+                )
+
+            serviceReference.getTimerCompleted()
+                .subscribeBy(
+                    onNext = {
+                        this@Repository.timerCompleted.accept(Unit)
+                        resetSharedPrefsData()
+                    },
+                    onError = { Log.d("zwi", "Error observing completed in Repository: $it") }
+                )
+
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {}
