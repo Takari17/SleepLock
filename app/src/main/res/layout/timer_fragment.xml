@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/main_fragment_layout"
-        android:background="#2F3238"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#2F3238"
         tools:context=".ui.feature.timer.TimerFragment">
 
     <TextView
             android:id="@+id/currentTimeTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="#e0f7fa"
-            android:text="@string/reset_time"
-            android:textSize="90sp"
-            android:singleLine="true"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:fontFamily="sans-serif-light"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.254"/>
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="@string/reset_time"
+            android:textColor="#e0f7fa"
+            app:autoSizeMaxTextSize="200dp"
+            app:autoSizeMinTextSize="50sp"
+            app:autoSizeStepGranularity="1sp"
+            app:autoSizeTextType="uniform"
+            app:layout_constraintBottom_toTopOf="@+id/guideline3"
+            app:layout_constraintEnd_toStartOf="@+id/guideline2"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline"
+            app:layout_constraintTop_toTopOf="@+id/guideline5"
+            app:layout_constraintVertical_bias="1.0" />
 
     <Button
             android:id="@+id/startPauseButton"
@@ -37,13 +37,14 @@
             android:layout_marginBottom="16dp"
             android:background="@android:color/transparent"
             android:backgroundTintMode="add"
+            android:enabled="false"
             android:text="@string/start"
             android:textColor="#0B3136"
-            android:enabled="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.493"
-            app:layout_constraintStart_toStartOf="parent" tools:targetApi="lollipop"/>
+            app:layout_constraintStart_toStartOf="parent"
+            tools:targetApi="lollipop" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab"
@@ -51,33 +52,37 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
             android:layout_marginBottom="8dp"
             android:clickable="true"
+            android:focusable="true"
             android:src="@drawable/clock_icon"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline2"
             app:layout_constraintTop_toBottomOf="@+id/currentTimeTextView"
-            app:layout_constraintVertical_bias="0.71000004" android:focusable="true" android:layout_marginRight="8dp"/>
+            app:layout_constraintVertical_bias="0.71000004" />
 
     <androidx.cardview.widget.CardView
             android:id="@+id/cardView"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             app:cardCornerRadius="10dp"
             app:layout_constraintBottom_toTopOf="@+id/resetButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/currentTimeTextView"
-            app:layout_constraintVertical_bias="0.8" android:layout_marginLeft="16dp">
+            app:layout_constraintVertical_bias="0.8">
 
         <ImageView
                 android:id="@+id/cardViewPic"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
-                android:src="@drawable/nosound"/>
+                android:src="@drawable/nosound" />
     </androidx.cardview.widget.CardView>
 
     <TextView
@@ -86,12 +91,12 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="@string/no_sound"
-            android:textSize="18sp"
             android:textColor="#e0f7fa"
+            android:textSize="18sp"
 
             app:layout_constraintEnd_toEndOf="@+id/cardView"
             app:layout_constraintStart_toStartOf="@+id/cardView"
-            app:layout_constraintTop_toBottomOf="@+id/cardView"/>
+            app:layout_constraintTop_toBottomOf="@+id/cardView" />
 
     <Button
             android:id="@+id/resetButton"
@@ -106,5 +111,33 @@
             app:layout_constraintBottom_toTopOf="@+id/startPauseButton"
             app:layout_constraintEnd_toEndOf="@+id/startPauseButton"
             app:layout_constraintStart_toStartOf="@+id/startPauseButton"
-            tools:text="Reset Button"/>
+            tools:text="Reset Button" />
+
+    <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.4" />
+
+    <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_begin="73dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.15" />
+
+    <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.85" />
 </androidx.constraintlayout.widget.ConstraintLayout>
