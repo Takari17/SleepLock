@@ -15,10 +15,8 @@ You can simply download it [here](https://play.google.com/store/apps/details?id=
 ## Primarily Built With
 * RxJava 
 * Dagger2
-* Lifecycle Libraries
-
-## Contributing 
-If you wish to contribute to this project email me first at takariharrison@gmail.com
+* Architecture Components
+* MVVM
 
 ## Acknowledgments
 Pretty much everyone on r/androiddev, especially [this guy.](https://github.com/Zhuinden)
