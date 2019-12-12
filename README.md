@@ -2,9 +2,11 @@
 SleepLock is a white noise sleep timer app that plays mellow sounds until the timer goes off. Perfect for sleeping and blocking out irritating noise!
 
 <p float="left">
-  <img src= "images/screenshot1.png" width="250" />
-  <img src= "images/screenshot2.png" width="250" /> 
-  <img src= "images/screenshot3.png" width="250" />
+  <img src= "screenshots/screenshot1.png" width="250" />
+  <img src= "screenshots/screenshot2.png" width="250" /> 
+  <img src= "screenshots/screenshot3.png" width="250" />
+  <img src= "screenshots/screenshot4.png" width="250" />
+
 </p>
 
 ## Installing
