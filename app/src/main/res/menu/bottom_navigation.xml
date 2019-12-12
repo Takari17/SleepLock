@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+            android:id="@+id/whiteNoise"
+            android:color="@android:color/white"
+            android:icon="@drawable/alarm_icon"
+            android:title="WhiteNoise" />
+    <item
+            android:id="@+id/sleepTimer"
+            android:color="@android:color/white"
+            android:icon="@drawable/moon"
+            android:title="SleepTimer" />
+</menu>

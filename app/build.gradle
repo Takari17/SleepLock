@@ -1,29 +1,27 @@
 apply plugin: 'com.android.application'
-
 apply plugin: 'kotlin-android'
-
 apply plugin: 'kotlin-android-extensions'
-
 apply plugin: 'kotlin-kapt'
 
 android {
 
     compileSdkVersion 28
+
     defaultConfig {
         applicationId "com.takari.sleeplock"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 28
         versionCode 3
         versionName "3.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    productFlavors {}
 
     packagingOptions {
         exclude 'META-INF/atomicfu.kotlin_module'
@@ -39,24 +37,20 @@ android {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
     }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
-    implementation 'androidx.core:core-ktx:1.2.0-alpha03'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta2'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.core:core-ktx:1.2.0-rc01'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta3'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.1.0-alpha09'
-
+    implementation 'com.google.android.material:material:1.2.0-alpha02'
     implementation group: 'org.reactivestreams', name: 'reactive-streams', version: '1.0.2'
 
     //JUnit 5
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.1.0'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.5.1'
@@ -64,17 +58,13 @@ dependencies {
     //Mockk
     testImplementation "io.mockk:mockk:1.9.3"
 
-    //ViewModel and LiveData
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0-alpha03'
-    kapt 'androidx.lifecycle:lifecycle-compiler:2.2.0-alpha03'
+    //ViewModel and Live Data
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.1.0"
 
-    //Rx Java
+    //Rx Java, Android, Kotlin, & Relay
     implementation "io.reactivex.rxjava2:rxjava:2.2.9"
-
-    //Rx Kotlin
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'io.reactivex.rxjava2:rxkotlin:2.2.0'
-
-    //Rx Relay
     implementation 'com.jakewharton.rxrelay2:rxrelay:2.1.1'
 
     //Toasty
@@ -90,9 +80,15 @@ dependencies {
     kapt 'com.google.dagger:dagger-compiler:2.24'
 
     //Fragment & Activity KTX
-    implementation 'androidx.fragment:fragment-ktx:1.2.0-alpha02'
-    implementation 'androidx.activity:activity-ktx:1.1.0-alpha02'
+    implementation 'androidx.fragment:fragment-ktx:1.2.0-rc02'
+    implementation 'androidx.activity:activity-ktx:1.1.0-rc02'
 
     //ViewPropertyObjectAnimator
     implementation 'com.bartoszlipinski:viewpropertyobjectanimator:1.4.5'
+
+    //Fancy Buttons
+    implementation 'com.github.medyo:fancybuttons:1.9.1'
+
+    //Gson
+    implementation 'com.google.code.gson:gson:2.8.6'
 }
