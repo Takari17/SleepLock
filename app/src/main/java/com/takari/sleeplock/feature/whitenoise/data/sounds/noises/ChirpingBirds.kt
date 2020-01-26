@@ -5,8 +5,7 @@ import com.takari.sleeplock.feature.whitenoise.data.sounds.WhiteNoise
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
-data class ChirpingBirds(val placeHolder: String = "") :
-    WhiteNoise {
+class ChirpingBirds(val placeHolder: String = "") : WhiteNoise {
 
     override fun image(): Int = R.drawable.chirpingbirds
 

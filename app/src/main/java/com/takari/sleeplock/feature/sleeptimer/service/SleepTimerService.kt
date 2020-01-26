@@ -1,44 +1,45 @@
 package com.takari.sleeplock.feature.sleeptimer.service
 
+import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.media.app.NotificationCompat.MediaStyle
+import com.takari.sleeplock.App
 import com.takari.sleeplock.App.Companion.applicationComponent
+import com.takari.sleeplock.R
+import com.takari.sleeplock.feature.MainActivity
 import com.takari.sleeplock.feature.common.*
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.plusAssign
 import io.reactivex.rxkotlin.subscribeBy
 import java.util.concurrent.TimeUnit
+
 
 class SleepTimerService : Service() {
 
     private lateinit var timer: Timer
-    private lateinit var mediaPlayerNotif: MediaPlayerNotification
-    private lateinit var resumeOrPause: MediaPlayerNotification.ResumeOrPause
+    private lateinit var notificationAction: NotificationAction
     private val repository = applicationComponent.sleepTimerRepository
     private val volumeManager = applicationComponent.volumeManager
     private val screenManager = applicationComponent.screenManager
-
-    //used for keeping the notification's time in sync with the timer's when paused.
+    private val compositeDisposable = CompositeDisposable()
+    private var notificationId = 3356
     private var recentTime: Long = 0
 
 
     override fun onCreate() {
         super.onCreate()
         running = true
-        mediaPlayerNotif = MediaPlayerNotification(
-            id = 2348,
-            context = this,
-            resumeIntent = createBroadcastPendingIntent(ServiceControls.Resume.name),
-            pauseIntent = createBroadcastPendingIntent(ServiceControls.Pause.name),
-            resetIntent = createBroadcastPendingIntent(ServiceControls.Reset.name)
-        )
     }
 
-    override fun onBind(intent: Intent): IBinder? {
-        return LocalBinder()
-    }
+    override fun onBind(intent: Intent): IBinder? = LocalBinder()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
@@ -53,28 +54,36 @@ class SleepTimerService : Service() {
                     setHasStarted(hasStarted)
                 })
 
-                timer.currentTime.subscribeBy(
+                compositeDisposable += timer.currentTime
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeBy(
                         onNext = { time ->
                             recentTime = time
                             repository.currentTime.accept(time)
-                            mediaPlayerNotif.update(time.to24HourFormat())
+
+                            //updates notification
+                            NotificationManagerCompat.from(this)
+                                .notify(
+                                    notificationId,
+                                    notification(notificationAction, time.to24HourFormat())
+                                )
                         },
                         onComplete = { reset() },
                         onError = { logD("error observing currentTime in SleepTimerService: $it") }
 
                     )
 
-                resumeOrPause = MediaPlayerNotification.ResumeOrPause.Pause
+                notificationAction = NotificationAction.Pause
                 start()
             }
 
             ServiceControls.Pause.name -> {
-                resumeOrPause = MediaPlayerNotification.ResumeOrPause.Pause
+                notificationAction = NotificationAction.Resume
                 pause()
             }
 
             ServiceControls.Resume.name -> {
-                resumeOrPause = MediaPlayerNotification.ResumeOrPause.Resume
+                notificationAction = NotificationAction.Pause
                 resume()
             }
 
@@ -85,11 +94,8 @@ class SleepTimerService : Service() {
         }
 
         startForeground(
-            mediaPlayerNotif.id,
-            mediaPlayerNotif.notification(
-                recentTime.to24HourFormat(),
-                resumeOrPause
-            )
+            notificationId,
+            notification(notificationAction, recentTime.to24HourFormat())
         )
         return START_STICKY
     }
@@ -97,7 +103,32 @@ class SleepTimerService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         running = false
+        compositeDisposable.clear()
     }
+
+
+    private fun notification(action: NotificationAction, currentTime: String): Notification =
+        NotificationCompat.Builder(this, App.CHANNEL_ID).apply {
+            setSmallIcon(R.drawable.alarm_icon)
+            if (action == NotificationAction.Resume)
+                addAction(R.drawable.play, "Pause", broadcastIntent(ServiceControls.Resume.name))
+            else
+                addAction(R.drawable.pause, "Resume", broadcastIntent(ServiceControls.Pause.name))
+            addAction(R.drawable.reset, "Reset", broadcastIntent(ServiceControls.Reset.name))
+            setStyle(MediaStyle().setShowActionsInCompactView(0, 1))
+            setSubText("Sound Options")
+            setContentTitle("SleepLock")
+            setContentText(currentTime)
+            setContentIntent(mainActivityIntent())
+        }.build()
+
+
+    private fun mainActivityIntent() = PendingIntent.getActivity(
+        this,
+        1,
+        MainActivity.createIntent(this),
+        0
+    )
 
     fun start() {
         timer.start()
@@ -113,20 +144,19 @@ class SleepTimerService : Service() {
 
     fun reset() {
         timer.reset()
-        sleepDevice()
         repository.completed.accept(Unit)
         destroyService()
-    }
 
-    private fun sleepDevice() {
-        Observable.interval(1, TimeUnit.SECONDS)
+        //sleeps the device
+        Observable.interval(2, TimeUnit.SECONDS)
             .take(15)
             .subscribeBy(
                 onNext = { volumeManager.lowerVolume() },
                 onComplete = { screenManager.turnOffScreen() },
-                onError = { logD("Error in SleepDevice: $it") }
+                onError = { logD("Error trying to sleep the device: $it") }
             )
     }
+
 
     private fun destroyService() {
         stopSelf()
@@ -146,7 +176,7 @@ class SleepTimerService : Service() {
         repository.hasTimerStarted = hasStarted
     }
 
-    private fun createBroadcastPendingIntent(action: String): PendingIntent =
+    private fun broadcastIntent(action: String): PendingIntent =
         PendingIntent.getBroadcast(
             this, 0, SleepTimerServiceReceiver.createIntent(
                 this,

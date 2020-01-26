@@ -24,7 +24,7 @@ class QuestionDialog : DialogFragment() {
                 onClick.accept(Unit)
             }
 
-            setMessage("Once the timer goes off, the volume will slowly fade and the screen will turn off. Admin permissions are required for this feature to work.")
+            setMessage("Once the timer goes off, the volume will slowly fade and the screen will turn off. Perfect for dozing off to a video!")
             setIcon(R.drawable.question_mark)
 
         }.create()

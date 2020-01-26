@@ -43,6 +43,7 @@ class WhiteNoiseViewModel @Inject constructor(
                 }
             }
 
+
         compositeDisposable += repository.currentTime.subscribeBy { millis ->
             state.updateCurrentTime(millis)
         }

@@ -1,6 +1,5 @@
 package com.takari.sleeplock.feature.whitenoise.ui
 
-import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -39,9 +38,9 @@ class WhiteNoiseFragment : Fragment() {
     private val animate by lazy { Animate(context!!) }
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.white_noise_fragment, container, false)
-    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.white_noise_fragment, container, false)
+
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -62,10 +61,12 @@ class WhiteNoiseFragment : Fragment() {
         }
 
         compositeDisposable += timeOptionDialog.getUserSelectedTime().subscribeBy { millis ->
-            viewModel.viewEvent(WhiteNoiseViewEvent.OnUserSelectsTime(millis)) }
+            viewModel.viewEvent(WhiteNoiseViewEvent.OnUserSelectsTime(millis))
+        }
 
-        compositeDisposable += soundOptionDialog.getWhiteNoiseData().subscribeBy { whiteNoise ->
-            viewModel.viewEvent(WhiteNoiseViewEvent.OnUserSelectsWhiteNoise(whiteNoise)) }
+        compositeDisposable += soundOptionDialog.getClickedWhiteNoiseData().subscribeBy { whiteNoise ->
+            viewModel.viewEvent(WhiteNoiseViewEvent.OnUserSelectsWhiteNoise(whiteNoise))
+        }
 
         compositeDisposable += viewModel.state()
             .observeOn(AndroidSchedulers.mainThread())
@@ -110,7 +111,9 @@ class WhiteNoiseFragment : Fragment() {
                         "Sound Dialog"
                     )
 
-                    is WhiteNoiseSingleEvent.ShowWarningToast -> context!!.showWarningToast(singleEvent.message)
+                    is WhiteNoiseSingleEvent.ShowWarningToast -> context!!.showWarningToast(
+                        singleEvent.message
+                    )
 
                     is WhiteNoiseSingleEvent.StartService -> {
                         startService(context!!, singleEvent.millis, singleEvent.whiteNoise)

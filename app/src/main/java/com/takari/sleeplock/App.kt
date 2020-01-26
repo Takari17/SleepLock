@@ -8,11 +8,8 @@ import android.os.Build
 import com.takari.sleeplock.dagger.ApplicationComponent
 import com.takari.sleeplock.dagger.DaggerApplicationComponent
 
-/*
-todo we gotta go through all of our classes and fix the fomratting, amke everything presentable.
- */
-class App : Application() {
 
+class App : Application() {
 
     override fun onCreate() {
         super.onCreate()

@@ -9,7 +9,10 @@ import android.view.View
 import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator
 
 
-//Looking back I have no idea what I was thinking.....but it works ¯\_(ツ)_/¯
+/*
+Looking back I have no idea what I was thinking.....but it works ¯\_(ツ)_/¯
+Refactor to constraint sets if you decide to do another major update.
+ */
 class Animate(private val context: Context) {
 
     fun start(
@@ -132,3 +135,4 @@ class Animate(private val context: Context) {
         INSTANT(0)
     }
 }
+

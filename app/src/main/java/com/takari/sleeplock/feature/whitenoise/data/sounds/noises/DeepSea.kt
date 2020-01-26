@@ -5,12 +5,11 @@ import com.takari.sleeplock.feature.whitenoise.data.sounds.WhiteNoise
 import kotlinx.android.parcel.Parcelize
 
 @Parcelize
-data class UnderWater(val placeHolder: String = "") :
-    WhiteNoise {
+data class DeepSea(val placeHolder: String = "") : WhiteNoise {
 
-    override fun image(): Int = R.drawable.underwater
+    override fun image(): Int = R.drawable.deepsea
 
-    override fun name(): String = "Under Water"
+    override fun name(): String = "Deep Sea"
 
-    override fun rawFile(): Int = R.raw.underwater
+    override fun rawFile(): Int = R.raw.deepsea
 }

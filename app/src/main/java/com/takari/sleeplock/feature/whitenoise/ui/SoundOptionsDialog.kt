@@ -8,16 +8,32 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxrelay2.PublishRelay
 import com.takari.sleeplock.R
+import com.takari.sleeplock.feature.common.logD
 import com.takari.sleeplock.feature.whitenoise.data.sounds.WhiteNoise
-import com.takari.sleeplock.feature.whitenoise.data.sounds.noises.WhiteNoiseList
+import com.takari.sleeplock.feature.whitenoise.data.sounds.noises.*
 import io.reactivex.Observable
 
 
 class SoundOptionsDialog : AppCompatDialogFragment() {
 
-    private val whiteNoiseData = PublishRelay.create<WhiteNoise>()
-    private val whiteNoiseAdapter = WhiteNoiseAdapter(WhiteNoiseList().getAllWhiteNoises()) { clickedSoundData ->
-            whiteNoiseData.accept(clickedSoundData)
+    private val clickedWhiteNoiseData = PublishRelay.create<WhiteNoise>()
+    private val whiteNoiseList = listOf(
+        Rain(),
+        OceanShore(),
+        DeepSea(),
+        MorningBliss(),
+        ChirpingBirds(),
+        PeacefulNight(),
+        Fan(),
+        Helicopter(),
+        CampFire(),
+        BoilingWater(),
+        AboveTheSky(),
+        WaterStream()
+    )
+
+    private val whiteNoiseAdapter = WhiteNoiseAdapter(whiteNoiseList) { clickedSoundData ->
+            clickedWhiteNoiseData.accept(clickedSoundData)
             dismiss()
         }
 
@@ -37,5 +53,5 @@ class SoundOptionsDialog : AppCompatDialogFragment() {
 
         }.create()
 
-    fun getWhiteNoiseData(): Observable<WhiteNoise> = whiteNoiseData
+    fun getClickedWhiteNoiseData(): Observable<WhiteNoise> = clickedWhiteNoiseData
 }

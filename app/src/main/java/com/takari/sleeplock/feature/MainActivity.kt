@@ -12,13 +12,17 @@ import com.takari.sleeplock.feature.sleeptimer.ui.SleepTimerFragment
 import com.takari.sleeplock.feature.whitenoise.ui.WhiteNoiseFragment
 import kotlinx.android.synthetic.main.activity_main.*
 
-var isAppInBackground = false
 
 class MainActivity : AppCompatActivity() {
 
-    //don't wanna keep creating instances of these
-    private val whiteNoiseFragment = WhiteNoiseFragment()
-    private val sleepTimerFragment = SleepTimerFragment()
+    private val whiteNoiseFragment: Fragment =
+        supportFragmentManager.findFragmentById(R.id.whiteNoiseFragment)
+            ?: WhiteNoiseFragment()
+
+    private val sleepTimerFragment: Fragment =
+        supportFragmentManager.findFragmentById(R.id.sleepTimerFragment)
+            ?: SleepTimerFragment()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +35,13 @@ class MainActivity : AppCompatActivity() {
 
         window.navigationBarColor = Color.parseColor("#000000")
 
-        replaceContainer(whiteNoiseFragment)
+
+        if (savedInstanceState == null) {
+            supportFragmentManager
+                .beginTransaction()
+                .add(R.id.container, whiteNoiseFragment)
+                .commit()
+        }
     }
 
     override fun onStart() {
@@ -44,20 +54,32 @@ class MainActivity : AppCompatActivity() {
         isAppInBackground = true
     }
 
+
     private val navListener = BottomNavigationView.OnNavigationItemSelectedListener { menuItem ->
         when (menuItem.itemId) {
-            R.id.whiteNoise -> replaceContainer(whiteNoiseFragment)
-            R.id.sleepTimer -> replaceContainer(sleepTimerFragment)
+            R.id.whiteNoise ->
+                supportFragmentManager
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right)
+                    .replace(R.id.container, whiteNoiseFragment)
+                    .commit()
+
+            R.id.sleepTimer ->
+                supportFragmentManager
+                    .beginTransaction()
+                    .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left)
+                    .replace(R.id.container, sleepTimerFragment)
+                    .commit()
         }
         true
-    }
-
-    private fun replaceContainer(fragment: Fragment) {
-        supportFragmentManager.beginTransaction().replace(R.id.container, fragment).commit()
     }
 
     companion object {
         fun createIntent(context: Context): Intent =
             Intent(context, MainActivity::class.java)
+
+        fun getIsAppInBackground(): Boolean = isAppInBackground
     }
 }
+
+private var isAppInBackground = false

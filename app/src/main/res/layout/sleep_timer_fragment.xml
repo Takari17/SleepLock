@@ -6,7 +6,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#2F3238"
-        tools:context=".feature.sleeptimer.ui.SleepTimerFragment">
+        tools:context=".feature.sleeptimer.ui.SleepTimerFragment"
+        android:id="@+id/sleepTimerFragment">
 
     <mehdi.sakout.fancybuttons.FancyButton
             android:id="@+id/resetTimer"
@@ -114,18 +115,19 @@
             android:orientation="horizontal"
             app:layout_constraintGuide_begin="73dp" />
 
-    <ImageView
+    <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/questionView"
-            style="?android:borderlessButtonStyle"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginStart="16dp"
+            android:layout_width="0dp"
+            android:layout_height="150dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:src="@drawable/question_mark"
             app:layout_constraintBottom_toTopOf="@+id/resetTimer"
+            app:layout_constraintEnd_toStartOf="@+id/resetTimer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/currentTimeTextView"
-            app:layout_constraintVertical_bias="0.788" />
+            app:layout_constraintVertical_bias="0.788"
+            app:lottie_autoPlay="true"
+            app:lottie_fileName="risinghand.json"
+            app:lottie_loop="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
