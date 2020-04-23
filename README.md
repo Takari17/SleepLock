@@ -16,6 +16,3 @@ You can simply download it [here](https://play.google.com/store/apps/details?id=
 * Dagger2
 * Architecture Components
 * MVVM
-
-## Acknowledgments
-Pretty much everyone on r/androiddev, especially [this guy.](https://github.com/Zhuinden)
