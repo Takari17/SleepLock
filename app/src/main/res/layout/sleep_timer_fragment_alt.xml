@@ -13,13 +13,13 @@
             android:id="@+id/cancelButton"
             android:layout_width="0dp"
             android:layout_height="50dp"
-            android:layout_marginTop="32dp"
+            app:layout_constraintBottom_toTopOf="@+id/guideline12"
             app:layout_constraintEnd_toStartOf="@+id/guideline2"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@+id/guideline"
-            app:layout_constraintTop_toBottomOf="parent"
-            fancy:fb_focusColor="#000000"
             fancy:fb_borderWidth="5dp"
             fancy:fb_defaultColor="@color/colorAccent"
+            fancy:fb_focusColor="#000000"
             fancy:fb_radius="40dp"
             fancy:fb_text="Cancel"
             fancy:fb_textColor="#FFFFFF" />
@@ -57,7 +57,7 @@
             android:text="00:00"
             android:textColor="#D5D8E8"
             app:autoSizeMaxTextSize="200dp"
-            app:autoSizeMinTextSize="16sp"
+            app:autoSizeMinTextSize="50sp"
             app:autoSizeStepGranularity="1sp"
             app:autoSizeTextType="uniform"
             app:layout_constraintBottom_toTopOf="@+id/guideline11"
@@ -69,10 +69,10 @@
             android:id="@+id/startPauseButton"
             android:layout_width="0dp"
             android:layout_height="50dp"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toTopOf="@+id/guideline12"
+            android:layout_marginBottom="32dp"
+            app:layout_constraintBottom_toTopOf="@+id/cancelButton"
             app:layout_constraintEnd_toStartOf="@+id/guideline2"
-            app:layout_constraintHorizontal_bias="0.497"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@+id/guideline"
             fancy:fb_borderWidth="5dp"
             fancy:fb_defaultColor="@color/colorAccent"
@@ -108,7 +108,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.5" />
+            app:layout_constraintGuide_percent="0.500684" />
 
     <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline12"
@@ -116,6 +116,5 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.9" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

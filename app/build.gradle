@@ -27,10 +27,8 @@ android {
         exclude 'META-INF/atomicfu.kotlin_module'
     }
 
-    android {
-        kotlinOptions {
-            jvmTarget = '1.8'
-        }
+    kotlinOptions {
+        jvmTarget = '1.8'
     }
 
     compileOptions {
@@ -62,12 +60,6 @@ dependencies {
     //ViewModel and Live Data
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
 
-    //Rx Java, Android, Kotlin, & Relay todo delete
-    implementation "io.reactivex.rxjava2:rxjava:2.2.9"
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
-    implementation 'io.reactivex.rxjava2:rxkotlin:2.2.0'
-    implementation 'com.jakewharton.rxrelay2:rxrelay:2.1.1'
-
     //Toasty
     implementation 'com.github.GrenderG:Toasty:1.4.2'
 
@@ -76,7 +68,7 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
     //Dagger 2
-    implementation 'com.google.dagger:dagger:2.28'
+    implementation 'com.google.dagger:dagger:2.28' //todo maybe delete
     annotationProcessor 'com.google.dagger:dagger-compiler:2.28'
     kapt 'com.google.dagger:dagger-android-processor:2.24'
     kapt 'com.google.dagger:dagger-compiler:2.28'
