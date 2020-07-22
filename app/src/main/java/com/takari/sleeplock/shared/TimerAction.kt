@@ -1,4 +1,4 @@
-package com.takari.sleeplock.whitenoise.msc
+package com.takari.sleeplock.shared
 
 import com.takari.sleeplock.R
 

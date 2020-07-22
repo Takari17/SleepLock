@@ -21,8 +21,8 @@ import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
 import com.takari.sleeplock.R
-import com.takari.sleeplock.feature.common.TimeSelectionDialog
-import com.takari.sleeplock.feature.common.to24HourFormat
+import com.takari.sleeplock.shared.TimeSelectionDialog
+import com.takari.sleeplock.shared.to24HourFormat
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.data.WhiteNoiseOptions
 import com.takari.sleeplock.whitenoise.data.sounds.Rain
@@ -39,9 +39,9 @@ class WhiteNoiseFragment : Fragment() {
     private val timeSelectionDialog = TimeSelectionDialog()
     private var whiteNoiseService: WhiteNoiseService? = null
     private val serviceIntent by lazy { Intent(context, WhiteNoiseService::class.java) }
+    private lateinit var zoomingLayoutManager: ZoomingLayoutManager
     private val initialConstraints = ConstraintSet()
     private val altConstraint = ConstraintSet()
-    private lateinit var zoomingLayoutManager: ZoomingLayoutManager
     private val transition = AutoTransition().apply {
         interpolator = AnticipateOvershootInterpolator(2f)
         duration = 1000
@@ -50,7 +50,9 @@ class WhiteNoiseFragment : Fragment() {
 
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? = inflater.inflate(R.layout.white_noise_fragment, container, false)
 
 

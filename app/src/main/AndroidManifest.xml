@@ -5,6 +5,7 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.USES_POLICY_FORCE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <supports-screens
             android:anyDensity="true"
@@ -20,7 +21,7 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
 
-        <activity android:name=".feature.MainActivity"
+        <activity android:name=".main.MainActivity"
                   android:launchMode="singleTop"
                   android:screenOrientation="portrait"
                   android:configChanges="orientation|keyboardHidden"
@@ -33,14 +34,14 @@
 
         </activity>
 
-        <service android:name="com.takari.sleeplock.feature.whitenoise.service.WhiteNoiseService" />
-        <service android:name="com.takari.sleeplock.feature.sleeptimer.service.SleepTimerService" />
+        <service android:name="com.takari.sleeplock.whitenoise.service.WhiteNoiseService" />
+        <service android:name="com.takari.sleeplock.sleeptimer.service.SleepTimerService" />
 
-        <receiver android:name="com.takari.sleeplock.feature.whitenoise.service.WhiteNoiseServiceReceiver" />
-        <receiver android:name="com.takari.sleeplock.feature.sleeptimer.service.SleepTimerServiceReceiver" />
+        <receiver android:name="com.takari.sleeplock.whitenoise.service.WhiteNoiseServiceReceiver" />
+        <receiver android:name="com.takari.sleeplock.sleeptimer.service.SleepTimerServiceReceiver" />
 
         <receiver
-                android:name="com.takari.sleeplock.feature.sleeptimer.admin.SleepTimerAdminReceiver"
+                android:name="com.takari.sleeplock.sleeptimer.admin.SleepTimerAdminReceiver"
                 android:label="SleepLock"
                 android:description="@string/device_admin_description"
                 android:permission="android.permission.BIND_DEVICE_ADMIN">

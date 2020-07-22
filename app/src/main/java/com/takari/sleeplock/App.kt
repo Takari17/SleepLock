@@ -5,11 +5,17 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 
-import com.takari.sleeplock.dagger.ApplicationComponent
-import com.takari.sleeplock.dagger.DaggerApplicationComponent
+import com.takari.sleeplock.di.ApplicationComponent
+import com.takari.sleeplock.di.DaggerApplicationComponent
 
 
 class App : Application() {
+
+    companion object {
+        lateinit var applicationComponent: ApplicationComponent
+        const val CHANNEL_ID = "=channel id"
+    }
+
 
     override fun onCreate() {
         super.onCreate()
@@ -33,10 +39,5 @@ class App : Application() {
 
             notificationManager.createNotificationChannel(channel)
         }
-    }
-
-    companion object {
-        lateinit var applicationComponent: ApplicationComponent
-        const val CHANNEL_ID = "custom channel if"
     }
 }

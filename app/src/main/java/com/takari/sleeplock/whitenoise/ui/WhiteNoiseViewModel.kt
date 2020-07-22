@@ -5,9 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.data.sounds.Rain
-import com.takari.sleeplock.whitenoise.msc.TimerAction
+import com.takari.sleeplock.shared.TimerAction
 
-class WhiteNoiseViewModel : ViewModel(), WhiteNoiseViewEvent {
+class WhiteNoiseViewModel : ViewModel(), WhiteNoiseViewEvents {
 
     private val _timerActionIcon = MutableLiveData(TimerAction.Play)
     val timerActionIcon: LiveData<TimerAction> = _timerActionIcon
@@ -15,7 +15,7 @@ class WhiteNoiseViewModel : ViewModel(), WhiteNoiseViewEvent {
     private var clickedWhiteNoise: WhiteNoise? = null
     var isViewBindedToService = false
 
-    //higher order functions are great for commands the ViewModel wants to send to the view once.
+    //the view overrides this to receive events from this viewModel
     var viewCommand: (WhiteNoiseViewCommands) -> Unit = {}
 
 

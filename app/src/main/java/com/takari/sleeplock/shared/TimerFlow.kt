@@ -3,11 +3,8 @@ package com.takari.sleeplock.shared
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 
+class TimerFlow(private var millis: Long, private val timerIsRunning: (Boolean) -> Unit = {}) {
 
-//todo unit test
-class TimerFlow(millis: Long, private val isRunning: (Boolean) -> Unit = {}) {
-
-    private var elapsedTime = millis
     private var running = true
     private var canceled = false
 
@@ -16,11 +13,11 @@ class TimerFlow(millis: Long, private val isRunning: (Boolean) -> Unit = {}) {
 
             if (running) {
                 //timer is not canceled or paused
-                elapsedTime -= 1000
-                emit(elapsedTime)
+                millis -= 1000
+                emit(millis)
             }
 
-            if (elapsedTime <= 0L) reset()
+            if (millis <= 0L) reset()
 
             delay(1000)
         }
@@ -29,19 +26,17 @@ class TimerFlow(millis: Long, private val isRunning: (Boolean) -> Unit = {}) {
     //collecting the flow starts it, so we don't need a start() function
     fun resume() {
         running = true
-        isRunning(true) //todo not a fan of this duplication
+        timerIsRunning(true)
     }
 
     fun pause() {
         running = false
-        isRunning(false)
+        timerIsRunning(false)
     }
 
     fun reset() {
         canceled = true
         running = false
-        isRunning(false)
+        timerIsRunning(false)
     }
-
-    fun isTimerRunning() = running
 }

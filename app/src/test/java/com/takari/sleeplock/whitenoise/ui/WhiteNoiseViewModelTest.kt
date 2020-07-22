@@ -2,7 +2,7 @@ package com.takari.sleeplock.whitenoise.ui
 
 import com.takari.sleeplock.InstantExecutorExtension
 import com.takari.sleeplock.whitenoise.data.sounds.Rain
-import com.takari.sleeplock.whitenoise.msc.TimerAction
+import com.takari.sleeplock.shared.TimerAction
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach

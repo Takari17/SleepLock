@@ -3,153 +3,120 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:fancy="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/whiteNoiseFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#2F3238"
-        android:id="@+id/whiteNoiseFragment">
+        android:background="#181A1E"
+        android:fitsSystemWindows="false">
 
-
-    <TextView
-            android:id="@+id/currentTimeTextView"
+    <com.rbrooks.indefinitepagerindicator.IndefinitePagerIndicator
+            android:id="@+id/pagerIndicator"
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:fontFamily="sans-serif-light"
-            android:gravity="center"
-            android:maxLines="1"
-            android:text="00:00"
-            android:textColor="#e0f7fa"
-            app:autoSizeMaxTextSize="200dp"
-            app:autoSizeMinTextSize="50sp"
-            app:autoSizeStepGranularity="1sp"
-            app:autoSizeTextType="uniform"
-            app:layout_constraintBottom_toTopOf="@+id/guideline3"
-            app:layout_constraintEnd_toStartOf="@+id/guideline2"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="@+id/guideline"
-            app:layout_constraintTop_toTopOf="@+id/guideline5"
-            app:layout_constraintVertical_bias="1.0" />
-
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/whiteNoiseFab"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="50dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/clock_icon"
-            app:layout_constraintBottom_toTopOf="@+id/startPauseWhiteNoise"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/currentTimeTextView"
-            app:layout_constraintVertical_bias="0.9" />
+            android:layout_marginTop="8dp"
+            android:elevation="1dp"
+            app:dotCount="3"
+            app:fadingDotCount="2"
+            app:layout_constraintEnd_toStartOf="@+id/guideline6"
+            app:layout_constraintStart_toStartOf="@+id/guideline4"
+            app:layout_constraintTop_toBottomOf="@+id/textView" />
 
-    <androidx.cardview.widget.CardView
-            android:id="@+id/whiteNoiseCardView"
+    <ImageView
+            android:id="@+id/timerActionIcon"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            app:cardCornerRadius="10dp"
-            app:layout_constraintBottom_toTopOf="@+id/resetWhiteNoise"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/currentTimeTextView"
-            app:layout_constraintVertical_bias="0.8"
-            android:foreground="?android:attr/selectableItemBackground">
-
-        <ImageView
-                android:id="@+id/whiteNoiseImage"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitXY"
-                android:src="@drawable/nosound" />
-    </androidx.cardview.widget.CardView>
-
-    <TextView
-            android:id="@+id/whiteNoiseText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="Select White Noise"
-            android:textColor="#e0f7fa"
-            android:textSize="18sp"
-            app:layout_constraintEnd_toEndOf="@+id/whiteNoiseCardView"
-            app:layout_constraintStart_toStartOf="@+id/whiteNoiseCardView"
-            app:layout_constraintTop_toBottomOf="@+id/whiteNoiseCardView" />
-
-    <mehdi.sakout.fancybuttons.FancyButton
-            android:id="@+id/startPauseWhiteNoise"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            android:enabled="false"
-            android:paddingLeft="12dp"
-            android:paddingTop="10dp"
-            android:paddingRight="12dp"
-            android:paddingBottom="10dp"
-            android:text="Start"
-            android:textColor="#FFFFFF"
+            android:elevation="1dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.493"
             app:layout_constraintStart_toStartOf="parent"
-            fancy:fb_borderWidth="5dp"
-            fancy:fb_disabledBorderColor="#0B3136"
-            fancy:fb_disabledColor="#0B3136"
-            fancy:fb_radius="40dp" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/transparant_play_icon" />
+
 
     <mehdi.sakout.fancybuttons.FancyButton
-            android:id="@+id/resetWhiteNoise"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@android:color/transparent"
+            android:id="@+id/resetButton"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="32dp"
+            android:alpha=".5"
+            android:elevation="1dp"
+            android:focusable="true"
             android:paddingLeft="12dp"
             android:paddingTop="10dp"
             android:paddingRight="12dp"
             android:paddingBottom="10dp"
             android:text="Reset"
             android:textColor="#FFFFFF"
+            app:layout_constraintEnd_toStartOf="@+id/guideline6"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline4"
+            app:layout_constraintTop_toBottomOf="parent"
+            fancy:fb_borderColor="#FFFFFF"
+            fancy:fb_borderWidth="2dp"
+            fancy:fb_defaultColor="@android:color/transparent"
+            fancy:fb_focusColor="#171716"
+            fancy:fb_radius="40dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/whiteNoiseRecyclerView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="32dp"
+            android:text="Pick a Sound!"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display3"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.25" />
+
+    <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.75" />
+
+    <TextView
+            android:id="@+id/elapseTimeTextView"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="32dp"
+            android:alpha=".8"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="00:00"
+            android:textColor="#FFFFFF"
             android:visibility="invisible"
-            app:layout_constraintBottom_toTopOf="@+id/startPauseWhiteNoise"
-            app:layout_constraintEnd_toEndOf="@+id/startPauseWhiteNoise"
-            app:layout_constraintStart_toStartOf="@+id/startPauseWhiteNoise"
-            fancy:fb_borderWidth="5dp"
-            fancy:fb_defaultColor="#4dd0e1"
-            fancy:fb_borderColor = "#4dd0e1"
-            fancy:fb_radius="40dp"
-            tools:text="Reset Button" />
-
-    <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.4" />
-
-    <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_begin="73dp" />
-
-    <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.15" />
-
-    <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.85" />
+            app:autoSizeMaxTextSize="160sp"
+            app:autoSizeMinTextSize="16sp"
+            app:autoSizeStepGranularity="1sp"
+            app:autoSizeTextType="uniform"
+            app:layout_constraintBottom_toTopOf="@+id/timerActionIcon"
+            app:layout_constraintEnd_toStartOf="@+id/guideline6"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="@+id/guideline4"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.32999998" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

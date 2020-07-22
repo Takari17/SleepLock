@@ -4,7 +4,7 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.graphics.BitmapFactory
+import android.graphics.Bitmap
 import android.media.MediaPlayer
 import android.os.Binder
 import android.os.IBinder
@@ -14,11 +14,12 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.media.app.NotificationCompat.MediaStyle
+import com.bumptech.glide.Glide
 import com.takari.sleeplock.App
 import com.takari.sleeplock.R
-import com.takari.sleeplock.feature.common.TimerFlow
-import com.takari.sleeplock.feature.common.to24HourFormat
 import com.takari.sleeplock.main.MainActivity
+import com.takari.sleeplock.shared.TimerFlow
+import com.takari.sleeplock.shared.to24HourFormat
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
@@ -47,6 +48,8 @@ class WhiteNoiseService : Service() {
         val session = MediaSessionCompat(this, "tag").sessionToken
         MediaStyle().setMediaSession(session)
     }
+
+    private lateinit var notificationJob: Job
 
     /*
     Using the same builder when updating a notification makes the whole operation less costly to the
@@ -81,9 +84,10 @@ class WhiteNoiseService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
-        when (intent!!.action) {
+        when (intent?.action) {
 
             INIT_AND_START -> {
+
                 whiteNoise = intent.getParcelableExtra(WHITE_NOISE)
                 val millis: Long = intent.getLongExtra(MILLIS, 0)
 
@@ -93,14 +97,28 @@ class WhiteNoiseService : Service() {
                 }
 
                 timerFlow = TimerFlow(millis) { isTimerRunning ->
-                    updateNotificationAction(isTimerRunning)
-                    _isTimerRunning.value = isTimerRunning
+                    serviceScope.launch(Dispatchers.Main) {
+                        updateNotificationAction(isTimerRunning)
+                        _isTimerRunning.value = isTimerRunning
+
+                    }
                 }
 
                 serviceScope.launch { observeTimerFlow(timerFlow) }
 
-                val notification = getTimerNotification(0L.to24HourFormat(), whiteNoise.sound())
-                startForeground(id, notification)
+                notificationJob = serviceScope.launch {
+
+                    val bitMap: Bitmap = Glide.with(this@WhiteNoiseService)
+                        .asBitmap()
+                        .load(whiteNoise.image())
+                        .submit()
+                        .get()
+
+                    withContext(Dispatchers.Main) {
+                        val notification = getTimerNotification(0L.to24HourFormat(), bitMap)
+                        startForeground(id, notification)
+                    }
+                }
             }
             PAUSE -> pause()
 
@@ -120,17 +138,17 @@ class WhiteNoiseService : Service() {
     //can only be called once
     override fun onDestroy() {
         super.onDestroy()
+        isServiceRunning = false
         onServiceDestroyed(Unit)
         _elapseTime.value = 0
-        serviceScope.cancel()
         timerFlow.reset()
         mediaPlayer.reset()
         mediaPlayer.release() //must be released to avoid memory leaks
         notificationManager.cancelAll()
-        isServiceRunning = false
+        serviceScope.cancel()
     }
 
-    private fun getTimerNotification(currentTime: String, image: Int): Notification {
+    private fun getTimerNotification(currentTime: String, bitMap: Bitmap): Notification {
         mediaStyle.showPauseAndResetActions()
 
         return notificationBuilder.apply {
@@ -139,7 +157,7 @@ class WhiteNoiseService : Service() {
             addAction(R.drawable.pause, "Pause", createBroadcastIntent(PAUSE))
             addAction(R.drawable.play, "Resume", createBroadcastIntent(RESUME))
             addAction(R.drawable.reset, "Reset", createBroadcastIntent(RESET))
-            setLargeIcon(BitmapFactory.decodeResource(resources, image))
+            setLargeIcon(bitMap)
             setStyle(mediaStyle)
             setSubText("Sound Options")
             setContentTitle("SleepLock")
@@ -189,9 +207,9 @@ class WhiteNoiseService : Service() {
         .onCompletion { destroyService() }
         .collect { millis ->
             withContext(Dispatchers.Main) {
-                //main thread
                 _elapseTime.value = millis
-                updateNotificationText(millis.to24HourFormat())
+
+                if (notificationJob.isCompleted) updateNotificationText(millis.to24HourFormat())
             }
         }
 

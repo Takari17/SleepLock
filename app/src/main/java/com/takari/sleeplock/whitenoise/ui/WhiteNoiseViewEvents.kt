@@ -2,7 +2,7 @@ package com.takari.sleeplock.whitenoise.ui
 
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 
-interface WhiteNoiseViewEvent {
+interface WhiteNoiseViewEvents {
 
     fun onAdapterClick(
         clickedWhiteNoise: WhiteNoise,
