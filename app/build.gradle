@@ -5,14 +5,14 @@ apply plugin: 'kotlin-kapt'
 
 android {
 
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         applicationId "com.takari.sleeplock"
         minSdkVersion 21
-        targetSdkVersion 28
-        versionCode 5
-        versionName "5.0"
+        targetSdkVersion 29
+        versionCode 8
+        versionName "6.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -80,7 +80,7 @@ dependencies {
     //Fancy Buttons
     implementation 'com.github.medyo:fancybuttons:1.9.1'
 
-    //Kenburns View
+    //KenBurns View
     implementation 'com.flaviofaria:kenburnsview:1.0.7'
 
     //Android-Indefinite-Pager-Indicator
