@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="SleepLockTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">#3949ab</item>
         <item name="colorPrimaryDark">#293580</item>
         <item name="colorAccent">#3949ab</item>

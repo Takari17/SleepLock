@@ -13,10 +13,9 @@
         android:theme="@style/Theme.SleepLock"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".homescreen.HomeScreenActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.SleepLock">
+            android:theme="@style/SleepLockTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
