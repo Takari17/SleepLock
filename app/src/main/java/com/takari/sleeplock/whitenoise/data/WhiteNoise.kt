@@ -15,6 +15,5 @@ interface WhiteNoise : Parcelable {
 
     fun sound(): Int
 
-    //keep this, may still need this later on
     fun colorHexCode(): String
 }

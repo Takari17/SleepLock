@@ -13,7 +13,7 @@ object WhiteNoiseOptions {
     val get = listOf(
         Rain(),
         OceanShore(),
-        DeepSea(),
+//        DeepSea(),
         Sunrise(),
         Nightfall(),
         Helicopter(),

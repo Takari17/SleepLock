@@ -2,11 +2,10 @@ package com.takari.sleeplock.whitenoise.data.sounds
 
 import com.takari.sleeplock.R
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Rain(private val placeHolder: String = "") :
-    WhiteNoise {
+data class Rain(private val placeHolder: String = "") : WhiteNoise {
 
     override fun image(): Int = R.drawable.rain
 
