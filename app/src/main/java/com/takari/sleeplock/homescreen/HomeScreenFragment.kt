@@ -45,15 +45,8 @@ import com.takari.sleeplock.whitenoise.WhiteNoiseFragment
 class HomeScreenFragment : Fragment() {
 
     private val whiteNoiseFragment: Fragment by lazy { WhiteNoiseFragment() }
-
-//    private val sleepTimerFragment: Fragment by lazy {
-//        supportFragmentManager.findFragmentById(R.id.sleepTimerFragment) ?: HomeScreenFragment()
-//    }
-
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
@@ -101,24 +94,21 @@ class HomeScreenFragment : Fragment() {
                     .padding(start = 20.dp, end = 20.dp),
             ) {
 
-                SleepFeature(
-                    imageID = R.drawable.white_noise_icon,
+                SleepFeature(imageID = R.drawable.white_noise_icon,
                     title = "White Noise",
                     description = "Doze off to mellow sounds",
                     onClick = {
                         MainActivity.fadeInFragment(
                             tag = WhiteNoiseFragment.TAG,
                             fragmentManager = requireActivity().supportFragmentManager,
-                            fragment = WhiteNoiseFragment()
+                            fragment = whiteNoiseFragment
                         )
-                    }
-                )
+                    })
 
                 SleepFeature(
                     imageID = R.drawable.sleep_timer_icon,
                     title = "Sleep Timer",
                     description = "Mute and sleep the device (perfect for videos)",
-                    onClick = {}
                 )
             }
         }
@@ -129,7 +119,7 @@ class HomeScreenFragment : Fragment() {
         imageID: Int = R.drawable.white_noise_icon,
         title: String = "White Noise",
         description: String = "Doze off to mellow sounds",
-        onClick: () -> Unit
+        onClick: () -> Unit = {}
     ) {
         Card(
             modifier = Modifier
@@ -141,8 +131,7 @@ class HomeScreenFragment : Fragment() {
         ) {
 
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
+                horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)
             ) {
 
                 Image(
