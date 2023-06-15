@@ -21,9 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.takari.sleeplock.R
 
 
@@ -74,6 +78,59 @@ fun KensBurnImage(imageID: Int = R.drawable.oceanshore) {
             .graphicsLayer(
                 scaleX = scale,
                 scaleY = scale,
+            )
+    )
+}
+
+/**
+ * States:
+ *  Zooming
+ *  Translation Start
+ *  Translation End
+ */
+@Composable
+fun AsyncKensBurnImage(imageID: Int = R.drawable.oceanshore, imageModifier: Modifier) {
+    val duration = 30000
+    var animated by remember { mutableStateOf(false) }
+    val startLocation = Offset(250F, 0F)
+    val endLocation = Offset(-250F, 0F)
+
+    val scale: Float by animateFloatAsState(
+        targetValue = if (animated) 1.5f else 2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = duration,
+                easing = LinearOutSlowInEasing
+            ), repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    LaunchedEffect(Unit) { animated = true }
+
+    val panningOffset by animateOffsetAsState(
+        targetValue = if (animated) endLocation else startLocation,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = duration,
+                easing = LinearOutSlowInEasing
+            ), repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    AsyncImage(
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(imageID)
+            .diskCachePolicy(CachePolicy.ENABLED)
+            .crossfade(true)
+            .build(),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = imageModifier
+            .graphicsLayer(
+                translationX = panningOffset.x,
+                translationY = panningOffset.y,
+                scaleX = scale,
+                scaleY = scale
             )
     )
 }
