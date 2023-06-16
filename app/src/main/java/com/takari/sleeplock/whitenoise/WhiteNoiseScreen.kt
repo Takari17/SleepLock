@@ -52,6 +52,7 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel) {
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             state = state,
             flingBehavior = rememberSnapFlingBehavior(lazyListState = state),
+            userScrollEnabled = !whiteNoiseUiState.mediaIsPlaying
         ) {
             items(viewModel.getWhiteNoiseOptions()) { item: WhiteNoise ->
                 val imageModifier = Modifier
