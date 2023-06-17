@@ -82,4 +82,11 @@ dependencies {
 
     // Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    // Compose ViewModel
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1'
+
+    // Flow Extensions
+//    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.0-beta01")
+
 }

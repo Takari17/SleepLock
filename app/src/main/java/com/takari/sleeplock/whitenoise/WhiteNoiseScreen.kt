@@ -1,7 +1,6 @@
 package com.takari.sleeplock.whitenoise
 
 import SleepLockTimeSelectionDialog
-import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -36,14 +35,40 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.takari.sleeplock.R
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
-import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
+
+/*
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        tools:targetApi="31">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/SleepLockTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+ */
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel) {
+fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
     val whiteNoiseUiState by viewModel.uiState.collectAsState()
+
+    logD(whiteNoiseUiState.toString())
 
     Box(modifier = Modifier.fillMaxSize()) {
         val state = rememberLazyListState()
@@ -57,13 +82,7 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel) {
             items(viewModel.getWhiteNoiseOptions()) { item: WhiteNoise ->
                 val imageModifier = Modifier
                     .fillParentMaxSize()
-                    .clickable {
-                        viewModel.onAdapterClick(
-                            item,
-                            WhiteNoiseService.isRunning(),
-                            false
-                        )
-                    }
+                    .clickable { viewModel.onWhiteNoiseItemClick(item) }
 
                 WhiteNoiseItem(whiteNoise = item, imageModifier = imageModifier)
             }
@@ -78,8 +97,14 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel) {
             fontWeight = FontWeight.Bold,
         )
 
+        val imageId = if (whiteNoiseUiState.isTimerRunning) {
+            R.drawable.transparant_pause_icon
+        } else {
+            R.drawable.transparant_play_icon
+        }
+
         Image(
-            painter = painterResource(id = whiteNoiseUiState.mediaOption),
+            painter = painterResource(id = imageId),
             contentDescription = null,
             modifier = Modifier
                 .align(Alignment.Center)
@@ -98,7 +123,7 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel) {
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 64.dp),
-            text = whiteNoiseUiState.timer,
+            text = whiteNoiseUiState.elapseTime,
             color = Color.White,
             fontSize = 64.sp,
             fadingCondition = !whiteNoiseUiState.mediaIsPlaying,
@@ -106,7 +131,7 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel) {
     }
 
     SelectTimeDialog(
-        showTimePicker = whiteNoiseUiState.showTimePicker,
+        showTimePicker = whiteNoiseUiState.showTimePickerDialog,
         onCancel = { viewModel.closeDialog() },
         onTimeSelected = { millis: Long -> viewModel.onUserSelectedTimeFromDialog(millis) }
     )
