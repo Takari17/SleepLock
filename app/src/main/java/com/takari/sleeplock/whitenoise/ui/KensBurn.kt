@@ -1,4 +1,4 @@
-package com.takari.sleeplock.whitenoise
+package com.takari.sleeplock.whitenoise.ui
 
 import android.util.Log
 import androidx.compose.animation.core.LinearOutSlowInEasing

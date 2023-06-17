@@ -1,4 +1,4 @@
-package com.takari.sleeplock.whitenoise
+package com.takari.sleeplock
 
 import android.content.Intent
 import android.os.Build.VERSION.SDK_INT

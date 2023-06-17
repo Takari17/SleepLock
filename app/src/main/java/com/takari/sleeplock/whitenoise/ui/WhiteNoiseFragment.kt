@@ -1,4 +1,4 @@
-package com.takari.sleeplock.whitenoise
+package com.takari.sleeplock.whitenoise.ui
 
 import android.content.ComponentName
 import android.content.Context
@@ -13,9 +13,12 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.takari.sleeplock.logD
+import com.takari.sleeplock.to24HourFormat
+import com.takari.sleeplock.whitenoise.WhiteNoiseUiState
+import com.takari.sleeplock.whitenoise.WhiteNoiseViewModel
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
-import com.takari.sleeplock.whitenoise.ui.WhiteNoiseOneTimeEvents
 import kotlinx.coroutines.launch
 
 
@@ -32,14 +35,12 @@ class WhiteNoiseFragment : Fragment() {
     }
 
     private var whiteNoiseService: WhiteNoiseService? = null
-    private var bindedToService: Boolean = false
     private lateinit var viewModel: WhiteNoiseViewModel
 
     private val connection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            logD("WhiteNoiseFragment binded")
-            bindedToService = true
+            logD("WhiteNoiseFragment binded to service.")
 
             whiteNoiseService = (service as WhiteNoiseService.LocalBinder).getService()
 
@@ -48,33 +49,13 @@ class WhiteNoiseFragment : Fragment() {
                     .collect { timerState -> viewModel.setTimerState(timerState) }
             }
 
-//            restoreRowState()
+            restoreState()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            logD("WhiteNoiseFragment disconnected")
-
-            bindedToService = false
-
-
-//            whiteNoiseService?.onDestroyed = {
-//                viewLifecycleOwner.lifecycleScope.launch {
-//                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
-//                    //TODO why do we need this? Why not just use the onServiceDisconnected callback? This is redundant.
-//                    //won't run until at least onStart has been called
-//                    if (bindedToService) {
-//                        unBindFromService()
-//                    }
-//
-////                    reverseAnimation()
-////                    zoomingLayoutManager.setScrollingEnabled(true)
-////                    viewModel.resetState()
-////                    whiteNoiseService = null
-//                }}
-
+            logD("WhiteNoiseFragment unbinded to service.")
         }
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -93,6 +74,7 @@ class WhiteNoiseFragment : Fragment() {
                 is WhiteNoiseOneTimeEvents.PauseService -> whiteNoiseService?.pause()
                 is WhiteNoiseOneTimeEvents.ResumeService -> whiteNoiseService?.resume()
                 is WhiteNoiseOneTimeEvents.DestroyService -> whiteNoiseService?.destroyService()
+                else -> {}
             }
         }
 
@@ -135,10 +117,16 @@ class WhiteNoiseFragment : Fragment() {
         requireContext().unbindService(connection)
     }
 
-    private fun restoreRowState() {
-//        val whiteNoise: WhiteNoise = whiteNoiseService?.getWhiteNoise() ?: Rain()
-//        val indexOfItem = WhiteNoiseOptions.getIndexOfItemInList(whiteNoise)
-//        indexOfItem?.let { whiteNoiseRecyclerView.scrollToPosition(it) }
-//        zoomingLayoutManager.setScrollingEnabled(false)
+    private fun restoreState() {
+        logD("Restored white oise state: ${whiteNoiseService?.whiteNoise}")
+
+        viewModel.restoreState(
+            WhiteNoiseUiState(
+                mediaIsPlaying = WhiteNoiseService.isRunning(),
+                isTimerRunning = WhiteNoiseService.timerIsRunning(),
+                elapseTime = whiteNoiseService!!.timerFlow.get.value.elapseTime.to24HourFormat(),
+                clickedWhiteNoise = whiteNoiseService?.whiteNoise!!
+            )
+        )
     }
 }

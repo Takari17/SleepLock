@@ -1,26 +1,18 @@
 package com.takari.sleeplock.whitenoise
 
 import androidx.lifecycle.ViewModel
-import com.takari.sleeplock.R
+import com.takari.sleeplock.logD
+import com.takari.sleeplock.to24HourFormat
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.data.WhiteNoiseOptions
-import com.takari.sleeplock.whitenoise.data.sounds.Rain
 import com.takari.sleeplock.whitenoise.service.TimerFlow
 import com.takari.sleeplock.whitenoise.ui.WhiteNoiseOneTimeEvents
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlin.math.log
 
 class WhiteNoiseViewModel : ViewModel() {
 
-    private var clickedWhiteNoise: WhiteNoise? = null
-
-    //the view overrides this to receive events from this viewModel
+    val uiState = MutableStateFlow(WhiteNoiseUiState())
     var events: (WhiteNoiseOneTimeEvents) -> Unit = {}
-
-    private val _uiState = MutableStateFlow(WhiteNoiseUiState())
-    val uiState: StateFlow<WhiteNoiseUiState> = _uiState.asStateFlow()
 
 
     /*
@@ -29,51 +21,56 @@ class WhiteNoiseViewModel : ViewModel() {
      */
     fun onWhiteNoiseItemClick(clickedWhiteNoise: WhiteNoise) {
         logD("onWhiteNoiseItemClick: $uiState")
-//        this.clickedWhiteNoise = clickedWhiteNoise //todo why is this needed?
 
         when {
             uiState.value.mediaIsPlaying and uiState.value.isTimerRunning -> {
                 events(WhiteNoiseOneTimeEvents.PauseService)
 
-                _uiState.value = _uiState.value.copy(
+                uiState.value = uiState.value.copy(
                     showTimePickerDialog = false,
                     mediaIsPlaying = true,
+                    clickedWhiteNoise = clickedWhiteNoise
                 )
             }
 
             uiState.value.mediaIsPlaying and !uiState.value.isTimerRunning -> {
                 events(WhiteNoiseOneTimeEvents.ResumeService)
 
-                _uiState.value = _uiState.value.copy(
+                uiState.value = uiState.value.copy(
                     showTimePickerDialog = false,
                     mediaIsPlaying = true,
+                    clickedWhiteNoise = clickedWhiteNoise
+
                 )
             }
 
             !uiState.value.mediaIsPlaying -> {
-                _uiState.value = _uiState.value.copy(showTimePickerDialog = true)
+                uiState.value = uiState.value.copy(
+                    showTimePickerDialog = true,
+                    clickedWhiteNoise = clickedWhiteNoise
+                )
             }
         }
     }
 
     fun onUserSelectedTimeFromDialog(millis: Long) {
         if (millis != 0L) {
-            _uiState.value = _uiState.value.copy(
+            uiState.value = uiState.value.copy(
                 showTimePickerDialog = false,
                 mediaIsPlaying = true,
             )
 
             events(
                 WhiteNoiseOneTimeEvents.StartAndBindToService(
-                    millis,
-                    clickedWhiteNoise ?: Rain()
+                    millis = millis,
+                    whiteNoise = uiState.value.clickedWhiteNoise
                 )
             )
         }
     }
 
     fun setTimerState(timerState: TimerFlow.TimerState) {
-        _uiState.value = _uiState.value.copy(
+        uiState.value = uiState.value.copy(
             elapseTime = timerState.elapseTime.to24HourFormat(),
             isTimerRunning = timerState.isTimerRunning
         )
@@ -85,11 +82,18 @@ class WhiteNoiseViewModel : ViewModel() {
     }
 
     fun closeDialog() {
-        _uiState.value = _uiState.value.copy(showTimePickerDialog = false)
+        uiState.value = uiState.value.copy(showTimePickerDialog = false)
+    }
+
+    fun restoreState(state: WhiteNoiseUiState) {
+        uiState.value = state
     }
 
     fun resetState() {
-        clickedWhiteNoise = null
-        _uiState.value = WhiteNoiseUiState()
+        uiState.value = WhiteNoiseUiState(
+            clickedWhiteNoise = uiState.value.clickedWhiteNoise // won't reset this state
+        )
+
+        events(WhiteNoiseOneTimeEvents.DestroyService)
     }
 }
