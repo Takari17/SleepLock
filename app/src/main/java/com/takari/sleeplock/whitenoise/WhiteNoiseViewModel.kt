@@ -5,53 +5,78 @@ import com.takari.sleeplock.R
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.data.WhiteNoiseOptions
 import com.takari.sleeplock.whitenoise.data.sounds.Rain
-import com.takari.sleeplock.whitenoise.ui.WhiteNoiseViewCommands
+import com.takari.sleeplock.whitenoise.service.TimerFlow
+import com.takari.sleeplock.whitenoise.ui.WhiteNoiseOneTimeEvents
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.math.log
 
 class WhiteNoiseViewModel : ViewModel() {
 
     private var clickedWhiteNoise: WhiteNoise? = null
 
     //the view overrides this to receive events from this viewModel
-    var viewCommand: (WhiteNoiseViewCommands) -> Unit = {}
+    var events: (WhiteNoiseOneTimeEvents) -> Unit = {}
 
     private val _uiState = MutableStateFlow(WhiteNoiseUiState())
     val uiState: StateFlow<WhiteNoiseUiState> = _uiState.asStateFlow()
 
 
-    fun onAdapterClick(
-        clickedWhiteNoise: WhiteNoise,
-        serviceIsRunning: Boolean,
-        timerIsRunning: Boolean
-    ) {
-        this.clickedWhiteNoise = clickedWhiteNoise
+    /*
+    If the media isn't playing, then show time picker. If media is playing and the timer is running,
+    then pause it. Else resume it.
+     */
+    fun onWhiteNoiseItemClick(clickedWhiteNoise: WhiteNoise) {
+        logD("onWhiteNoiseItemClick: $uiState")
+//        this.clickedWhiteNoise = clickedWhiteNoise //todo why is this needed?
 
-        if (serviceIsRunning) {
-            if (timerIsRunning) viewCommand(WhiteNoiseViewCommands.PauseService)
-            else viewCommand(WhiteNoiseViewCommands.ResumeService)
-        } else {
-            _uiState.value = _uiState.value.copy(showTimePicker = true)
+        when {
+            uiState.value.mediaIsPlaying and uiState.value.isTimerRunning -> {
+                events(WhiteNoiseOneTimeEvents.PauseService)
+
+                _uiState.value = _uiState.value.copy(
+                    showTimePickerDialog = false,
+                    mediaIsPlaying = true,
+                )
+            }
+
+            uiState.value.mediaIsPlaying and !uiState.value.isTimerRunning -> {
+                events(WhiteNoiseOneTimeEvents.ResumeService)
+
+                _uiState.value = _uiState.value.copy(
+                    showTimePickerDialog = false,
+                    mediaIsPlaying = true,
+                )
+            }
+
+            !uiState.value.mediaIsPlaying -> {
+                _uiState.value = _uiState.value.copy(showTimePickerDialog = true)
+            }
         }
     }
 
     fun onUserSelectedTimeFromDialog(millis: Long) {
         if (millis != 0L) {
             _uiState.value = _uiState.value.copy(
-                showTimePicker = false,
+                showTimePickerDialog = false,
                 mediaIsPlaying = true,
-                mediaOption = R.drawable.transparant_pause_icon
             )
 
-            viewCommand(WhiteNoiseViewCommands.StartAnimation)
-            viewCommand(
-                WhiteNoiseViewCommands.StartAndBindToService(
+            events(
+                WhiteNoiseOneTimeEvents.StartAndBindToService(
                     millis,
                     clickedWhiteNoise ?: Rain()
                 )
             )
         }
+    }
+
+    fun setTimerState(timerState: TimerFlow.TimerState) {
+        _uiState.value = _uiState.value.copy(
+            elapseTime = timerState.elapseTime.to24HourFormat(),
+            isTimerRunning = timerState.isTimerRunning
+        )
     }
 
     fun getWhiteNoiseOptions(): List<WhiteNoise> {
@@ -60,7 +85,7 @@ class WhiteNoiseViewModel : ViewModel() {
     }
 
     fun closeDialog() {
-        _uiState.value = _uiState.value.copy(showTimePicker = false)
+        _uiState.value = _uiState.value.copy(showTimePickerDialog = false)
     }
 
     fun resetState() {

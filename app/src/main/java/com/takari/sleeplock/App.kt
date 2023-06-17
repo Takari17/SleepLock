@@ -5,14 +5,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 
-import com.takari.sleeplock.di.ApplicationComponent
-import com.takari.sleeplock.di.DaggerApplicationComponent
-
-
 class App : Application() {
 
     companion object {
-        lateinit var applicationComponent: ApplicationComponent
+        //        lateinit var applicationComponent: ApplicationComponent
         const val CHANNEL_ID = "=channel id"
     }
 
@@ -20,8 +16,8 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-        applicationComponent = DaggerApplicationComponent.factory()
-            .create(applicationContext)
+//        applicationComponent = DaggerApplicationComponent.factory()
+//            .create(applicationContext)
     }
 
     private fun createNotificationChannel() {
@@ -35,7 +31,8 @@ class App : Application() {
             )
             channel.description = "Displays Current Time"
 
-            val notificationManager = (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
+            val notificationManager =
+                (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
 
             notificationManager.createNotificationChannel(channel)
         }

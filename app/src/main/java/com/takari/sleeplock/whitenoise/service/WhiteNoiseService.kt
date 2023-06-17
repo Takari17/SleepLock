@@ -11,116 +11,98 @@ import android.os.IBinder
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.core.graphics.drawable.toBitmap
 import androidx.media.app.NotificationCompat.MediaStyle
-import com.bumptech.glide.Glide
+import coil.executeBlocking
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.takari.sleeplock.App
+import com.takari.sleeplock.MainActivity
 import com.takari.sleeplock.R
-import com.takari.sleeplock.main.MainActivity
-import com.takari.sleeplock.shared.TimerFlow
-import com.takari.sleeplock.shared.to24HourFormat
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onCompletion
+import com.takari.sleeplock.whitenoise.logD
+import com.takari.sleeplock.whitenoise.parcelable
+import com.takari.sleeplock.whitenoise.to24HourFormat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+
+
+private var isServiceRunning = false
+private var isTimerRunning = false
+
 
 
 class WhiteNoiseService : Service() {
 
-    companion object {
+    companion object IntentActions {
         const val INIT_AND_START = "start"
         const val PAUSE = "pause"
         const val RESUME = "resume"
         const val RESET = "reset"
-        const val MILLIS = "timerFlow id"
-        const val WHITE_NOISE = "white noise id"
+        const val MILLIS = "elapse time"
+        const val WHITE_NOISE = "white noise"
+        const val NOTIFICATION_ID = 46294
 
-        /**Immutable so it's pretty reliable to use.*/
         fun isRunning() = isServiceRunning
+        fun timerIsRunning() = isTimerRunning
     }
 
-    private lateinit var timerFlow: TimerFlow
+
+    lateinit var timerFlow: TimerFlow
     private lateinit var mediaPlayer: MediaPlayer
-    private lateinit var whiteNoise: WhiteNoise
-
-    private val mediaStyle: MediaStyle by lazy {
-        val session = MediaSessionCompat(this, "tag").sessionToken
-        MediaStyle().setMediaSession(session)
-    }
-
-    private lateinit var notificationJob: Job
-
-    /*
-    Using the same builder when updating a notification makes the whole operation less costly to the
-    UI thread since it doesn't need to create a new builder each time.
-     */
     private val notificationBuilder by lazy { NotificationCompat.Builder(this, App.CHANNEL_ID) }
     private val notificationManager by lazy { NotificationManagerCompat.from(this) }
-    private val id = 46294
-
-    // the view observes these when it binds
-    private val _elapseTime: MutableLiveData<Long> = MutableLiveData(0L)
-    val elapseTime: LiveData<Long> = _elapseTime
-
-    private val _isTimerRunning: MutableLiveData<Boolean> = MutableLiveData(true)
-    val isTimerRunning: LiveData<Boolean> = _isTimerRunning
-
     private val serviceScope = CoroutineScope(Dispatchers.IO)
-    var onServiceDestroyed: (Unit) -> Unit = {}
 
 
-    override fun onCreate() {
-        super.onCreate()
-        isServiceRunning = true
-    }
-
-    override fun onBind(intent: Intent): IBinder? = LocalBinder()
+    override fun onBind(intent: Intent): IBinder = LocalBinder()
 
     inner class LocalBinder : Binder() {
         fun getService(): WhiteNoiseService = this@WhiteNoiseService
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        isServiceRunning = true
 
-        when (intent?.action) {
+        logD("Service intent action: ${intent.action}")
+
+        when (intent.action) {
 
             INIT_AND_START -> {
+                isTimerRunning = true
 
-                whiteNoise = intent.getParcelableExtra(WHITE_NOISE)
+                val whiteNoise = intent.parcelable<WhiteNoise>(WHITE_NOISE)!!
                 val millis: Long = intent.getLongExtra(MILLIS, 0)
+
+                logD("WhiteNoise: $whiteNoise, Milliseconds: $millis")
 
                 mediaPlayer = MediaPlayer.create(this, whiteNoise.sound()).apply {
                     start()
                     isLooping = true
                 }
 
-                timerFlow = TimerFlow(millis) { isTimerRunning ->
-                    serviceScope.launch(Dispatchers.Main) {
-                        updateNotificationAction(isTimerRunning)
-                        _isTimerRunning.value = isTimerRunning
-
-                    }
-                }
+                timerFlow = TimerFlow(millis)
 
                 serviceScope.launch { observeTimerFlow(timerFlow) }
 
-                notificationJob = serviceScope.launch {
+                serviceScope.launch { timerFlow.start() }
 
-                    val bitMap: Bitmap = Glide.with(this@WhiteNoiseService)
-                        .asBitmap()
-                        .load(whiteNoise.image())
-                        .submit()
-                        .get()
+                val request = ImageRequest.Builder(this)
+                    .data(whiteNoise.image())
+                    .target { drawable -> drawable.toBitmap() }
+                    .build()
 
-                    withContext(Dispatchers.Main) {
-                        val notification = getTimerNotification(0L.to24HourFormat(), bitMap)
-                        startForeground(id, notification)
-                    }
-                }
+                val bitmap = imageLoader.executeBlocking(request).drawable!!.toBitmap()
+
+                val notification = getAndBuildTimerNotification(millis.to24HourFormat(), bitmap)
+                startForeground(NOTIFICATION_ID, notification)
             }
+
             PAUSE -> pause()
+
 
             RESUME -> resume()
 
@@ -132,15 +114,12 @@ class WhiteNoiseService : Service() {
 
     fun destroyService() {
         stopSelf()
-        stopForeground(true)
+        stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
     //can only be called once
     override fun onDestroy() {
         super.onDestroy()
-        isServiceRunning = false
-        onServiceDestroyed(Unit)
-        _elapseTime.value = 0
         timerFlow.reset()
         mediaPlayer.reset()
         mediaPlayer.release() //must be released to avoid memory leaks
@@ -148,14 +127,20 @@ class WhiteNoiseService : Service() {
         serviceScope.cancel()
     }
 
-    private fun getTimerNotification(currentTime: String, bitMap: Bitmap): Notification {
-        mediaStyle.showPauseAndResetActions()
+    private fun getAndBuildTimerNotification(currentTime: String, bitMap: Bitmap): Notification {
+        val activityIntent = PendingIntent.getActivity(
+            this,
+            1,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val session = MediaSessionCompat(this, "tag").sessionToken
+        val mediaStyle = MediaStyle().setMediaSession(session)
 
         return notificationBuilder.apply {
             setSmallIcon(R.drawable.alarm_icon)
-            //will always be "pause" initially
             addAction(R.drawable.pause, "Pause", createBroadcastIntent(PAUSE))
-            addAction(R.drawable.play, "Resume", createBroadcastIntent(RESUME))
             addAction(R.drawable.reset, "Reset", createBroadcastIntent(RESET))
             setLargeIcon(bitMap)
             setStyle(mediaStyle)
@@ -167,53 +152,48 @@ class WhiteNoiseService : Service() {
     }
 
     private fun updateNotificationText(newText: String) {
-        notificationBuilder.setContentText(newText).build()
+        notificationBuilder
+            .setContentText(newText)
+            .setSmallIcon(R.drawable.alarm_icon)
+            .build()
 
-        notificationManager.notify(id, notificationBuilder.build())
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
     }
 
-    private fun updateNotificationAction(timerRunning: Boolean) {
+    private fun updateNotificationAction(isTimerRunning: Boolean) {
+        if (isTimerRunning) {
+            notificationBuilder
+                .clearActions()
+                .addAction(R.drawable.pause, "Pause", createBroadcastIntent(PAUSE))
+                .addAction(R.drawable.reset, "Reset", createBroadcastIntent(RESET))
+        } else {
+            notificationBuilder
+                .clearActions()
+                .addAction(R.drawable.play, "Resume", createBroadcastIntent(RESUME))
+                .addAction(R.drawable.reset, "Reset", createBroadcastIntent(RESET))
+        }
 
-        if (timerRunning) mediaStyle.showPauseAndResetActions()
-        else mediaStyle.showPlayAndResetActions()
-
-        notificationBuilder.setStyle(mediaStyle)
-
-        notificationManager.notify(id, notificationBuilder.build())
-    }
-
-    //Makes these operation much more explicit and concrete
-    private fun MediaStyle.showPauseAndResetActions() {
-        this.setShowActionsInCompactView(0, 2)
-    }
-
-    private fun MediaStyle.showPlayAndResetActions() {
-        this.setShowActionsInCompactView(1, 2)
-    }
-
-    private val activityIntent by lazy {
-        val intent = Intent(this, MainActivity::class.java)
-        PendingIntent.getActivity(this, 1, intent, 0)
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
     }
 
     private fun createBroadcastIntent(action: String): PendingIntent {
         val intent = Intent(this, WhiteNoiseServiceReceiver::class.java).apply {
             this.action = action
         }
-        return PendingIntent.getBroadcast(this, 0, intent, 0)
+
+        return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
     }
 
-    private suspend fun observeTimerFlow(timerFlow: TimerFlow) = timerFlow.get
-        .onCompletion { destroyService() }
-        .collect { millis ->
-            withContext(Dispatchers.Main) {
-                _elapseTime.value = millis
+    private suspend fun observeTimerFlow(timerFlow: TimerFlow): Nothing = timerFlow.get
+        .collect { timerState ->
+            updateNotificationText(timerState.elapseTime.to24HourFormat())
+            updateNotificationAction(isTimerRunning = timerState.isTimerRunning)
 
-                if (notificationJob.isCompleted) updateNotificationText(millis.to24HourFormat())
-            }
+            isTimerRunning = timerState.isTimerRunning
+
+            if (timerState.elapseTime == 0L) destroyService()
         }
 
-    fun getWhiteNoise(): WhiteNoise? = whiteNoise
 
     fun pause() {
         timerFlow.pause()
@@ -225,5 +205,3 @@ class WhiteNoiseService : Service() {
         mediaPlayer.start()
     }
 }
-
-private var isServiceRunning = false
