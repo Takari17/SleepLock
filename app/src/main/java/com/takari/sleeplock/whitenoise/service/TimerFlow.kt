@@ -20,9 +20,9 @@ class TimerFlow(private var millis: Long) {
                 millis -= 1000
             }
 
-            if (millis <= 0L) reset()
-
             get.emit(TimerState(elapseTime = millis, isTimerRunning = running))
+
+            if (millis <= 0L) reset()
 
             delay(1000)
         }

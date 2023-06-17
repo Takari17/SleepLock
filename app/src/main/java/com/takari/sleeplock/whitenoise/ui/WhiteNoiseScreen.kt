@@ -23,7 +23,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -39,9 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.takari.sleeplock.R
+import com.takari.sleeplock.logD
 import com.takari.sleeplock.whitenoise.WhiteNoiseViewModel
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
-import com.takari.sleeplock.logD
+import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
 import kotlinx.coroutines.launch
 
 
@@ -60,19 +60,26 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             state = state,
             flingBehavior = rememberSnapFlingBehavior(lazyListState = state),
-            userScrollEnabled = !whiteNoiseUiState.mediaIsPlaying
+            userScrollEnabled = !whiteNoiseUiState.mediaServiceIsRunning
         ) {
             items(viewModel.getWhiteNoiseOptions()) { item: WhiteNoise ->
                 val imageModifier = Modifier
                     .fillParentMaxSize()
-                    .clickable { viewModel.onWhiteNoiseItemClick(item) }
+                    .clickable {
+                        viewModel.onWhiteNoiseItemClick(
+                            clickedWhiteNoise = item,
+                            serviceIsRunning = WhiteNoiseService.isRunning(),
+                            timerIsRunning = WhiteNoiseService.timerIsRunning(),
+                        )
+                    }
 
                 WhiteNoiseItem(whiteNoise = item, imageModifier = imageModifier)
             }
         }
 
         coroutineScope.launch {
-            val index= viewModel.getWhiteNoiseOptions().indexOf(whiteNoiseUiState.clickedWhiteNoise)
+            val index =
+                viewModel.getWhiteNoiseOptions().indexOf(whiteNoiseUiState.clickedWhiteNoise)
             logD("Index: $index")
             state.animateScrollToItem(index)
 
@@ -81,7 +88,7 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
         FadingText(
             modifier = Modifier.padding(start = 8.dp, top = 24.dp),
             text = "Pick a Sound!",
-            fadingCondition = whiteNoiseUiState.mediaIsPlaying,
+            fadingCondition = whiteNoiseUiState.mediaServiceIsRunning,
             color = Color.White,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
@@ -105,8 +112,8 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 64.dp),
-            fadingCondition = whiteNoiseUiState.mediaIsPlaying,
-            onClick = { viewModel.resetState() },
+            fadingCondition = whiteNoiseUiState.mediaServiceIsRunning,
+            onClick = { viewModel.destroyService() },
         )
 
         FadingText(
@@ -116,7 +123,7 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
             text = whiteNoiseUiState.elapseTime,
             color = Color.White,
             fontSize = 64.sp,
-            fadingCondition = !whiteNoiseUiState.mediaIsPlaying,
+            fadingCondition = !whiteNoiseUiState.mediaServiceIsRunning,
         )
     }
 

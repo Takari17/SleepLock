@@ -54,6 +54,7 @@ class WhiteNoiseFragment : Fragment() {
 
         override fun onServiceDisconnected(name: ComponentName?) {
             logD("WhiteNoiseFragment unbinded to service.")
+            viewModel.resetState()
         }
     }
 
@@ -122,7 +123,7 @@ class WhiteNoiseFragment : Fragment() {
 
         viewModel.restoreState(
             WhiteNoiseUiState(
-                mediaIsPlaying = WhiteNoiseService.isRunning(),
+                mediaServiceIsRunning = WhiteNoiseService.isRunning(),
                 isTimerRunning = WhiteNoiseService.timerIsRunning(),
                 elapseTime = whiteNoiseService!!.timerFlow.get.value.elapseTime.to24HourFormat(),
                 clickedWhiteNoise = whiteNoiseService?.whiteNoise!!
