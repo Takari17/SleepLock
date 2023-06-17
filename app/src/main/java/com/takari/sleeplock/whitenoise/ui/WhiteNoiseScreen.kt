@@ -1,4 +1,4 @@
-package com.takari.sleeplock.whitenoise
+package com.takari.sleeplock.whitenoise.ui
 
 import SleepLockTimeSelectionDialog
 import androidx.compose.animation.core.animateFloatAsState
@@ -23,8 +23,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,30 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.takari.sleeplock.R
+import com.takari.sleeplock.whitenoise.WhiteNoiseViewModel
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
-
-/*
-
-    <application
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        tools:targetApi="31">
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:theme="@style/SleepLockTheme">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
-
- */
+import com.takari.sleeplock.logD
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -72,6 +54,7 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         val state = rememberLazyListState()
+        val coroutineScope = rememberCoroutineScope()
 
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -86,6 +69,13 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
 
                 WhiteNoiseItem(whiteNoise = item, imageModifier = imageModifier)
             }
+        }
+
+        coroutineScope.launch {
+            val index= viewModel.getWhiteNoiseOptions().indexOf(whiteNoiseUiState.clickedWhiteNoise)
+            logD("Index: $index")
+            state.animateScrollToItem(index)
+
         }
 
         FadingText(

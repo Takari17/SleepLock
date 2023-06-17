@@ -1,4 +1,3 @@
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -22,8 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.takari.sleeplock.whitenoise.hrToMilli
-import com.takari.sleeplock.whitenoise.minToMilli
+import com.takari.sleeplock.hrToMilli
+import com.takari.sleeplock.minToMilli
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)

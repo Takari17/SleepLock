@@ -40,7 +40,7 @@ import com.takari.sleeplock.R
 import com.takari.sleeplock.ui.theme.DarkBackground
 import com.takari.sleeplock.ui.theme.DarkLight
 import com.takari.sleeplock.ui.theme.SleepLockTheme
-import com.takari.sleeplock.whitenoise.WhiteNoiseFragment
+import com.takari.sleeplock.whitenoise.ui.WhiteNoiseFragment
 
 class HomeScreenFragment : Fragment() {
 

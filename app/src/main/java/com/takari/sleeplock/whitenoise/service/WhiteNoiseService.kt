@@ -20,9 +20,9 @@ import com.takari.sleeplock.App
 import com.takari.sleeplock.MainActivity
 import com.takari.sleeplock.R
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
-import com.takari.sleeplock.whitenoise.logD
-import com.takari.sleeplock.whitenoise.parcelable
-import com.takari.sleeplock.whitenoise.to24HourFormat
+import com.takari.sleeplock.logD
+import com.takari.sleeplock.parcelable
+import com.takari.sleeplock.to24HourFormat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -55,6 +55,7 @@ class WhiteNoiseService : Service() {
     private val notificationBuilder by lazy { NotificationCompat.Builder(this, App.CHANNEL_ID) }
     private val notificationManager by lazy { NotificationManagerCompat.from(this) }
     private val serviceScope = CoroutineScope(Dispatchers.IO)
+    lateinit var whiteNoise: WhiteNoise
 
 
     override fun onBind(intent: Intent): IBinder = LocalBinder()
@@ -74,7 +75,8 @@ class WhiteNoiseService : Service() {
             INIT_AND_START -> {
                 isTimerRunning = true
 
-                val whiteNoise = intent.parcelable<WhiteNoise>(WHITE_NOISE)!!
+                whiteNoise = intent.parcelable(WHITE_NOISE)!!
+
                 val millis: Long = intent.getLongExtra(MILLIS, 0)
 
                 logD("WhiteNoise: $whiteNoise, Milliseconds: $millis")
