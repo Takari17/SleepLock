@@ -19,32 +19,36 @@ class WhiteNoiseViewModel : ViewModel() {
     If the media isn't playing, then show time picker. If media is playing and the timer is running,
     then pause it. Else resume it.
      */
-    fun onWhiteNoiseItemClick(clickedWhiteNoise: WhiteNoise) {
-        logD("onWhiteNoiseItemClick: $uiState")
+    fun onWhiteNoiseItemClick(
+        clickedWhiteNoise: WhiteNoise,
+        serviceIsRunning: Boolean,
+        timerIsRunning: Boolean
+    ) {
+        logD("onWhiteNoiseItemClick: ${uiState.value}")
 
         when {
-            uiState.value.mediaIsPlaying and uiState.value.isTimerRunning -> {
+            serviceIsRunning and timerIsRunning -> {
                 events(WhiteNoiseOneTimeEvents.PauseService)
 
                 uiState.value = uiState.value.copy(
                     showTimePickerDialog = false,
-                    mediaIsPlaying = true,
+                    mediaServiceIsRunning = true,
                     clickedWhiteNoise = clickedWhiteNoise
                 )
             }
 
-            uiState.value.mediaIsPlaying and !uiState.value.isTimerRunning -> {
+            serviceIsRunning and !timerIsRunning -> {
                 events(WhiteNoiseOneTimeEvents.ResumeService)
 
                 uiState.value = uiState.value.copy(
                     showTimePickerDialog = false,
-                    mediaIsPlaying = true,
+                    mediaServiceIsRunning = true,
                     clickedWhiteNoise = clickedWhiteNoise
 
                 )
             }
 
-            !uiState.value.mediaIsPlaying -> {
+            !serviceIsRunning -> {
                 uiState.value = uiState.value.copy(
                     showTimePickerDialog = true,
                     clickedWhiteNoise = clickedWhiteNoise
@@ -57,7 +61,7 @@ class WhiteNoiseViewModel : ViewModel() {
         if (millis != 0L) {
             uiState.value = uiState.value.copy(
                 showTimePickerDialog = false,
-                mediaIsPlaying = true,
+                mediaServiceIsRunning = true,
             )
 
             events(
@@ -89,11 +93,12 @@ class WhiteNoiseViewModel : ViewModel() {
         uiState.value = state
     }
 
-    fun resetState() {
-        uiState.value = WhiteNoiseUiState(
-            clickedWhiteNoise = uiState.value.clickedWhiteNoise // won't reset this state
-        )
+    fun resetState(){
+        // won't reset clickedWhiteNoise
+        uiState.value = WhiteNoiseUiState(clickedWhiteNoise = uiState.value.clickedWhiteNoise)
+    }
 
+    fun destroyService() {
         events(WhiteNoiseOneTimeEvents.DestroyService)
     }
 }

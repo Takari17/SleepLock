@@ -125,6 +125,8 @@ class WhiteNoiseService : Service() {
         timerFlow.reset()
         mediaPlayer.reset()
         mediaPlayer.release() //must be released to avoid memory leaks
+        isServiceRunning = false
+        isTimerRunning = false
         notificationManager.cancelAll()
         serviceScope.cancel()
     }
