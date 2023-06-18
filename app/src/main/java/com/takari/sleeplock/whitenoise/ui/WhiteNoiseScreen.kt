@@ -127,7 +127,7 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
         )
     }
 
-    SelectTimeDialog(
+    SleepLockTimeSelectionDialog(
         showTimePicker = whiteNoiseUiState.showTimePickerDialog,
         onCancel = { viewModel.closeDialog() },
         onTimeSelected = { millis: Long -> viewModel.onUserSelectedTimeFromDialog(millis) }
@@ -165,20 +165,6 @@ fun WhiteNoiseItem(whiteNoise: WhiteNoise, imageModifier: Modifier) {
         }
     }
 }
-
-@Composable
-fun SelectTimeDialog(
-    showTimePicker: Boolean,
-    onCancel: () -> Unit = {},
-    onTimeSelected: (Long) -> Unit = { }
-) {
-    SleepLockTimeSelectionDialog(
-        showTimePicker,
-        onCancel = { onCancel() },
-        onTimeSelected = { onTimeSelected(it) }
-    )
-}
-
 
 @Preview
 @Composable

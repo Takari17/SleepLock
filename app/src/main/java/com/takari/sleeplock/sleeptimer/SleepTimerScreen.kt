@@ -1,5 +1,6 @@
 package com.takari.sleeplock.sleeptimer
 
+import SleepLockTimeSelectionDialog
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -18,10 +19,8 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,6 +39,8 @@ import com.takari.sleeplock.ui.theme.DeepBlue
 @Preview
 @Composable
 fun SleepTimerScreen(viewModel: SleepTimerViewModel = viewModel()) {
+    val sleepTimerUiState by viewModel.uiState.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -69,7 +70,7 @@ fun SleepTimerScreen(viewModel: SleepTimerViewModel = viewModel()) {
 
         Column(modifier = Modifier.fillMaxSize()) {
             Text(
-                text = "00:00",
+                text = sleepTimerUiState.elapseTime,
                 color = Color.White,
                 fontSize = 72.sp,
                 modifier = Modifier
@@ -82,35 +83,51 @@ fun SleepTimerScreen(viewModel: SleepTimerViewModel = viewModel()) {
                 verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier.fillMaxSize()
             ) {
-                var s by remember { mutableStateOf(false) }
 
                 VerticalSlidingButton(
                     modifier = Modifier
                         .padding(bottom = 36.dp)
                         .align(Alignment.CenterHorizontally)
                         .width(200.dp),
-                    slidingCondition = s,
+                    slidingCondition = sleepTimerUiState.timerServiceIsRunning,
                     startAxis = 1f,
                     endAxis = -150f,
                     colors = ButtonDefaults.buttonColors(containerColor = DeepBlue),
-                    onClick = { s = !s },
-                    content = { Text(text = "Start", color = Color.White) }
+                    onClick = {
+                        // TODO replace with SleepTimerService
+                        viewModel.onStartButtonClick(
+                            serviceIsRunning = false,
+                            timerIsRunning = false
+                        )
+                    },
+                    content = {
+                        Text(
+                            text = if (sleepTimerUiState.isTimerRunning) "Pause" else "Start",
+                            color = Color.White
+                        )
+                    }
                 )
 
                 VerticalSlidingButton(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .width(200.dp),
-                    slidingCondition = s,
+                    slidingCondition = sleepTimerUiState.timerServiceIsRunning,
                     startAxis = 250f,
                     endAxis = -225f,
                     colors = ButtonDefaults.buttonColors(containerColor = DeepBlue),
-                    onClick = { },
+                    onClick = { viewModel.resetState() },
                     content = { Text(text = "Reset", color = Color.White) }
                 )
             }
         }
     }
+
+    SleepLockTimeSelectionDialog(
+        showTimePicker = sleepTimerUiState.showTimePickerDialog,
+        onCancel = { viewModel.closeDialog() },
+        onTimeSelected = { millis: Long -> viewModel.onUserSelectedTimeFromDialog(millis) }
+    )
 }
 
 
