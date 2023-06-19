@@ -97,4 +97,12 @@ dependencies {
     // Dagger Hilt
     implementation("com.google.dagger:hilt-android:2.44.2")
     kapt("com.google.dagger:hilt-android-compiler:2.44.2")
+
+    // Activity & Fragment androidx
+    implementation("androidx.activity:activity:1.7.2")
+    implementation("androidx.activity:activity-ktx:1.7.2")
+    implementation("androidx.fragment:fragment:1.6.0")
+    implementation("androidx.fragment:fragment-ktx:1.6.0")
+    debugImplementation("androidx.fragment:fragment-testing:1.6.0")
+
 }

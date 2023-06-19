@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USES_POLICY_FORCE_LOCK" />
 
     <application
-        android:name = ".di.App"
+        android:name=".di.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -32,10 +31,12 @@
         <receiver android:name="com.takari.sleeplock.whitenoise.service.WhiteNoiseServiceReceiver" />
 
         <service android:name="com.takari.sleeplock.sleeptimer.service.SleepTimerService" />
+
         <receiver android:name="com.takari.sleeplock.sleeptimer.service.SleepTimerServiceReceiver" />
 
         <receiver
-            android:name="com.takari.sleeplock.sleeptimer.admin.AdminPermissionReceiver"
+            android:name="com.takari.sleeplock.sleeptimer.admin.SleepTimerAdminReceiver"
+            android:description="@string/device_admin_description"
             android:exported="true"
             android:label="SleepLock"
             android:permission="android.permission.BIND_DEVICE_ADMIN">

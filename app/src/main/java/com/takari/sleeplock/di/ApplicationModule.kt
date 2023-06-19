@@ -2,7 +2,9 @@ package com.takari.sleeplock.di
 
 import android.app.admin.DevicePolicyManager
 import android.content.Context
+import android.content.SharedPreferences
 import android.media.AudioManager
+import android.preference.PreferenceManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,5 +23,10 @@ object ApplicationModule {
     @Provides
     fun provideDevicePolicyManager(@ApplicationContext context: Context): DevicePolicyManager {
         return context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    }
+
+    @Provides
+    fun provideSharedPreferences(@ApplicationContext context: Context): SharedPreferences {
+        return PreferenceManager.getDefaultSharedPreferences(context)
     }
 }

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SleepLock</string>
+    <string name="device_admin_description">Needed for the sleep timer feature to work</string>
+
 </resources>
