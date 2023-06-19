@@ -17,6 +17,9 @@ import androidx.lifecycle.lifecycleScope
 import com.takari.sleeplock.log
 import com.takari.sleeplock.sleeptimer.permissions.AdminPermissionManager
 import com.takari.sleeplock.sleeptimer.service.SleepTimerService
+import com.takari.sleeplock.to24HourFormat
+import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
+import com.takari.sleeplock.whitenoise.ui.WhiteNoiseUiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -124,6 +127,12 @@ class SleepTimerFragment : Fragment() {
     }
 
     private fun restoreState() {
-
+        viewModel.restoreState(
+            SleepTimerUiState(
+                timerServiceIsRunning = SleepTimerService.isRunning(),
+                isTimerRunning = SleepTimerService.timerIsRunning(),
+                elapseTime = sleepTimerService!!.timerFlow.get.value.elapseTime.to24HourFormat(),
+            )
+        )
     }
 }

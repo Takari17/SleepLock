@@ -1,4 +1,4 @@
-package com.takari.sleeplock.sleeptimer
+package com.takari.sleeplock.sleeptimer.ui
 
 import androidx.lifecycle.ViewModel
 import com.takari.sleeplock.to24HourFormat
@@ -59,6 +59,10 @@ class SleepTimerViewModel : ViewModel() {
 
     fun closeDialog() {
         uiState.value = uiState.value.copy(showTimePickerDialog = false)
+    }
+
+    fun restoreState(state: SleepTimerUiState) {
+        uiState.value = state
     }
 
     fun resetState(){
