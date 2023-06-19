@@ -62,7 +62,7 @@ class SleepTimerViewModel : ViewModel() {
     }
 
     fun resetState(){
-        // won't reset clickedWhiteNoise
+        events(SleepTimerViewCommands.DestroyService)
         uiState.value = SleepTimerUiState()
     }
 }

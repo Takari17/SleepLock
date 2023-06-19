@@ -9,13 +9,18 @@ import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.takari.sleeplock.logD
+import com.takari.sleeplock.log
+import com.takari.sleeplock.sleeptimer.permissions.AdminPermissionManager
 import com.takari.sleeplock.sleeptimer.service.SleepTimerService
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+
 
 class SleepTimerFragment : Fragment() {
 
@@ -23,6 +28,8 @@ class SleepTimerFragment : Fragment() {
         const val TAG = "Sleep Timer"
     }
 
+    @Inject
+    lateinit var permissionManager: AdminPermissionManager
     private var sleepTimerService: SleepTimerService? = null
     private lateinit var viewModel: SleepTimerViewModel
 
@@ -34,8 +41,11 @@ class SleepTimerFragment : Fragment() {
             sleepTimerService = (service as SleepTimerService.LocalBinder).getService()
 
             lifecycleScope.launch {
-                sleepTimerService!!.timerFlow.get
-                    .collect { timerState -> viewModel.setTimerState(timerState) }
+                sleepTimerService!!.timerFlow.get.collect { timerState ->
+                    viewModel.setTimerState(
+                        timerState
+                    )
+                }
             }
 
 //            restoreState()
@@ -47,6 +57,15 @@ class SleepTimerFragment : Fragment() {
         }
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (!permissionManager.permissionIsEnabled()) {
+            permissionManager.requestPermissions(this) { isGranted ->
+                if (!isGranted) requireActivity().supportFragmentManager.popBackStack()
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -54,7 +73,7 @@ class SleepTimerFragment : Fragment() {
         viewModel = ViewModelProvider(this)[SleepTimerViewModel::class.java]
 
         viewModel.events = { command ->
-            logD(command.toString())
+            log(command.toString())
 
             when (command) {
                 is SleepTimerViewCommands.StartAndBindToService -> {
@@ -96,9 +115,7 @@ class SleepTimerFragment : Fragment() {
 
     private fun bindToService() {
         requireContext().bindService(
-            Intent(context, SleepTimerService::class.java),
-            connection,
-            Context.BIND_IMPORTANT
+            Intent(context, SleepTimerService::class.java), connection, Context.BIND_IMPORTANT
         )
     }
 

@@ -1,4 +1,4 @@
-package com.takari.sleeplock.sleeptimer
+package com.takari.sleeplock.sleeptimer.ui
 
 data class SleepTimerUiState(
     val showTimePickerDialog: Boolean = false,

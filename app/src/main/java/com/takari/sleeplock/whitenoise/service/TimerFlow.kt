@@ -28,8 +28,6 @@ class TimerFlow(private var millis: Long) {
         }
     }
 
-
-    //collecting the flow starts it, so we don't need a start() function
     fun resume() {
         running = true
     }

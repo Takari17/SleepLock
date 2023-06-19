@@ -10,7 +10,7 @@ fun Int.minToMilli(): Long = (this * 60000).toLong()
 
 fun Int.hrToMilli(): Long = (this * 3.6e+6).toLong()
 
-fun logD(message: String) = Log.d("logs", message)
+fun log(message: String) = Log.d("takari_logs", message)
 
 fun Long.to24HourFormat(): String {
     val seconds = (this / 1000 % 60).toInt()
