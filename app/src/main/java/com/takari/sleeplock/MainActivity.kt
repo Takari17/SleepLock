@@ -6,8 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.takari.sleeplock.main.HomeScreenFragment
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     companion object {
 
@@ -24,8 +25,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private val homeScreenFragment: Fragment by lazy { HomeScreenFragment() }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -35,7 +34,7 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             supportFragmentManager
                 .beginTransaction()
-                .add(R.id.container, homeScreenFragment)
+                .add(R.id.container, HomeScreenFragment())
                 .commit()
         }
     }
