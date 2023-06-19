@@ -1,19 +1,68 @@
-package com.takari.sleeplock.sleeptimer.ui
+package com.takari.sleeplock.sleeptimer
 
 import androidx.lifecycle.ViewModel
-import com.takari.sleeplock.whitenoise.ui.WhiteNoiseViewCommands
-import javax.inject.Inject
+import com.takari.sleeplock.to24HourFormat
+import com.takari.sleeplock.whitenoise.service.TimerFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 
-class SleepTimerViewModel @Inject constructor() : ViewModel() {
+class SleepTimerViewModel : ViewModel() {
 
-    //the view overrides this to receive events from this viewModel
-    var viewCommand: (SleepTimerViewCommands) -> Unit = {}
+    val uiState = MutableStateFlow(SleepTimerUiState())
+    var events: (SleepTimerViewCommands) -> Unit = {}
 
-    fun onStartPauseButtonClick(serviceIsRunning: Boolean, timerIsRunning: Boolean) {
-        if (serviceIsRunning) {
-            if (timerIsRunning) viewCommand(SleepTimerViewCommands.PauseService)
-            else viewCommand(SleepTimerViewCommands.ResumeService)
-        } else viewCommand(SleepTimerViewCommands.OpenTimeSelectionDialog)
+    fun onStartButtonClick(serviceIsRunning: Boolean, timerIsRunning: Boolean) {
+        when {
+            serviceIsRunning and timerIsRunning -> {
+                events(SleepTimerViewCommands.PauseService)
+
+                uiState.value = uiState.value.copy(
+                    showTimePickerDialog = false,
+                    timerServiceIsRunning = true,
+                )
+            }
+
+            serviceIsRunning and !timerIsRunning -> {
+                events(SleepTimerViewCommands.ResumeService)
+
+                uiState.value = uiState.value.copy(
+                    showTimePickerDialog = false,
+                    timerServiceIsRunning = true,
+                )
+            }
+
+            !serviceIsRunning -> {
+                uiState.value = uiState.value.copy(showTimePickerDialog = true)
+            }
+        }
+    }
+
+    fun onUserSelectedTimeFromDialog(millis: Long) {
+        if (millis != 0L) {
+            uiState.value = uiState.value.copy(
+                showTimePickerDialog = false,
+                timerServiceIsRunning = true,
+                isTimerRunning = true,
+                elapseTime = millis.to24HourFormat()
+            )
+
+            events(SleepTimerViewCommands.StartAndBindToService(millis = millis))
+        }
+    }
+
+    fun setTimerState(timerState: TimerFlow.TimerState) {
+        uiState.value = uiState.value.copy(
+            elapseTime = timerState.elapseTime.to24HourFormat(),
+            isTimerRunning = timerState.isTimerRunning
+        )
+    }
+
+    fun closeDialog() {
+        uiState.value = uiState.value.copy(showTimePickerDialog = false)
+    }
+
+    fun resetState(){
+        // won't reset clickedWhiteNoise
+        uiState.value = SleepTimerUiState()
     }
 }

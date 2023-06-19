@@ -1,6 +1,7 @@
 package com.takari.sleeplock.sleeptimer.ui
 
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
@@ -8,98 +9,67 @@ import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnticipateOvershootInterpolator
-import androidx.constraintlayout.widget.ConstraintSet
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.transition.AutoTransition
-import androidx.transition.TransitionManager
-import com.takari.sleeplock.App
-import com.takari.sleeplock.R
-import com.takari.sleeplock.shared.TimeSelectionDialog
-import com.takari.sleeplock.sleeptimer.admin.PermissionResult
+import com.takari.sleeplock.logD
 import com.takari.sleeplock.sleeptimer.service.SleepTimerService
-import kotlinx.android.synthetic.main.sleep_timer_fragment.*
-
+import kotlinx.coroutines.launch
 
 class SleepTimerFragment : Fragment() {
 
     companion object {
-        const val DURATION_DEFAULT = 1000L
-        const val DURATION_INSTANT = 0L
+        const val TAG = "Sleep Timer"
     }
 
-    private val viewModel by viewModels<SleepTimerViewModel>()
     private var sleepTimerService: SleepTimerService? = null
-    private val serviceIntent by lazy { Intent(requireContext(), SleepTimerService::class.java) }
-    private val timeSelectionDialog = TimeSelectionDialog()
-    private val adminPermissions = App.applicationComponent.adminPermission
-    private val requestId = 2343345
-    private val initialConstraints = ConstraintSet()
-    private val altConstraint = ConstraintSet()
-    private val transition = AutoTransition().apply {
-        interpolator = AnticipateOvershootInterpolator(1f)
-        duration = 1000
-        ordering = AutoTransition.ORDERING_TOGETHER
-    }
+    private lateinit var viewModel: SleepTimerViewModel
 
+    private val connection = object : ServiceConnection {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (!adminPermissions.isEnabled()) requestDeviceAdminPermissions()
-    }
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            logD("SleepTimerFragment binded to service.")
 
-    private fun requestDeviceAdminPermissions() {
-        val requestIntent = adminPermissions.requestIntent
-        startActivityForResult(requestIntent, requestId)
-    }
+            sleepTimerService = (service as SleepTimerService.LocalBinder).getService()
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == requestId) {
-            if (resultCode == PermissionResult.UserCanceled.code)
-                requireActivity().supportFragmentManager.popBackStack()
+            lifecycleScope.launch {
+                sleepTimerService!!.timerFlow.get
+                    .collect { timerState -> viewModel.setTimerState(timerState) }
+            }
+
+//            restoreState()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            logD("SleepTimerFragment unbinded to service.")
+            viewModel.resetState()
         }
     }
+
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.sleep_timer_fragment, container, false)
-    }
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        viewModel = ViewModelProvider(this)[SleepTimerViewModel::class.java]
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        viewModel.events = { command ->
+            logD(command.toString())
 
-        initialConstraints.clone(sleepTimerFragment)
-        altConstraint.clone(requireContext(), R.layout.sleep_timer_fragment_alt)
+            when (command) {
+                is SleepTimerViewCommands.StartAndBindToService -> {
+                    startService(command.millis)
+                    bindToService()
+                }
 
-        startPauseButton.setOnClickListener {
-            val timerIsRunning = sleepTimerService?.timerIsRunning?.value ?: false
-            viewModel.onStartPauseButtonClick(SleepTimerService.isRunning(), timerIsRunning)
-        }
-
-        cancelButton.setOnClickListener { cancelService() }
-
-        timeSelectionDialog.onTimeSelected = { millis ->
-            if (millis != 0L) {
-                startService(millis)
-                bindToService()
-                startAnimation(DURATION_DEFAULT)
+                is SleepTimerViewCommands.PauseService -> sleepTimerService?.pause()
+                is SleepTimerViewCommands.ResumeService -> sleepTimerService?.resume()
+                is SleepTimerViewCommands.DestroyService -> sleepTimerService?.destroyService()
             }
         }
 
-        viewModel.viewCommand = { viewCommand ->
-            val placeHolder = when (viewCommand) {
-                SleepTimerViewCommands.PauseService -> pauseService()
-                SleepTimerViewCommands.ResumeService -> resumeService()
-                SleepTimerViewCommands.DestroyService -> cancelService()
-                SleepTimerViewCommands.OpenTimeSelectionDialog -> openTimeOptionsDialog()
-            }
+        return ComposeView(requireContext()).apply {
+            setContent { SleepTimerScreen(viewModel) }
         }
     }
 
@@ -113,80 +83,30 @@ class SleepTimerFragment : Fragment() {
         if (SleepTimerService.isRunning()) unBindFromService()
     }
 
-    private fun openTimeOptionsDialog() {
-        if (!timeSelectionDialog.isAdded)
-            timeSelectionDialog.show(requireActivity().supportFragmentManager, "timeDialog")
-    }
-
-    private fun startAnimation(duration: Long) {
-        transition.duration = duration
-        TransitionManager.beginDelayedTransition(sleepTimerFragment, transition)
-        altConstraint.applyTo(sleepTimerFragment)
-    }
-
-    private fun reverseAnimation() {
-        transition.duration = DURATION_DEFAULT
-        TransitionManager.beginDelayedTransition(sleepTimerFragment, transition)
-        initialConstraints.applyTo(sleepTimerFragment)
-    }
-
     private fun startService(millis: Long) {
+        val serviceIntent = Intent(context, SleepTimerService::class.java)
+
         serviceIntent.apply {
             action = SleepTimerService.START
             putExtra(SleepTimerService.MILLIS, millis)
         }
+
         requireContext().startService(serviceIntent)
     }
 
-    private fun pauseService() {
-        sleepTimerService?.pauseTimer()
-    }
-
-    private fun resumeService() {
-        sleepTimerService?.resumeTimer()
-    }
-
-    private fun cancelService() {
-        sleepTimerService?.destroyService()
-    }
-
     private fun bindToService() {
-        requireContext().bindService(serviceIntent, serviceConnection, 0)
+        requireContext().bindService(
+            Intent(context, SleepTimerService::class.java),
+            connection,
+            Context.BIND_IMPORTANT
+        )
     }
 
     private fun unBindFromService() {
-        requireContext().unbindService(serviceConnection)
+        requireContext().unbindService(connection)
     }
 
-    private fun onBind() {
-        startAnimation(DURATION_INSTANT)
-    }
+    private fun restoreState() {
 
-    private val serviceConnection = object : ServiceConnection {
-
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-
-            sleepTimerService = (service as SleepTimerService.LocalBinder).getService()
-
-            onBind()
-
-            sleepTimerService?.elapseTime?.observe(viewLifecycleOwner, Observer { elapseTime ->
-                currentTimeTextView.text = elapseTime
-            })
-
-            sleepTimerService?.timerIsRunning?.observe(viewLifecycleOwner, Observer { timerIsRunning ->
-                    val newText = if (timerIsRunning) "Pause" else "Resume"
-                    startPauseButton.setText(newText)
-                })
-
-            sleepTimerService?.onServiceCanceled = {
-                lifecycleScope.launchWhenStarted {
-                    reverseAnimation()
-                    startPauseButton.setText("Start")
-                }
-            }
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {}
     }
 }

@@ -1,14 +1,15 @@
-package com.takari.sleeplock
+package com.takari.sleeplock.di
 
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class App : Application() {
 
     companion object {
-        //        lateinit var applicationComponent: ApplicationComponent
         const val CHANNEL_ID = "=channel id"
     }
 
@@ -16,8 +17,6 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
-//        applicationComponent = DaggerApplicationComponent.factory()
-//            .create(applicationContext)
     }
 
     private fun createNotificationChannel() {

@@ -6,90 +6,105 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import com.takari.sleeplock.App
+import com.takari.sleeplock.MainActivity
 import com.takari.sleeplock.R
-import com.takari.sleeplock.main.MainActivity
-import com.takari.sleeplock.shared.TimerFlow
-import com.takari.sleeplock.shared.to24HourFormat
+import com.takari.sleeplock.di.App
+import com.takari.sleeplock.logD
+import com.takari.sleeplock.sleeptimer.admin.DeviceSleeper
+import com.takari.sleeplock.to24HourFormat
+import com.takari.sleeplock.whitenoise.service.TimerFlow
 import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+private var isServiceRunning = false
+private var isTimerRunning = false
 
+@AndroidEntryPoint
 class SleepTimerService : Service() {
 
     companion object {
-        fun isRunning() = isServiceRunning
         const val MILLIS = "millis"
         const val START = "start"
         const val PAUSE = "pause"
         const val RESUME = "resume"
-        const val CANCEL = "reset"
+        const val RESET = "reset"
+        const val NOTIFICATION_ID = 8936457
+
+        fun isRunning() = isServiceRunning
+        fun timerIsRunning() = isTimerRunning
     }
 
-    private lateinit var timerFlow: TimerFlow
-    private val deviceSleeper = App.applicationComponent.deviceSleeper
+    lateinit var timerFlow: TimerFlow
 
-    // the view observes these when it binds
-    private val _elapseTime: MutableLiveData<String> = MutableLiveData("00:00")
-    val elapseTime: LiveData<String> = _elapseTime
-
-    private val _timerIsRunning: MutableLiveData<Boolean> = MutableLiveData(true)
-    val timerIsRunning: LiveData<Boolean> = _timerIsRunning
+    @Inject
+    lateinit var deviceSleeper: DeviceSleeper
 
     private val serviceScope = CoroutineScope(Dispatchers.Main)
-    var onServiceCanceled: (Unit) -> Unit = {}
 
-    private var id = 3356
-    private lateinit var notificationBuilder: NotificationCompat.Builder
     private val notificationManager by lazy { NotificationManagerCompat.from(this) }
 
-
-    override fun onCreate() {
-        super.onCreate()
-        isServiceRunning = true
-        notificationBuilder = NotificationCompat.Builder(this, App.CHANNEL_ID)
+    private val notificationBuilder: NotificationCompat.Builder by lazy {
+        NotificationCompat.Builder(this, App.CHANNEL_ID)
     }
+
 
     inner class LocalBinder : Binder() {
         fun getService(): SleepTimerService = this@SleepTimerService
     }
 
-    override fun onBind(intent: Intent): IBinder? = LocalBinder()
+    override fun onBind(intent: Intent): IBinder = LocalBinder()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        isServiceRunning = true
 
         when (intent?.action) {
 
             START -> {
+                isTimerRunning = true
 
                 val millis: Long = intent.getLongExtra(MILLIS, 0)
 
-                timerFlow = TimerFlow(millis) { isRunning ->
-                    serviceScope.launch {
-                        withContext(Dispatchers.Main) {
-                            _timerIsRunning.value = isRunning
-                            updateNotificationAction(isRunning, _elapseTime.value ?: "00:00")
+                logD("Millis in service: $millis")
+
+                timerFlow = TimerFlow(millis)
+
+                serviceScope.launch {
+                    timerFlow.get
+                        .collect { timerState ->
+                            logD("Sleep timer service elapse time: $timerState")
+                            updateNotificationText(timerState.elapseTime.to24HourFormat())
+                            updateNotificationAction(isTimerRunning = timerState.isTimerRunning)
+
+                            isTimerRunning = timerState.isTimerRunning
+                            if (millis == 0L) { // timer finishes
+                                logD("Sleeping the device...")
+                                updateNotificationText("Sleeping Device")
+                                sleepTheDevice()
+                            }
                         }
-                    }
                 }
 
-                observeTimerFlow(timerFlow)
+                serviceScope.launch { timerFlow.start() }
 
-                startForeground(id, getInitialTimerNotification())
+                val notification = getInitialTimerNotification(millis.to24HourFormat())
+
+                startForeground(NOTIFICATION_ID, notification)
             }
 
-            PAUSE -> pauseTimer()
-            RESUME -> resumeTimer()
-            CANCEL -> destroyService()
+            PAUSE -> pause()
+            RESUME -> resume()
+            RESET -> destroyService()
         }
 
         return START_STICKY
@@ -97,114 +112,97 @@ class SleepTimerService : Service() {
 
 
     private fun sleepTheDevice() = serviceScope.launch {
-        deviceSleeper.slowlySleepDeviceFlow
+        deviceSleeper.sleepDevice
             .onCompletion { destroyService() }
             .flowOn(Dispatchers.IO)
-            .collect()
+            .collect {}
     }
 
     fun destroyService() {
         stopSelf()
-        stopForeground(true)
-
+        stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
-    /*
-    If the timer finishes itself, it sleeps the device and on complete destroys the service. If the
-    user cancels the service manually, destroy service is just called directly
- */
     override fun onDestroy() {
         super.onDestroy()
-        _elapseTime.value = "00:00"
+        logD("SleepTimer onDestroy")
         isServiceRunning = false
+        isTimerRunning = false
         timerFlow.reset()
-        onServiceCanceled(Unit)
         notificationManager.cancelAll()
         serviceScope.cancel()
-
     }
 
-    private fun observeTimerFlow(timerFlow: TimerFlow) = serviceScope.launch {
-        timerFlow.get
-            .flowOn(Dispatchers.IO)
-            .collect { millis ->
-                _elapseTime.value = millis.to24HourFormat()
-                updateNotificationText(millis.to24HourFormat())
+    private fun getInitialTimerNotification(millis: String): Notification {
+        val session = MediaSessionCompat(this, "tag").sessionToken
 
-                if (millis == 0L) {
-                    //timer finished on it's own and wasn't manually killed
-                    sleepTheDevice()
-                    _elapseTime.value = "Sleeping Device"
-                    updateNotificationText("Sleeping Device")
-                }
-            }
+        val mediaStyle = androidx.media.app.NotificationCompat.MediaStyle().setMediaSession(session)
+
+        val activityIntent = PendingIntent.getActivity(
+            this,
+            1,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
+        return notificationBuilder.apply {
+            setSmallIcon(R.drawable.alarm_icon)
+            addAction(R.drawable.pause, "Pause", createBroadcastIntent(PAUSE))
+            addAction(R.drawable.reset, "Reset", createBroadcastIntent(RESET))
+            setSubText("Sound Options")
+            setContentTitle("Sleep Lock")
+            setContentText(millis)
+            setStyle(mediaStyle)
+            setOngoing(true)
+            setContentIntent(activityIntent)
+        }.build()
     }
-
-    private fun getInitialTimerNotification(): Notification = notificationBuilder.apply {
-        setSmallIcon(R.drawable.alarm_icon)
-        addAction(R.drawable.pause, "Pause", createBroadcastIntent(WhiteNoiseService.PAUSE))
-        addAction(R.drawable.reset, "Cancel", createBroadcastIntent(WhiteNoiseService.RESET))
-        setSubText("Sound Options")
-        setContentTitle("Sleep Lock")
-        setContentText(0L.to24HourFormat())
-        color = ContextCompat.getColor(this@SleepTimerService, R.color.colorAccent)
-        setColorized(true)
-        setContentIntent(activityIntent)
-    }.build()
 
 
     private fun updateNotificationText(newText: String) {
         notificationBuilder.setContentText(newText).build()
-        notificationManager.notify(id, notificationBuilder.build())
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
     }
 
     //Gotta create a new builder since you can't replace notification actions :/
-    private fun updateNotificationAction(timerIsRunning: Boolean, elapseTime: String) {
-
-        notificationBuilder = NotificationCompat.Builder(this, App.CHANNEL_ID)
-
-        if (timerIsRunning)
-            notificationBuilder.addAction(
-                R.drawable.pause, "Pause", createBroadcastIntent(WhiteNoiseService.PAUSE)
-            )
-        else notificationBuilder.addAction(
-            R.drawable.play, "Resume", createBroadcastIntent(WhiteNoiseService.RESUME)
-        )
-
-        notificationBuilder.apply {
-            setSmallIcon(R.drawable.alarm_icon)
-            addAction(R.drawable.reset, "Cancel", createBroadcastIntent(WhiteNoiseService.RESET))
-            setSubText("Sound Options")
-            setContentTitle("SleepLock")
-            setContentText(elapseTime)
-            setContentIntent(activityIntent)
-            color = ContextCompat.getColor(this@SleepTimerService, R.color.colorAccent)
-            setColorized(true)
+    private fun updateNotificationAction(isTimerRunning: Boolean) {
+        if (isTimerRunning) {
+            notificationBuilder
+                .clearActions()
+                .addAction(R.drawable.pause, "Pause", createBroadcastIntent(PAUSE))
+                .addAction(
+                    R.drawable.reset,
+                    "Reset",
+                    createBroadcastIntent(WhiteNoiseService.RESET)
+                )
+        } else {
+            notificationBuilder
+                .clearActions()
+                .addAction(R.drawable.play, "Resume", createBroadcastIntent(RESUME))
+                .addAction(
+                    R.drawable.reset,
+                    "Reset",
+                    createBroadcastIntent(WhiteNoiseService.RESET)
+                )
         }
 
-        notificationManager.notify(id, notificationBuilder.build())
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
     }
 
-
-    private val activityIntent by lazy {
-        val intent = Intent(this, MainActivity::class.java)
-        PendingIntent.getActivity(this, 1, intent, 0)
-    }
 
     private fun createBroadcastIntent(action: String): PendingIntent {
         val intent = Intent(this, SleepTimerServiceReceiver::class.java).apply {
             this.action = action
         }
-        return PendingIntent.getBroadcast(this, 0, intent, 0)
+
+        return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
     }
 
-    fun pauseTimer() {
+    fun pause() {
         timerFlow.pause()
     }
 
-    fun resumeTimer() {
+    fun resume() {
         timerFlow.resume()
     }
 }
-
-private var isServiceRunning = false

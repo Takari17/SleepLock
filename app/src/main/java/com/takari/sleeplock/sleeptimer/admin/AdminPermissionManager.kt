@@ -8,11 +8,10 @@ import androidx.core.content.edit
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/*
-The API for checking the status of the admin permissions didn't suit my needs and so I created my
- own implementation.
+
+/**
+ * Handles requesting/checking admin permissions needed for sleeping the device.
  */
-@Singleton
 class AdminPermissionManager @Inject constructor(
     private val sharedPrefs: SharedPreferences,
     private val adminReceiverComponentName: ComponentName
