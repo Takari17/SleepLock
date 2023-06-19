@@ -12,8 +12,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.takari.sleeplock.MainActivity
 import com.takari.sleeplock.R
 import com.takari.sleeplock.di.App
-import com.takari.sleeplock.logD
-import com.takari.sleeplock.sleeptimer.admin.DeviceSleeper
+import com.takari.sleeplock.log
 import com.takari.sleeplock.to24HourFormat
 import com.takari.sleeplock.whitenoise.service.TimerFlow
 import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
@@ -75,20 +74,20 @@ class SleepTimerService : Service() {
 
                 val millis: Long = intent.getLongExtra(MILLIS, 0)
 
-                logD("Millis in service: $millis")
+                log("Millis in service: $millis")
 
                 timerFlow = TimerFlow(millis)
 
                 serviceScope.launch {
                     timerFlow.get
                         .collect { timerState ->
-                            logD("Sleep timer service elapse time: $timerState")
+                            log("Sleep timer service elapse time: $timerState")
                             updateNotificationText(timerState.elapseTime.to24HourFormat())
                             updateNotificationAction(isTimerRunning = timerState.isTimerRunning)
 
                             isTimerRunning = timerState.isTimerRunning
-                            if (millis == 0L) { // timer finishes
-                                logD("Sleeping the device...")
+                            if (timerState.elapseTime == 0L) { // timer finishes
+                                log("Sleeping the device...")
                                 updateNotificationText("Sleeping Device")
                                 sleepTheDevice()
                             }
@@ -115,7 +114,7 @@ class SleepTimerService : Service() {
         deviceSleeper.sleepDevice
             .onCompletion { destroyService() }
             .flowOn(Dispatchers.IO)
-            .collect {}
+            .collect { log("Sleeping...") }
     }
 
     fun destroyService() {
@@ -125,7 +124,7 @@ class SleepTimerService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        logD("SleepTimer onDestroy")
+        log("SleepTimer onDestroy")
         isServiceRunning = false
         isTimerRunning = false
         timerFlow.reset()
