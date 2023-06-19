@@ -1,4 +1,4 @@
-package com.takari.sleeplock.sleeptimer
+package com.takari.sleeplock.sleeptimer.ui
 
 import SleepLockTimeSelectionDialog
 import androidx.compose.animation.core.animateFloatAsState
@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.takari.sleeplock.R
+import com.takari.sleeplock.sleeptimer.service.SleepTimerService
 import com.takari.sleeplock.ui.theme.DarkBackground
 import com.takari.sleeplock.ui.theme.DeepBlue
 
@@ -84,6 +85,9 @@ fun SleepTimerScreen(viewModel: SleepTimerViewModel = viewModel()) {
                 modifier = Modifier.fillMaxSize()
             ) {
 
+                sleepTimerUiState.timerServiceIsRunning
+                sleepTimerUiState.isTimerRunning
+
                 VerticalSlidingButton(
                     modifier = Modifier
                         .padding(bottom = 36.dp)
@@ -94,17 +98,19 @@ fun SleepTimerScreen(viewModel: SleepTimerViewModel = viewModel()) {
                     endAxis = -150f,
                     colors = ButtonDefaults.buttonColors(containerColor = DeepBlue),
                     onClick = {
-                        // TODO replace with SleepTimerService
                         viewModel.onStartButtonClick(
-                            serviceIsRunning = false,
-                            timerIsRunning = false
+                            serviceIsRunning = SleepTimerService.isRunning(),
+                            timerIsRunning = SleepTimerService.timerIsRunning()
                         )
                     },
                     content = {
-                        Text(
-                            text = if (sleepTimerUiState.isTimerRunning) "Pause" else "Start",
-                            color = Color.White
-                        )
+                        val buttonText = when {
+                            sleepTimerUiState.timerServiceIsRunning and sleepTimerUiState.isTimerRunning -> "Pause"
+                            sleepTimerUiState.timerServiceIsRunning and !sleepTimerUiState.isTimerRunning -> "Resume"
+                            else -> "Start"
+                        }
+
+                        Text(text = buttonText, color = Color.White)
                     }
                 )
 

@@ -1,9 +1,8 @@
 package com.takari.sleeplock.sleeptimer
 
 import androidx.lifecycle.ViewModel
-import com.takari.sleeplock.sleeptimer.ui.SleepTimerViewCommands
 import com.takari.sleeplock.to24HourFormat
-import com.takari.sleeplock.whitenoise.ui.WhiteNoiseUiState
+import com.takari.sleeplock.whitenoise.service.TimerFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 
@@ -49,6 +48,13 @@ class SleepTimerViewModel : ViewModel() {
 
             events(SleepTimerViewCommands.StartAndBindToService(millis = millis))
         }
+    }
+
+    fun setTimerState(timerState: TimerFlow.TimerState) {
+        uiState.value = uiState.value.copy(
+            elapseTime = timerState.elapseTime.to24HourFormat(),
+            isTimerRunning = timerState.isTimerRunning
+        )
     }
 
     fun closeDialog() {
