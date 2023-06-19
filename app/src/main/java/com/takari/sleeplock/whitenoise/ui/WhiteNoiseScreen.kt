@@ -38,8 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.takari.sleeplock.R
-import com.takari.sleeplock.logD
-import com.takari.sleeplock.whitenoise.WhiteNoiseViewModel
+import com.takari.sleeplock.log
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
 import kotlinx.coroutines.launch

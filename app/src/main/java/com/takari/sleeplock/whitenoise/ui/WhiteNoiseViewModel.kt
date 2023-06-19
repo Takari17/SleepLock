@@ -1,60 +1,103 @@
 package com.takari.sleeplock.whitenoise.ui
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.takari.sleeplock.log
+import com.takari.sleeplock.to24HourFormat
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
-import com.takari.sleeplock.whitenoise.data.sounds.Rain
-import com.takari.sleeplock.shared.TimerAction
+import com.takari.sleeplock.whitenoise.data.WhiteNoiseOptions
+import com.takari.sleeplock.whitenoise.service.TimerFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 
-class WhiteNoiseViewModel : ViewModel(), WhiteNoiseViewEvents {
+class WhiteNoiseViewModel : ViewModel() {
 
-    private val _timerActionIcon = MutableLiveData(TimerAction.Play)
-    val timerActionIcon: LiveData<TimerAction> = _timerActionIcon
-
-    private var clickedWhiteNoise: WhiteNoise? = null
-    var isViewBindedToService = false
-
-    //the view overrides this to receive events from this viewModel
-    var viewCommand: (WhiteNoiseViewCommands) -> Unit = {}
+    val uiState = MutableStateFlow(WhiteNoiseUiState())
+    var events: (WhiteNoiseOneTimeEvents) -> Unit = {}
 
 
-    override fun onAdapterClick(
+    /*
+    If the media isn't playing, then show time picker. If media is playing and the timer is running,
+    then pause it. Else resume it.
+     */
+    fun onWhiteNoiseItemClick(
         clickedWhiteNoise: WhiteNoise,
         serviceIsRunning: Boolean,
         timerIsRunning: Boolean
     ) {
-        this.clickedWhiteNoise = clickedWhiteNoise
+        log("onWhiteNoiseItemClick: ${uiState.value}")
 
-        if (serviceIsRunning) {
-            if (timerIsRunning) viewCommand(WhiteNoiseViewCommands.PauseService)
-            else viewCommand(WhiteNoiseViewCommands.ResumeService)
-        } else viewCommand(WhiteNoiseViewCommands.OpenTimeSelectionDialog)
-    }
+        when {
+            serviceIsRunning and timerIsRunning -> {
+                events(WhiteNoiseOneTimeEvents.PauseService)
 
-    override fun onUserSelectedTimeFromDialog(millis: Long) {
+                uiState.value = uiState.value.copy(
+                    showTimePickerDialog = false,
+                    mediaServiceIsRunning = true,
+                    clickedWhiteNoise = clickedWhiteNoise
+                )
+            }
 
-        if (millis != 0L) {
-            viewCommand(WhiteNoiseViewCommands.StartAnimation)
-            viewCommand(WhiteNoiseViewCommands.StartAndBindToService(millis, clickedWhiteNoise ?: Rain()))
+            serviceIsRunning and !timerIsRunning -> {
+                events(WhiteNoiseOneTimeEvents.ResumeService)
+
+                uiState.value = uiState.value.copy(
+                    showTimePickerDialog = false,
+                    mediaServiceIsRunning = true,
+                    clickedWhiteNoise = clickedWhiteNoise
+
+                )
+            }
+
+            !serviceIsRunning -> {
+                uiState.value = uiState.value.copy(
+                    showTimePickerDialog = true,
+                    clickedWhiteNoise = clickedWhiteNoise
+                )
+            }
         }
     }
 
-    override fun onResetButtonClick() {
-        viewCommand(WhiteNoiseViewCommands.DestroyService)
+    fun onUserSelectedTimeFromDialog(millis: Long) {
+        if (millis != 0L) {
+            uiState.value = uiState.value.copy(
+                showTimePickerDialog = false,
+                mediaServiceIsRunning = true,
+            )
+
+            events(
+                WhiteNoiseOneTimeEvents.StartAndBindToService(
+                    millis = millis,
+                    whiteNoise = uiState.value.clickedWhiteNoise
+                )
+            )
+        }
     }
 
-    /*
-    Alts between pause and play icons, but I used an enum since I didn't want to reference a Drawable or
-    resource id. The VM should know nothing about Android.
-     */
-    fun setTimerActionIcon(isTimerRunning: Boolean) {
-        _timerActionIcon.value = if (isTimerRunning) TimerAction.Pause else TimerAction.Play
+    fun setTimerState(timerState: TimerFlow.TimerState) {
+        uiState.value = uiState.value.copy(
+            elapseTime = timerState.elapseTime.to24HourFormat(),
+            isTimerRunning = timerState.isTimerRunning
+        )
     }
 
-    fun resetState() {
-        _timerActionIcon.value = TimerAction.Play
-        clickedWhiteNoise = null
-        isViewBindedToService = false
+    fun getWhiteNoiseOptions(): List<WhiteNoise> {
+        //todo look at that google project, look at how they handle the data layer when it's not needed
+        return WhiteNoiseOptions.get
+    }
+
+    fun closeDialog() {
+        uiState.value = uiState.value.copy(showTimePickerDialog = false)
+    }
+
+    fun restoreState(state: WhiteNoiseUiState) {
+        uiState.value = state
+    }
+
+    fun resetState(){
+        // won't reset clickedWhiteNoise
+        uiState.value = WhiteNoiseUiState(clickedWhiteNoise = uiState.value.clickedWhiteNoise)
+    }
+
+    fun destroyService() {
+        events(WhiteNoiseOneTimeEvents.DestroyService)
     }
 }

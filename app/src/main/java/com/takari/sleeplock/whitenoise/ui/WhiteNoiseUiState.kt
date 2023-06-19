@@ -1,4 +1,4 @@
-package com.takari.sleeplock.whitenoise
+package com.takari.sleeplock.whitenoise.ui
 
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.data.sounds.Rain
