@@ -71,7 +71,7 @@ fun HomeScreen(activity: FragmentActivity) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 20.dp, end = 20.dp),
+                .padding(start = 15.dp, end = 15.dp),
         ) {
 
             SleepFeature(
@@ -113,8 +113,8 @@ fun SleepFeature(
 ) {
     Card(
         modifier = Modifier
-            .width(150.dp)
-            .height(250.dp)
+            .width(175.dp)
+            .height(275.dp)
             .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = DarkLight),
         elevation = CardDefaults.cardElevation(16.dp)
@@ -136,7 +136,7 @@ fun SleepFeature(
             Text(
                 text = title,
                 color = Color.White,
-                fontSize = 20.sp,
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 5.dp, bottom = 10.dp)
             )
@@ -151,9 +151,9 @@ fun SleepFeature(
             Text(
                 text = description,
                 color = Color.White,
-                modifier = Modifier.padding(top = 20.dp, bottom = 15.dp),
+                modifier = Modifier.padding(top = 20.dp, bottom = 15.dp, start = 5.dp, end = 5.dp),
                 textAlign = TextAlign.Center,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontStyle = FontStyle.Italic
             )
         }
