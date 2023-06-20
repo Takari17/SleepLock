@@ -51,11 +51,11 @@ class SleepTimerFragment : Fragment() {
                 }
             }
 
-//            restoreState()
+            restoreState()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            logD("SleepTimerFragment unbinded to service.")
+            log("SleepTimerFragment unbinded to service.")
             viewModel.resetState()
         }
     }

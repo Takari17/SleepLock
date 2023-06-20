@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,19 +18,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,6 +44,9 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.takari.sleeplock.R
 import com.takari.sleeplock.log
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
@@ -49,21 +59,42 @@ import kotlinx.coroutines.launch
 fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
     val whiteNoiseUiState by viewModel.uiState.collectAsState()
 
-    logD(whiteNoiseUiState.toString())
+    log(whiteNoiseUiState.toString())
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val state = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
 
+        val halfRowWidth = constraints.maxWidth / 2
+
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
             state = state,
             flingBehavior = rememberSnapFlingBehavior(lazyListState = state),
             userScrollEnabled = !whiteNoiseUiState.mediaServiceIsRunning
         ) {
-            items(viewModel.getWhiteNoiseOptions()) { item: WhiteNoise ->
+            itemsIndexed(viewModel.getWhiteNoiseOptions()) { i, item: WhiteNoise ->
+                val opacity by remember {
+                    derivedStateOf {
+                        val currentItemInfo = state.layoutInfo.visibleItemsInfo
+                            .firstOrNull { it.index == i }
+                            ?: return@derivedStateOf 0.5f
+
+                        val itemHalfSize = currentItemInfo.size / 2
+                        val distanceFromCenter =
+                            Math.abs(currentItemInfo.offset + itemHalfSize - halfRowWidth)
+                                .toFloat() / halfRowWidth
+
+                        val scrollDistance = (1f - minOf(1f, distanceFromCenter * 0.1f))
+
+                        scrollDistance
+                    }
+                }
+
                 val imageModifier = Modifier
                     .fillParentMaxSize()
+                    .scale(opacity)
+                    .alpha(opacity)
+                    .addKensBurnEffect()
                     .clickable {
                         viewModel.onWhiteNoiseItemClick(
                             clickedWhiteNoise = item,
@@ -72,14 +103,21 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
                         )
                     }
 
-                WhiteNoiseItem(whiteNoise = item, imageModifier = imageModifier)
+                val textModifier = Modifier
+                    .scale(opacity)
+                    .alpha(opacity)
+
+                WhiteNoiseItem(
+                    whiteNoise = item,
+                    imageModifier = imageModifier,
+                    textModifier = textModifier
+                )
             }
         }
 
         coroutineScope.launch {
             val index =
                 viewModel.getWhiteNoiseOptions().indexOf(whiteNoiseUiState.clickedWhiteNoise)
-            logD("Index: $index")
             state.animateScrollToItem(index)
 
         }
@@ -134,16 +172,23 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
 }
 
 @Composable
-fun WhiteNoiseItem(whiteNoise: WhiteNoise, imageModifier: Modifier) {
+fun WhiteNoiseItem(whiteNoise: WhiteNoise, imageModifier: Modifier, textModifier: Modifier) {
     Box {
-        AsyncKensBurnImage(
-            imageID = whiteNoise.image(),
-            imageModifier = imageModifier
+
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(whiteNoise.image())
+                .diskCachePolicy(CachePolicy.ENABLED)
+                .crossfade(true)
+                .build(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = imageModifier
         )
 
         Column(
             verticalArrangement = Arrangement.Bottom,
-            modifier = Modifier
+            modifier = textModifier
                 .fillMaxHeight()
                 .width(375.dp)
                 .padding(bottom = 150.dp, start = 16.dp)

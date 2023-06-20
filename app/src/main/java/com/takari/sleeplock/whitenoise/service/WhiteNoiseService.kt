@@ -16,13 +16,13 @@ import androidx.media.app.NotificationCompat.MediaStyle
 import coil.executeBlocking
 import coil.imageLoader
 import coil.request.ImageRequest
-import com.takari.sleeplock.App
 import com.takari.sleeplock.MainActivity
 import com.takari.sleeplock.R
-import com.takari.sleeplock.whitenoise.data.WhiteNoise
-import com.takari.sleeplock.logD
+import com.takari.sleeplock.di.App
+import com.takari.sleeplock.log
 import com.takari.sleeplock.parcelable
 import com.takari.sleeplock.to24HourFormat
+import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -68,7 +68,7 @@ class WhiteNoiseService : Service() {
         super.onStartCommand(intent, flags, startId)
         isServiceRunning = true
 
-        logD("Service intent action: ${intent.action}")
+        log("Service intent action: ${intent.action}")
 
         when (intent.action) {
 
@@ -79,7 +79,7 @@ class WhiteNoiseService : Service() {
 
                 val millis: Long = intent.getLongExtra(MILLIS, 0)
 
-                logD("WhiteNoise: $whiteNoise, Milliseconds: $millis")
+                log("WhiteNoise: $whiteNoise, Milliseconds: $millis")
 
                 mediaPlayer = MediaPlayer.create(this, whiteNoise.sound()).apply {
                     start()
@@ -100,11 +100,11 @@ class WhiteNoiseService : Service() {
                 val bitmap = imageLoader.executeBlocking(request).drawable!!.toBitmap()
 
                 val notification = getAndBuildTimerNotification(millis.to24HourFormat(), bitmap)
+
                 startForeground(NOTIFICATION_ID, notification)
             }
 
             PAUSE -> pause()
-
 
             RESUME -> resume()
 
@@ -119,7 +119,6 @@ class WhiteNoiseService : Service() {
         stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
-    //can only be called once
     override fun onDestroy() {
         super.onDestroy()
         timerFlow.reset()
@@ -133,10 +132,7 @@ class WhiteNoiseService : Service() {
 
     private fun getAndBuildTimerNotification(currentTime: String, bitMap: Bitmap): Notification {
         val activityIntent = PendingIntent.getActivity(
-            this,
-            1,
-            Intent(this, MainActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE
+            this, 1, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE
         )
 
         val session = MediaSessionCompat(this, "tag").sessionToken
@@ -156,23 +152,18 @@ class WhiteNoiseService : Service() {
     }
 
     private fun updateNotificationText(newText: String) {
-        notificationBuilder
-            .setContentText(newText)
-            .setSmallIcon(R.drawable.alarm_icon)
-            .build()
+        notificationBuilder.setContentText(newText).setSmallIcon(R.drawable.alarm_icon).build()
 
         notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
     }
 
     private fun updateNotificationAction(isTimerRunning: Boolean) {
         if (isTimerRunning) {
-            notificationBuilder
-                .clearActions()
+            notificationBuilder.clearActions()
                 .addAction(R.drawable.pause, "Pause", createBroadcastIntent(PAUSE))
                 .addAction(R.drawable.reset, "Reset", createBroadcastIntent(RESET))
         } else {
-            notificationBuilder
-                .clearActions()
+            notificationBuilder.clearActions()
                 .addAction(R.drawable.play, "Resume", createBroadcastIntent(RESUME))
                 .addAction(R.drawable.reset, "Reset", createBroadcastIntent(RESET))
         }
@@ -188,15 +179,15 @@ class WhiteNoiseService : Service() {
         return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
     }
 
-    private suspend fun observeTimerFlow(timerFlow: TimerFlow): Nothing = timerFlow.get
-        .collect { timerState ->
-            updateNotificationText(timerState.elapseTime.to24HourFormat())
-            updateNotificationAction(isTimerRunning = timerState.isTimerRunning)
+    private suspend fun observeTimerFlow(timerFlow: TimerFlow): Nothing =
+        timerFlow.get.collect { timerState ->
+                updateNotificationText(timerState.elapseTime.to24HourFormat())
+                updateNotificationAction(isTimerRunning = timerState.isTimerRunning)
 
-            isTimerRunning = timerState.isTimerRunning
+                isTimerRunning = timerState.isTimerRunning
 
-            if (timerState.elapseTime == 0L) destroyService()
-        }
+                if (timerState.elapseTime == 0L) destroyService()
+            }
 
 
     fun pause() {
