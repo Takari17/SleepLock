@@ -38,7 +38,7 @@ class WhiteNoiseFragment : Fragment() {
     private val connection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            logD("WhiteNoiseFragment binded to service.")
+            log("WhiteNoiseFragment binded to service.")
 
             whiteNoiseService = (service as WhiteNoiseService.LocalBinder).getService()
 
@@ -51,7 +51,7 @@ class WhiteNoiseFragment : Fragment() {
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            logD("WhiteNoiseFragment unbinded to service.")
+            log("WhiteNoiseFragment unbinded to service.")
             viewModel.resetState()
         }
     }
@@ -62,7 +62,7 @@ class WhiteNoiseFragment : Fragment() {
         viewModel = ViewModelProvider(this)[WhiteNoiseViewModel::class.java]
 
         viewModel.events = { command ->
-            logD(command.toString())
+            log(command.toString())
 
             when (command) {
                 is WhiteNoiseOneTimeEvents.StartAndBindToService -> {
@@ -117,7 +117,7 @@ class WhiteNoiseFragment : Fragment() {
     }
 
     private fun restoreState() {
-        logD("Restored white oise state: ${whiteNoiseService?.whiteNoise}")
+        log("Restored white oise state: ${whiteNoiseService?.whiteNoise}")
 
         viewModel.restoreState(
             WhiteNoiseUiState(
