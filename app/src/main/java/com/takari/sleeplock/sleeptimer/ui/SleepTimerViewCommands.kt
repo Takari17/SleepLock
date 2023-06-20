@@ -5,4 +5,5 @@ sealed class SleepTimerViewCommands {
     object PauseService : SleepTimerViewCommands()
     object ResumeService : SleepTimerViewCommands()
     object DestroyService : SleepTimerViewCommands()
+    object ShowTimePickerDialog : SleepTimerViewCommands()
 }
