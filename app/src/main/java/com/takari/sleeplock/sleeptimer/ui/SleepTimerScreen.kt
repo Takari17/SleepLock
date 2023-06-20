@@ -1,6 +1,5 @@
 package com.takari.sleeplock.sleeptimer.ui
 
-import SleepLockTimeSelectionDialog
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -128,12 +127,6 @@ fun SleepTimerScreen(viewModel: SleepTimerViewModel = viewModel()) {
             }
         }
     }
-
-    SleepLockTimeSelectionDialog(
-        showTimePicker = sleepTimerUiState.showTimePickerDialog,
-        onCancel = { viewModel.closeDialog() },
-        onTimeSelected = { millis: Long -> viewModel.onUserSelectedTimeFromDialog(millis) }
-    )
 }
 
 

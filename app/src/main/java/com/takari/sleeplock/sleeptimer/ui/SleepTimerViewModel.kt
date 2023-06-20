@@ -16,31 +16,22 @@ class SleepTimerViewModel : ViewModel() {
             serviceIsRunning and timerIsRunning -> {
                 events(SleepTimerViewCommands.PauseService)
 
-                uiState.value = uiState.value.copy(
-                    showTimePickerDialog = false,
-                    timerServiceIsRunning = true,
-                )
+                uiState.value = uiState.value.copy(timerServiceIsRunning = true)
             }
 
             serviceIsRunning and !timerIsRunning -> {
                 events(SleepTimerViewCommands.ResumeService)
 
-                uiState.value = uiState.value.copy(
-                    showTimePickerDialog = false,
-                    timerServiceIsRunning = true,
-                )
+                uiState.value = uiState.value.copy(timerServiceIsRunning = true)
             }
 
-            !serviceIsRunning -> {
-                uiState.value = uiState.value.copy(showTimePickerDialog = true)
-            }
+            !serviceIsRunning -> events(SleepTimerViewCommands.ShowTimePickerDialog)
         }
     }
 
     fun onUserSelectedTimeFromDialog(millis: Long) {
         if (millis != 0L) {
             uiState.value = uiState.value.copy(
-                showTimePickerDialog = false,
                 timerServiceIsRunning = true,
                 isTimerRunning = true,
                 elapseTime = millis.to24HourFormat()
@@ -57,15 +48,11 @@ class SleepTimerViewModel : ViewModel() {
         )
     }
 
-    fun closeDialog() {
-        uiState.value = uiState.value.copy(showTimePickerDialog = false)
-    }
-
     fun restoreState(state: SleepTimerUiState) {
         uiState.value = state
     }
 
-    fun resetState(){
+    fun resetState() {
         events(SleepTimerViewCommands.DestroyService)
         uiState.value = SleepTimerUiState()
     }

@@ -9,17 +9,15 @@ import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.takari.sleeplock.log
+import com.takari.sleeplock.shared.TimeSelectionDialog
 import com.takari.sleeplock.sleeptimer.permissions.AdminPermissionManager
 import com.takari.sleeplock.sleeptimer.service.SleepTimerService
 import com.takari.sleeplock.to24HourFormat
-import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
-import com.takari.sleeplock.whitenoise.ui.WhiteNoiseUiState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,11 +33,12 @@ class SleepTimerFragment : Fragment() {
     lateinit var permissionManager: AdminPermissionManager
     private var sleepTimerService: SleepTimerService? = null
     private lateinit var viewModel: SleepTimerViewModel
+    private val timeSelectionDialog = TimeSelectionDialog()
 
     private val connection = object : ServiceConnection {
 
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            logD("SleepTimerFragment binded to service.")
+            log("SleepTimerFragment binded to service.")
 
             sleepTimerService = (service as SleepTimerService.LocalBinder).getService()
 
@@ -87,6 +86,7 @@ class SleepTimerFragment : Fragment() {
                 is SleepTimerViewCommands.PauseService -> sleepTimerService?.pause()
                 is SleepTimerViewCommands.ResumeService -> sleepTimerService?.resume()
                 is SleepTimerViewCommands.DestroyService -> sleepTimerService?.destroyService()
+                is SleepTimerViewCommands.ShowTimePickerDialog -> openTimeOptionsDialog()
             }
         }
 
@@ -134,5 +134,16 @@ class SleepTimerFragment : Fragment() {
                 elapseTime = sleepTimerService!!.timerFlow.get.value.elapseTime.to24HourFormat(),
             )
         )
+    }
+
+    private fun openTimeOptionsDialog() {
+
+        timeSelectionDialog.onTimeSelected = { millis: Long ->
+            viewModel.onUserSelectedTimeFromDialog(millis)
+        }
+
+        if (!timeSelectionDialog.isAdded) {
+            timeSelectionDialog.show(requireActivity().supportFragmentManager, "timeDialog")
+        }
     }
 }
