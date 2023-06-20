@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.takari.sleeplock.log
+import com.takari.sleeplock.shared.TimeSelectionDialog
 import com.takari.sleeplock.to24HourFormat
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
@@ -34,6 +35,7 @@ class WhiteNoiseFragment : Fragment() {
 
     private var whiteNoiseService: WhiteNoiseService? = null
     private lateinit var viewModel: WhiteNoiseViewModel
+    private val timeSelectionDialog = TimeSelectionDialog()
 
     private val connection = object : ServiceConnection {
 
@@ -73,7 +75,7 @@ class WhiteNoiseFragment : Fragment() {
                 is WhiteNoiseOneTimeEvents.PauseService -> whiteNoiseService?.pause()
                 is WhiteNoiseOneTimeEvents.ResumeService -> whiteNoiseService?.resume()
                 is WhiteNoiseOneTimeEvents.DestroyService -> whiteNoiseService?.destroyService()
-                else -> {}
+                is WhiteNoiseOneTimeEvents.ShowTimePickerDialog -> openTimeOptionsDialog()
             }
         }
 
@@ -127,5 +129,16 @@ class WhiteNoiseFragment : Fragment() {
                 clickedWhiteNoise = whiteNoiseService?.whiteNoise!!
             )
         )
+    }
+
+    private fun openTimeOptionsDialog() {
+
+        timeSelectionDialog.onTimeSelected = { millis: Long ->
+            viewModel.onUserSelectedTimeFromDialog(millis)
+        }
+
+        if (!timeSelectionDialog.isAdded) {
+            timeSelectionDialog.show(requireActivity().supportFragmentManager, "timeDialog")
+        }
     }
 }

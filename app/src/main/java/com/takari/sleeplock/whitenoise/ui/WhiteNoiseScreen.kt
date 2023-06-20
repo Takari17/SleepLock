@@ -163,13 +163,8 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
             fadingCondition = !whiteNoiseUiState.mediaServiceIsRunning,
         )
     }
-
-    SleepLockTimeSelectionDialog(
-        showTimePicker = whiteNoiseUiState.showTimePickerDialog,
-        onCancel = { viewModel.closeDialog() },
-        onTimeSelected = { millis: Long -> viewModel.onUserSelectedTimeFromDialog(millis) }
-    )
 }
+
 
 @Composable
 fun WhiteNoiseItem(whiteNoise: WhiteNoise, imageModifier: Modifier, textModifier: Modifier) {
