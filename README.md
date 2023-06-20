@@ -18,25 +18,17 @@ You can download it from the release [right here.](https://github.com/That1guy17
 <img src="/preview/sleep-lock-preview-gif.gif" align="right" width="32%"/>
 
 ## Tech stack & Open-source libraries
-- Minimum SDK level 21
-- Kotlin based
-- Architecture
-  - MVVM Architecture (View - ViewModel - Model)
-  - Repository pattern
-- [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel) - used for surviving configuration changes and holding business logic for the views.
-- [Live Data](https://developer.android.com/topic/libraries/architecture/livedata) - used to keep the view's data up to date.
-- [Dagger2](https://dagger.dev/) - handles dependency injection/management.
-- [Coroutines](https://github.com/Kotlin/kotlinx.coroutines) - used for reducing the complexity of asynchronous code and concurrency.
-- [Kotlin Flow](https://kotlinlang.org/docs/reference/coroutines/flow.html) - used for simplistic cold observables
-- [JUnit 5](https://junit.org/junit5/) - used for unit testing business logic.
-- [Mockk](https://mockk.io/) - provides fake objects and stubs to help isolate code for unit testing.
-- [Android KTX](https://developer.android.com/kotlin/ktx) - a set of Kotlin extensions.
-- [KenBurns View](https://github.com/flavioarfaria/KenBurnsView) - provides an extension to ImageView that creates an immersive experience by animating its drawable using the Ken Burns Effect.
-- [Android-Indefinite-Pager-Indicator](https://github.com/rbro112/Android-Indefinite-Pager-Indicator) - a lightweight, plug-and-play indefinite pager indicator for RecyclerViews & ViewPagers.
-- [Fancy Buttons](https://github.com/medyo/fancybuttons) - gives access to beautiful custom made buttons.
-- [Glide](https://github.com/bumptech/glide) - a tried and true image loading library for android.
+
+Sleep Lock was built 100% in Kotlin using modern design practices including:
+
+- [Jetpack Compose](https://developer.android.com/jetpack/compose) - Jetpack Compose is Android’s recommended modern toolkit for building native UI.
+- [MVVM Architecture](https://developer.android.com/topic/architecture#modern-app-architecture) - Improves maintainability, scalability, and robustuss of the overall app.
+- [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel) - Exposes state to the UI via Kotlin flows and encapsulates related business logic
+- [Dagger Hilt](https://developer.android.com/training/dependency-injection/hilt-android) - Reduces the boilerplate of doing manual dependency injection in your project.
+- [Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) - Simplifies the the complexity of asynchronous programs.
+- [Coil](https://coil-kt.github.io/coil/) - An image loading library for Android backed by Kotlin Coroutines.
 
 ## Architecture
-Sleep Lock uses MVVM architecture and the Repository pattern for Separation of Concerns.
+Sleep Lock was built using the MVVM architecture for Separation of Concerns.
 
 ![architecture](https://cdn-images-1.medium.com/max/1200/1*KnYBBZIDDeg4zVDDEcLw2A.png)
