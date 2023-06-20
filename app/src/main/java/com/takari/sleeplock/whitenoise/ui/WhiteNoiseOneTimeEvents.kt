@@ -13,4 +13,5 @@ sealed class WhiteNoiseOneTimeEvents {
     object PauseService : WhiteNoiseOneTimeEvents()
     object ResumeService : WhiteNoiseOneTimeEvents()
     object DestroyService : WhiteNoiseOneTimeEvents()
+    object ShowTimePickerDialog : WhiteNoiseOneTimeEvents()
 }

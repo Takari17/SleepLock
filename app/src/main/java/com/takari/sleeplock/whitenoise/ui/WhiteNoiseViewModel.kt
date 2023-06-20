@@ -30,7 +30,6 @@ class WhiteNoiseViewModel : ViewModel() {
                 events(WhiteNoiseOneTimeEvents.PauseService)
 
                 uiState.value = uiState.value.copy(
-                    showTimePickerDialog = false,
                     mediaServiceIsRunning = true,
                     clickedWhiteNoise = clickedWhiteNoise
                 )
@@ -40,7 +39,6 @@ class WhiteNoiseViewModel : ViewModel() {
                 events(WhiteNoiseOneTimeEvents.ResumeService)
 
                 uiState.value = uiState.value.copy(
-                    showTimePickerDialog = false,
                     mediaServiceIsRunning = true,
                     clickedWhiteNoise = clickedWhiteNoise
 
@@ -48,20 +46,16 @@ class WhiteNoiseViewModel : ViewModel() {
             }
 
             !serviceIsRunning -> {
-                uiState.value = uiState.value.copy(
-                    showTimePickerDialog = true,
-                    clickedWhiteNoise = clickedWhiteNoise
-                )
+                events(WhiteNoiseOneTimeEvents.ShowTimePickerDialog)
+
+                uiState.value = uiState.value.copy(clickedWhiteNoise = clickedWhiteNoise)
             }
         }
     }
 
     fun onUserSelectedTimeFromDialog(millis: Long) {
         if (millis != 0L) {
-            uiState.value = uiState.value.copy(
-                showTimePickerDialog = false,
-                mediaServiceIsRunning = true,
-            )
+            uiState.value = uiState.value.copy(mediaServiceIsRunning = true )
 
             events(
                 WhiteNoiseOneTimeEvents.StartAndBindToService(
@@ -84,15 +78,11 @@ class WhiteNoiseViewModel : ViewModel() {
         return WhiteNoiseOptions.get
     }
 
-    fun closeDialog() {
-        uiState.value = uiState.value.copy(showTimePickerDialog = false)
-    }
-
     fun restoreState(state: WhiteNoiseUiState) {
         uiState.value = state
     }
 
-    fun resetState(){
+    fun resetState() {
         // won't reset clickedWhiteNoise
         uiState.value = WhiteNoiseUiState(clickedWhiteNoise = uiState.value.clickedWhiteNoise)
     }
