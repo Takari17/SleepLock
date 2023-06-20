@@ -8,14 +8,14 @@
 Using the power of white noise and sleep timers, Sleep Lock aims to help you relax and focus by helping you get the sleep you deserve.
 
 <p align="center">
-<img src= "preview/sleep_lock_feature_graphic.png"/>
+<img src= "/app/preview/sleep_lock_feature_graphic.png"/>
 </p>
 
 
 ## Download
 You can download it from the release [right here.](https://github.com/That1guy17/SleepLock/releases)
 
-<img src="/preview/sleep-lock-preview-gif.gif" align="right" width="32%"/>
+<img src="/app/preview/sleep-lock-preview-gif.gif" align="right" width="32%"/>
 
 ## Tech stack & Open-source libraries
 
