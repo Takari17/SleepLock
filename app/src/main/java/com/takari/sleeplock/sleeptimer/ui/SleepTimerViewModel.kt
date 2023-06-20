@@ -1,8 +1,8 @@
 package com.takari.sleeplock.sleeptimer.ui
 
 import androidx.lifecycle.ViewModel
-import com.takari.sleeplock.to24HourFormat
-import com.takari.sleeplock.whitenoise.service.TimerFlow
+import com.takari.sleeplock.shared.to24HourFormat
+import com.takari.sleeplock.shared.TimerFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 

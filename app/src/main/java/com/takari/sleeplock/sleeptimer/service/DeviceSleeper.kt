@@ -2,7 +2,7 @@ package com.takari.sleeplock.sleeptimer.service
 
 import android.app.admin.DevicePolicyManager
 import android.media.AudioManager
-import com.takari.sleeplock.log
+import com.takari.sleeplock.shared.log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject

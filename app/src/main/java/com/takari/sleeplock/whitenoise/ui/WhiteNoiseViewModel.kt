@@ -1,11 +1,11 @@
 package com.takari.sleeplock.whitenoise.ui
 
 import androidx.lifecycle.ViewModel
-import com.takari.sleeplock.log
-import com.takari.sleeplock.to24HourFormat
+import com.takari.sleeplock.shared.log
+import com.takari.sleeplock.shared.to24HourFormat
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.data.WhiteNoiseOptions
-import com.takari.sleeplock.whitenoise.service.TimerFlow
+import com.takari.sleeplock.shared.TimerFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class WhiteNoiseViewModel : ViewModel() {

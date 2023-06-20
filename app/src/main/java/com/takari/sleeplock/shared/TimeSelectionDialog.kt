@@ -2,10 +2,15 @@ package com.takari.sleeplock.shared
 
 import android.app.Dialog
 import android.os.Bundle
+import android.widget.Button
+import android.widget.NumberPicker
 import androidx.fragment.app.DialogFragment
 import com.takari.sleeplock.R
-import kotlinx.android.synthetic.main.time_selection_layout.*
 
+/**
+ * The time pickers in Jetpack Compose are too limiting for my use case, and I don't want to write
+ * some custom composable for a simple time picker. So I reverted back to standard XML here.
+ */
 
 class TimeSelectionDialog : DialogFragment() {
 
@@ -15,6 +20,10 @@ class TimeSelectionDialog : DialogFragment() {
         Dialog(requireContext()).apply {
 
             setContentView(R.layout.time_selection_layout)
+
+            val numberPickerHours = findViewById<NumberPicker>(R.id.numberPickerHours)
+            val numberPickerMin = findViewById<NumberPicker>(R.id.numberPickerMin)
+            val setTimeButton = findViewById<Button>(R.id.setTimeButton)
 
             val numPickerHours = numberPickerHours.apply {
                 maxValue = 23

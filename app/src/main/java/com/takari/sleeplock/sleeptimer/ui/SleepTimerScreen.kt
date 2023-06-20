@@ -32,8 +32,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.takari.sleeplock.R
 import com.takari.sleeplock.sleeptimer.service.SleepTimerService
-import com.takari.sleeplock.ui.theme.DarkBackground
-import com.takari.sleeplock.ui.theme.DeepBlue
+import com.takari.sleeplock.shared.theme.DarkBackground
+import com.takari.sleeplock.shared.theme.DeepBlue
 
 
 @Preview

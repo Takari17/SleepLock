@@ -1,21 +1,26 @@
 package com.takari.sleeplock.shared
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.MutableStateFlow
 
-class TimerFlow(private var millis: Long, private val timerIsRunning: (Boolean) -> Unit = {}) {
+
+//TODO write docs
+class TimerFlow(private var millis: Long) {
+
+    data class TimerState(val elapseTime: Long, val isTimerRunning: Boolean)
 
     private var running = true
     private var canceled = false
 
-    val get = flow<Long> {
-        while (!canceled) {
+    val get = MutableStateFlow(TimerState(elapseTime = millis, isTimerRunning = false))
 
+    suspend fun start() {
+        while (!canceled) {
             if (running) {
-                //timer is not canceled or paused
                 millis -= 1000
-                emit(millis)
             }
+
+            get.emit(TimerState(elapseTime = millis, isTimerRunning = running))
 
             if (millis <= 0L) reset()
 
@@ -23,20 +28,16 @@ class TimerFlow(private var millis: Long, private val timerIsRunning: (Boolean) 
         }
     }
 
-    //collecting the flow starts it, so we don't need a start() function
     fun resume() {
         running = true
-        timerIsRunning(true)
     }
 
     fun pause() {
         running = false
-        timerIsRunning(false)
     }
 
     fun reset() {
         canceled = true
         running = false
-        timerIsRunning(false)
     }
 }

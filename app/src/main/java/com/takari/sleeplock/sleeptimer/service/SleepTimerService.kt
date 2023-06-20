@@ -12,9 +12,9 @@ import androidx.core.app.NotificationManagerCompat
 import com.takari.sleeplock.MainActivity
 import com.takari.sleeplock.R
 import com.takari.sleeplock.di.App
-import com.takari.sleeplock.log
-import com.takari.sleeplock.to24HourFormat
-import com.takari.sleeplock.whitenoise.service.TimerFlow
+import com.takari.sleeplock.shared.log
+import com.takari.sleeplock.shared.to24HourFormat
+import com.takari.sleeplock.shared.TimerFlow
 import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope

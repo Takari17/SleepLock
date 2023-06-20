@@ -1,4 +1,4 @@
-package com.takari.sleeplock.ui.theme
+package com.takari.sleeplock.shared.theme
 
 import androidx.compose.ui.graphics.Color
 

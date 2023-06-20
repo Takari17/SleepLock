@@ -21,8 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.takari.sleeplock.hrToMilli
-import com.takari.sleeplock.minToMilli
+import com.takari.sleeplock.shared.hrToMilli
+import com.takari.sleeplock.shared.minToMilli
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
