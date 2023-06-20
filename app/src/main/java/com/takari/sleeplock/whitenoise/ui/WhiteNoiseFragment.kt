@@ -13,9 +13,9 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.takari.sleeplock.log
+import com.takari.sleeplock.shared.log
 import com.takari.sleeplock.shared.TimeSelectionDialog
-import com.takari.sleeplock.to24HourFormat
+import com.takari.sleeplock.shared.to24HourFormat
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
 import kotlinx.coroutines.launch

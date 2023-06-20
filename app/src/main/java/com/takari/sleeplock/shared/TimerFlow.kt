@@ -1,4 +1,4 @@
-package com.takari.sleeplock.whitenoise.service
+package com.takari.sleeplock.shared
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

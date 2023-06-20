@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import com.takari.sleeplock.homescreen.HomeScreen
-import com.takari.sleeplock.ui.theme.SleepLockTheme
+import com.takari.sleeplock.shared.theme.SleepLockTheme
 
 class HomeScreenFragment : Fragment() {
 

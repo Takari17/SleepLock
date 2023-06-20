@@ -13,7 +13,6 @@ class App : Application() {
         const val CHANNEL_ID = "=channel id"
     }
 
-
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
@@ -21,7 +20,8 @@ class App : Application() {
 
     private fun createNotificationChannel() {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // API 26 and above
+        // Only needed for API 26 and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             val channel = NotificationChannel(
                 CHANNEL_ID,

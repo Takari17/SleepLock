@@ -6,8 +6,6 @@ import android.widget.Button
 import android.widget.NumberPicker
 import androidx.fragment.app.DialogFragment
 import com.takari.sleeplock.R
-import com.takari.sleeplock.hrToMilli
-import com.takari.sleeplock.minToMilli
 
 /**
  * The time pickers in Jetpack Compose are too limiting for my use case, and I don't want to write

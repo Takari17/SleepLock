@@ -32,8 +32,8 @@ import androidx.fragment.app.FragmentActivity
 import com.takari.sleeplock.MainActivity
 import com.takari.sleeplock.R
 import com.takari.sleeplock.sleeptimer.ui.SleepTimerFragment
-import com.takari.sleeplock.ui.theme.DarkBackground
-import com.takari.sleeplock.ui.theme.DarkLight
+import com.takari.sleeplock.shared.theme.DarkBackground
+import com.takari.sleeplock.shared.theme.DarkLight
 import com.takari.sleeplock.whitenoise.ui.WhiteNoiseFragment
 
 

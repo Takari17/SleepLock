@@ -1,4 +1,4 @@
-package com.takari.sleeplock
+package com.takari.sleeplock.shared
 
 import android.content.Intent
 import android.os.Build.VERSION.SDK_INT
