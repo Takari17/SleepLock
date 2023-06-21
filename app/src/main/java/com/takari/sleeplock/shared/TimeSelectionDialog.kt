@@ -7,11 +7,10 @@ import android.widget.NumberPicker
 import androidx.fragment.app.DialogFragment
 import com.takari.sleeplock.R
 
-/**
+/*
  * The time pickers in Jetpack Compose are too limiting for my use case, and I don't want to write
  * some custom composable for a simple time picker. So I reverted back to standard XML here.
  */
-
 class TimeSelectionDialog : DialogFragment() {
 
     var onTimeSelected: (milliseconds: Long) -> Unit = {}

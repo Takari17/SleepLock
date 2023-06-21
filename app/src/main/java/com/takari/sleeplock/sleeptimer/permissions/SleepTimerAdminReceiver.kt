@@ -7,9 +7,9 @@ import com.takari.sleeplock.sleeptimer.permissions.AdminPermissionManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-/**
-DeviceAdminReceiver extents BroadcastReceiver. It's intuitive, onDisabled is called when the
-user disables the admin permission and vice versa with onEnabled.
+/*
+Called when user either enables or disables admin permissions. DeviceAdminReceiver
+extents BroadcastReceiver.
  */
 @AndroidEntryPoint
 class SleepTimerAdminReceiver : DeviceAdminReceiver() {

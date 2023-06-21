@@ -11,8 +11,9 @@ import com.takari.sleeplock.sleeptimer.admin.SleepTimerAdminReceiver
 import javax.inject.Inject
 
 /*
-The API for checking the status of the admin permissions didn't suit my needs and so I created my
- own implementation.
+The API for checking the status of the admin permissions was difficult to deal with,
+so I'm just using shared preferences to save a simple 'isGranted' boolean that's modified
+in SleepTimerAdminReceiver.kt .
  */
 class AdminPermissionManager @Inject constructor(
     private val sharedPrefs: SharedPreferences,

@@ -30,20 +30,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.takari.sleeplock.whitenoise.data.WhiteNoiseOptions
+import com.takari.sleeplock.whitenoise.data.allWhiteNoises
 import java.lang.Math.abs
 
 
 @Preview
 @Composable
-fun AnimationTest() {
+fun ZoomingAnimationTest() {
     val listState = rememberLazyListState()
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val halfRowWidth = constraints.maxWidth / 2
 
         LazyRow(state = listState) {
-            itemsIndexed(WhiteNoiseOptions.get) { i, item ->
+            itemsIndexed(allWhiteNoises) { i, item ->
                 val opacity by remember {
                     derivedStateOf {
                         val currentItemInfo = listState.layoutInfo.visibleItemsInfo
@@ -79,7 +79,10 @@ fun AnimationTest() {
 
 
 /**
- * This is meant to only be used on Images related composable.
+ * The Ken Burns effect is a type of panning and zooming effect used in film and video production
+ * from still imagery. This is only intended to be used on image related composables.
+ *
+ * [Wiki](https://en.wikipedia.org/wiki/Ken_Burns_effect)
  */
 fun Modifier.addKensBurnEffect(): Modifier = composed {
     var animated by remember { mutableStateOf(false) }

@@ -23,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -71,7 +72,7 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
             flingBehavior = rememberSnapFlingBehavior(lazyListState = state),
             userScrollEnabled = !whiteNoiseUiState.mediaServiceIsRunning
         ) {
-            itemsIndexed(viewModel.getWhiteNoiseOptions()) { i, item: WhiteNoise ->
+            itemsIndexed(viewModel.getWhiteNoiseList()) { i, item: WhiteNoise ->
                 val opacity by remember {
                     derivedStateOf {
                         val currentItemInfo = state.layoutInfo.visibleItemsInfo
@@ -114,11 +115,14 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
             }
         }
 
-        coroutineScope.launch {
-            val index =
-                viewModel.getWhiteNoiseOptions().indexOf(whiteNoiseUiState.clickedWhiteNoise)
-            state.animateScrollToItem(index)
+        LaunchedEffect(Unit) {
+            coroutineScope.launch {
+                val index = viewModel
+                    .getWhiteNoiseList()
+                    .indexOf(whiteNoiseUiState.clickedWhiteNoise)
 
+                state.animateScrollToItem(index)
+            }
         }
 
         FadingText(
@@ -155,7 +159,7 @@ fun WhiteNoiseScreen(viewModel: WhiteNoiseViewModel = viewModel()) {
         FadingText(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 64.dp),
+                .padding(top = 80.dp),
             text = whiteNoiseUiState.elapseTime,
             color = Color.White,
             fontSize = 64.sp,

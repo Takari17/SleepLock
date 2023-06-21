@@ -10,7 +10,7 @@ import dagger.hilt.android.HiltAndroidApp
 class App : Application() {
 
     companion object {
-        const val CHANNEL_ID = "=channel id"
+        const val CHANNEL_ID = "channel id"
     }
 
     override fun onCreate() {

@@ -25,6 +25,13 @@ import com.takari.sleeplock.shared.hrToMilli
 import com.takari.sleeplock.shared.minToMilli
 import java.util.Calendar
 
+/*
+ * I wasn't able to remove the AM/PM button from the TimePicker, and I didn't want to write
+ * my own implementation so I just used TimeSelectionDialog.kt
+ *
+ * I'll keep this here for future reference.
+ */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable

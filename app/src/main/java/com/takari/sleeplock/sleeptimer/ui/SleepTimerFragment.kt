@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
+@AndroidEntryPoint
 class SleepTimerFragment : Fragment() {
 
     companion object {

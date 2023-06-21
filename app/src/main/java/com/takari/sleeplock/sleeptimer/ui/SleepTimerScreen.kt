@@ -73,7 +73,7 @@ fun SleepTimerScreen(viewModel: SleepTimerViewModel = viewModel()) {
             Text(
                 text = sleepTimerUiState.elapseTime,
                 color = Color.White,
-                fontSize = 72.sp,
+                fontSize = 80.sp,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = 128.dp)

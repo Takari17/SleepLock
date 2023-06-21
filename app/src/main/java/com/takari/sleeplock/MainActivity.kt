@@ -8,6 +8,12 @@ import androidx.fragment.app.FragmentManager
 import com.takari.sleeplock.main.HomeScreenFragment
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * This app was built using the Single Activity Architecture, making this the only Activity. Every
+ * other screen is hosted via fragments. I'm not using Jetpack Compose's Navigation library
+ * due to the negative experiences some of my peers have had with it. I'll wait until it's more
+ * mature.
+ */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     companion object {
