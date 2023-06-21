@@ -89,7 +89,19 @@ class WhiteNoiseService : Service() {
 
                 timerFlow = TimerFlow(millis)
 
-                serviceScope.launch { observeTimerFlow(timerFlow) }
+                serviceScope.launch {
+                    timerFlow.elapseTime.collect { millis ->
+                        updateNotificationText(millis.to24HourFormat())
+                        if (millis == 0L) destroyService()
+                    }
+                }
+
+                serviceScope.launch {
+                    timerFlow.isRunning.collect { isRunning ->
+                        updateNotificationAction(isTimerRunning = isRunning)
+                        isTimerRunning = isRunning
+                    }
+                }
 
                 serviceScope.launch { timerFlow.start() }
 
@@ -179,17 +191,6 @@ class WhiteNoiseService : Service() {
 
         return PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
     }
-
-    private suspend fun observeTimerFlow(timerFlow: TimerFlow): Nothing =
-        timerFlow.get.collect { timerState ->
-                updateNotificationText(timerState.elapseTime.to24HourFormat())
-                updateNotificationAction(isTimerRunning = timerState.isTimerRunning)
-
-                isTimerRunning = timerState.isTimerRunning
-
-                if (timerState.elapseTime == 0L) destroyService()
-            }
-
 
     fun pause() {
         timerFlow.pause()

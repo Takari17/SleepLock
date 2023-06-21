@@ -13,11 +13,11 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.takari.sleeplock.shared.log
 import com.takari.sleeplock.shared.TimeSelectionDialog
+import com.takari.sleeplock.shared.log
+import com.takari.sleeplock.shared.to24HourFormat
 import com.takari.sleeplock.sleeptimer.permissions.AdminPermissionManager
 import com.takari.sleeplock.sleeptimer.service.SleepTimerService
-import com.takari.sleeplock.shared.to24HourFormat
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -43,12 +43,15 @@ class SleepTimerFragment : Fragment() {
             sleepTimerService = (service as SleepTimerService.LocalBinder).getService()
 
             lifecycleScope.launch {
-                sleepTimerService!!.timerFlow.get.collect { timerState ->
-                    viewModel.setTimerState(
-                        timerState
-                    )
-                }
+                sleepTimerService!!.timerFlow.elapseTime
+                    .collect { elapseTime -> viewModel.setElapseTime(elapseTime) }
             }
+
+            lifecycleScope.launch {
+                sleepTimerService!!.timerFlow.isRunning
+                    .collect { isRunning -> viewModel.setIsTimerRunning(isRunning) }
+            }
+
 
             restoreState()
         }
@@ -131,7 +134,7 @@ class SleepTimerFragment : Fragment() {
             SleepTimerUiState(
                 timerServiceIsRunning = SleepTimerService.isRunning(),
                 isTimerRunning = SleepTimerService.timerIsRunning(),
-                elapseTime = sleepTimerService!!.timerFlow.get.value.elapseTime.to24HourFormat(),
+                elapseTime = sleepTimerService!!.timerFlow.elapseTime.value.to24HourFormat(),
             )
         )
     }

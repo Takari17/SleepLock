@@ -7,20 +7,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 //TODO write docs
 class TimerFlow(private var millis: Long) {
 
-    data class TimerState(val elapseTime: Long, val isTimerRunning: Boolean)
-
-    private var running = true
     private var canceled = false
 
-    val get = MutableStateFlow(TimerState(elapseTime = millis, isTimerRunning = false))
+    val elapseTime = MutableStateFlow(millis)
+    val isRunning = MutableStateFlow(true)
 
     suspend fun start() {
         while (!canceled) {
-            if (running) {
+            if (isRunning.value) {
                 millis -= 1000
             }
 
-            get.emit(TimerState(elapseTime = millis, isTimerRunning = running))
+            elapseTime.value = millis
 
             if (millis <= 0L) reset()
 
@@ -29,15 +27,15 @@ class TimerFlow(private var millis: Long) {
     }
 
     fun resume() {
-        running = true
+        isRunning.value = true
     }
 
     fun pause() {
-        running = false
+        isRunning.value = false
     }
 
     fun reset() {
+        isRunning.value = false
         canceled = true
-        running = false
     }
 }

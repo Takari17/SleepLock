@@ -41,19 +41,24 @@ class SleepTimerViewModel : ViewModel() {
         }
     }
 
-    fun setTimerState(timerState: TimerFlow.TimerState) {
-        uiState.value = uiState.value.copy(
-            elapseTime = timerState.elapseTime.to24HourFormat(),
-            isTimerRunning = timerState.isTimerRunning
-        )
+    fun setElapseTime(elapseTime: Long) {
+        uiState.value = uiState.value.copy(elapseTime = elapseTime.to24HourFormat())
     }
+
+    fun setIsTimerRunning(isRunning: Boolean) {
+        uiState.value = uiState.value.copy(isTimerRunning = isRunning)
+    }
+
 
     fun restoreState(state: SleepTimerUiState) {
         uiState.value = state
     }
 
     fun resetState() {
-        events(SleepTimerViewCommands.DestroyService)
         uiState.value = SleepTimerUiState()
+    }
+
+    fun destroyService() {
+        events(SleepTimerViewCommands.DestroyService)
     }
 }

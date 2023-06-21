@@ -5,7 +5,6 @@ import com.takari.sleeplock.shared.log
 import com.takari.sleeplock.shared.to24HourFormat
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.data.WhiteNoiseOptions
-import com.takari.sleeplock.shared.TimerFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class WhiteNoiseViewModel : ViewModel() {
@@ -55,7 +54,7 @@ class WhiteNoiseViewModel : ViewModel() {
 
     fun onUserSelectedTimeFromDialog(millis: Long) {
         if (millis != 0L) {
-            uiState.value = uiState.value.copy(mediaServiceIsRunning = true )
+            uiState.value = uiState.value.copy(mediaServiceIsRunning = true)
 
             events(
                 WhiteNoiseOneTimeEvents.StartAndBindToService(
@@ -66,11 +65,12 @@ class WhiteNoiseViewModel : ViewModel() {
         }
     }
 
-    fun setTimerState(timerState: TimerFlow.TimerState) {
-        uiState.value = uiState.value.copy(
-            elapseTime = timerState.elapseTime.to24HourFormat(),
-            isTimerRunning = timerState.isTimerRunning
-        )
+    fun setElapseTime(elapseTime: Long) {
+        uiState.value = uiState.value.copy(elapseTime = elapseTime.to24HourFormat())
+    }
+
+    fun setIsTimerRunning(isRunning: Boolean) {
+        uiState.value = uiState.value.copy(isTimerRunning = isRunning)
     }
 
     fun getWhiteNoiseOptions(): List<WhiteNoise> {
