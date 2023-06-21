@@ -12,9 +12,9 @@ import androidx.core.app.NotificationManagerCompat
 import com.takari.sleeplock.MainActivity
 import com.takari.sleeplock.R
 import com.takari.sleeplock.di.App
+import com.takari.sleeplock.shared.TimerFlow
 import com.takari.sleeplock.shared.log
 import com.takari.sleeplock.shared.to24HourFormat
-import com.takari.sleeplock.shared.TimerFlow
 import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -79,20 +79,24 @@ class SleepTimerService : Service() {
                 timerFlow = TimerFlow(millis)
 
                 serviceScope.launch {
-                    timerFlow.get
-                        .collect { timerState ->
-                            log("Sleep timer service elapse time: $timerState")
-                            updateNotificationText(timerState.elapseTime.to24HourFormat())
-                            updateNotificationAction(isTimerRunning = timerState.isTimerRunning)
+                    timerFlow.elapseTime.collect { millis ->
+                        updateNotificationText(millis.to24HourFormat())
 
-                            isTimerRunning = timerState.isTimerRunning
-                            if (timerState.elapseTime == 0L) { // timer finishes
-                                log("Sleeping the device...")
-                                updateNotificationText("Sleeping Device")
-                                sleepTheDevice()
-                            }
+                        if (millis == 0L) { // timer finishes
+                            log("Sleeping the device...")
+                            updateNotificationText("Sleeping Device")
+                            sleepTheDevice()
                         }
+                    }
                 }
+
+                serviceScope.launch {
+                    timerFlow.isRunning.collect { isRunning ->
+                        updateNotificationAction(isTimerRunning = isRunning)
+                        isTimerRunning = isRunning
+                    }
+                }
+
 
                 serviceScope.launch { timerFlow.start() }
 

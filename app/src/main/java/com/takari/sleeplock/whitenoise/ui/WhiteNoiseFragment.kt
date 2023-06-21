@@ -45,8 +45,13 @@ class WhiteNoiseFragment : Fragment() {
             whiteNoiseService = (service as WhiteNoiseService.LocalBinder).getService()
 
             lifecycleScope.launch {
-                whiteNoiseService!!.timerFlow.get
-                    .collect { timerState -> viewModel.setTimerState(timerState) }
+                whiteNoiseService!!.timerFlow.elapseTime
+                    .collect { elapseTime -> viewModel.setElapseTime(elapseTime) }
+            }
+
+            lifecycleScope.launch {
+                whiteNoiseService!!.timerFlow.isRunning
+                    .collect { isRunning -> viewModel.setIsTimerRunning(isRunning) }
             }
 
             restoreState()
@@ -125,7 +130,7 @@ class WhiteNoiseFragment : Fragment() {
             WhiteNoiseUiState(
                 mediaServiceIsRunning = WhiteNoiseService.isRunning(),
                 isTimerRunning = WhiteNoiseService.timerIsRunning(),
-                elapseTime = whiteNoiseService!!.timerFlow.get.value.elapseTime.to24HourFormat(),
+                elapseTime = whiteNoiseService!!.timerFlow.elapseTime.value.to24HourFormat(),
                 clickedWhiteNoise = whiteNoiseService?.whiteNoise!!
             )
         )

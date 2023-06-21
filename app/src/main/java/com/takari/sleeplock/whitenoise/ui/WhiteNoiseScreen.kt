@@ -1,6 +1,5 @@
 package com.takari.sleeplock.whitenoise.ui
 
-import SleepLockTimeSelectionDialog
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -48,7 +47,7 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.takari.sleeplock.R
-import com.takari.sleeplock.log
+import com.takari.sleeplock.shared.log
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
 import com.takari.sleeplock.whitenoise.service.WhiteNoiseService
 import kotlinx.coroutines.launch
