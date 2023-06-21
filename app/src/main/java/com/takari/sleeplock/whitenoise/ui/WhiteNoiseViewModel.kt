@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.takari.sleeplock.shared.log
 import com.takari.sleeplock.shared.to24HourFormat
 import com.takari.sleeplock.whitenoise.data.WhiteNoise
-import com.takari.sleeplock.whitenoise.data.WhiteNoiseOptions
+import com.takari.sleeplock.whitenoise.data.allWhiteNoises
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class WhiteNoiseViewModel : ViewModel() {
@@ -13,10 +13,6 @@ class WhiteNoiseViewModel : ViewModel() {
     var events: (WhiteNoiseOneTimeEvents) -> Unit = {}
 
 
-    /*
-    If the media isn't playing, then show time picker. If media is playing and the timer is running,
-    then pause it. Else resume it.
-     */
     fun onWhiteNoiseItemClick(
         clickedWhiteNoise: WhiteNoise,
         serviceIsRunning: Boolean,
@@ -73,9 +69,9 @@ class WhiteNoiseViewModel : ViewModel() {
         uiState.value = uiState.value.copy(isTimerRunning = isRunning)
     }
 
-    fun getWhiteNoiseOptions(): List<WhiteNoise> {
+    fun getWhiteNoiseList(): List<WhiteNoise> {
         //todo look at that google project, look at how they handle the data layer when it's not needed
-        return WhiteNoiseOptions.get
+        return allWhiteNoises
     }
 
     fun restoreState(state: WhiteNoiseUiState) {

@@ -2,7 +2,6 @@ package com.takari.sleeplock.sleeptimer.service
 
 import android.app.admin.DevicePolicyManager
 import android.media.AudioManager
-import com.takari.sleeplock.shared.log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -24,16 +23,14 @@ class DeviceSleeper @Inject constructor(
         }
     }
 
-    fun lowerVolumeOnce() {
-        log("lowerVolumeOnce()")
+    private fun lowerVolumeOnce() {
         audioManager.adjustVolume(
             AudioManager.ADJUST_LOWER,
             AudioManager.FLAG_PLAY_SOUND
         )
     }
 
-    fun turnOffScreen() {
-        log("Turning off screen")
+    private fun turnOffScreen() {
         policyManager.lockNow()
     }
 }

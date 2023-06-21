@@ -34,6 +34,13 @@ private var isServiceRunning = false
 private var isTimerRunning = false
 
 
+/**
+ * Services sit out of MVVM, but since this service provides data to WhiteNoiseScreen I decided
+ * to make the view bind to this service and observe exposed Flow's. The alternative was having
+ * this service communicate with a Repository, which seemed like overkill for this app considering
+ * the fact that this app only has a simple static datasource.
+ */
+
 
 class WhiteNoiseService : Service() {
 
@@ -105,10 +112,8 @@ class WhiteNoiseService : Service() {
 
                 serviceScope.launch { timerFlow.start() }
 
-                val request = ImageRequest.Builder(this)
-                    .data(whiteNoise.image())
-                    .target { drawable -> drawable.toBitmap() }
-                    .build()
+                val request = ImageRequest.Builder(this).data(whiteNoise.image())
+                    .target { drawable -> drawable.toBitmap() }.build()
 
                 val bitmap = imageLoader.executeBlocking(request).drawable!!.toBitmap()
 

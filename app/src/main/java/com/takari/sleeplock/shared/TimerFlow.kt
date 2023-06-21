@@ -4,11 +4,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 
 
-//TODO write docs
+/**
+ * A countdown timer that emit elapseTime and isRunning via stateflow StateFlow
+ * until millis reaches 0.
+ *
+ * @param millis Staring time in milliseconds.
+ */
 class TimerFlow(private var millis: Long) {
 
     private var canceled = false
 
+    // Separating elapseTime and isRunning helps to avoid dropping emissions.
     val elapseTime = MutableStateFlow(millis)
     val isRunning = MutableStateFlow(true)
 

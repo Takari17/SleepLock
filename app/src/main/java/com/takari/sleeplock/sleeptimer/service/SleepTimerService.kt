@@ -97,7 +97,6 @@ class SleepTimerService : Service() {
                     }
                 }
 
-
                 serviceScope.launch { timerFlow.start() }
 
                 val notification = getInitialTimerNotification(millis.to24HourFormat())
