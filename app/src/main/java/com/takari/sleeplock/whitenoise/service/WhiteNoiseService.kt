@@ -157,6 +157,7 @@ class WhiteNoiseService : Service() {
         val mediaStyle = MediaStyle().setMediaSession(session)
 
         return notificationBuilder.apply {
+            clearActions()
             setSmallIcon(R.drawable.alarm_icon)
             addAction(R.drawable.pause, "Pause", createBroadcastIntent(PAUSE))
             addAction(R.drawable.reset, "Reset", createBroadcastIntent(RESET))
