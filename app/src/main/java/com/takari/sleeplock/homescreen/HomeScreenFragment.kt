@@ -1,4 +1,4 @@
-package com.takari.sleeplock.main
+package com.takari.sleeplock.homescreen
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import com.takari.sleeplock.homescreen.HomeScreen
 import com.takari.sleeplock.shared.theme.SleepLockTheme
 
 class HomeScreenFragment : Fragment() {

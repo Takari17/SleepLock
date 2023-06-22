@@ -5,7 +5,7 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import com.takari.sleeplock.main.HomeScreenFragment
+import com.takari.sleeplock.homescreen.HomeScreenFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
