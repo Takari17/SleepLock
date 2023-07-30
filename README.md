@@ -13,7 +13,7 @@ Using the power of white noise and sleep timers, Sleep Lock aims to help you rel
 
 
 ## Download
-You can download it from the release [right here.](https://github.com/That1guy17/SleepLock/releases)
+You can download it directly from Google Play [right here.](https://play.google.com/store/apps/details?id=com.harrison.sleeplock&pli=1)
 
 <img src="/app/preview/sleep-lock-preview-gif.gif" align="right" width="32%"/>
 
